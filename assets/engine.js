@@ -24100,7 +24100,8 @@ function() {
         if (DEVELOPMENT) {
             r = -1 != document.domain.indexOf("192.168.") ? "ws://" + document.domain + ":8010/" + game.playPath : "ws://" + game.playHost + ".airmash.devel:8000/" + game.playPath
         } else
-            r = "wss://game-" + game.playHost + ".airma.sh/" + game.playPath;
+            //r = "wss://game-" + game.playHost + ".airma.sh/" + game.playPath;
+            r = game.playData.url; // DERPS
         t && n && t.close(),
         (e = new WebSocket(r)).binaryType = "arraybuffer",
         e.onopen = function() {
@@ -28713,6 +28714,7 @@ function() {
                 }
                 var d = S(game.playRegion, o);
                 game.playHost = d.host,
+                game.playData = d, // DERPS
                 game.playPath = d.id,
                 game.regionName = E(game.playRegion).name,
                 game.playRoom = o,
