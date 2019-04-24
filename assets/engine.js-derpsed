@@ -32341,7 +32341,7 @@ function() {
     }
     ;
     var w = function(e, t) {
-        var n = "/games";
+        var n = "games"; // DERPS
         t && (n += "?main=1"),
         $.ajax({
             url: n,
