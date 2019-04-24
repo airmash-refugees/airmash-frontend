@@ -1,0 +1,495 @@
+(function() {
+    var e = {}
+      , t = 0
+      , n = {
+        started: !1,
+        startX: 200,
+        startY: -2450,
+        pan: 0,
+        dist: 100,
+        explosion: 4e3,
+        direction: 1
+    };
+    Tools.updateReel = function() {
+        if (!n.started) {
+            n.pos = Vector.zero();
+            for (var e, t = [3, 1, 2, 4, 5], r = [-270, -150, 0, 150, 270], i = 0; i < t.length; i++)
+                Players.add({
+                    id: i + 1,
+                    team: 1,
+                    status: 0,
+                    reel: !0,
+                    name: "",
+                    type: t[i],
+                    posX: 0,
+                    posY: 0,
+                    rot: 0,
+                    flag: 1
+                }),
+                (e = Players.get(i + 1)).keystate.UP = !0,
+                e._offset = r[i]
+        }
+        n.started = !0,
+        n.dist > 2e3 ? n.direction = -1 : n.dist < 100 && (n.direction = 1),
+        n.dist += .5 * n.direction * game.timeFactor,
+        n.pan += 1 / n.dist * game.timeFactor,
+        n.pos.x = n.startX + Math.sin(n.pan) * n.dist,
+        n.pos.y = n.startY - Math.cos(n.pan) * n.dist,
+        Graphics.setCamera(n.pos.x, n.pos.y),
+        Players.update(),
+        Particles.update();
+        for (var o, s = 1; s <= 5; s++)
+            (o = Players.get(s)).pos.x = n.pos.x + o._offset,
+            o.pos.y = n.pos.y + game.screenY / game.scale * .24,
+            null != o._prevPos ? o.rot = new Vector(o.pos.x - o._prevPos.x,o.pos.y - o._prevPos.y).angle() + Math.PI : o._prevPos = o.pos.clone(),
+            o._prevPos = new Vector((19 * o._prevPos.x + o.pos.x) / 20,(19 * o._prevPos.y + o.pos.y) / 20);
+        if (game.time > n.explosion) {
+            var a = new Vector(Tools.rand(n.pos.x - game.halfScreenX / game.scale, n.pos.x + game.halfScreenX / game.scale),Tools.rand(n.pos.y - game.halfScreenY / game.scale, n.pos.y + game.halfScreenY / game.scale));
+            Particles.explosion(a, Tools.rand(2, 2.5), Tools.randInt(4, 7)),
+            Particles.explosion(new Vector(a.x + Tools.rand(-100, 100),a.y + Tools.rand(-100, 100)), Tools.rand(1, 1.2)),
+            n.explosion = game.time + Tools.rand(1e3, 3e3)
+        }
+    }
+    ,
+    Tools.wipeReel = function() {
+        Particles.wipe(),
+        Players.wipe()
+    }
+    ,
+    Tools.startupMsg = function() {
+        console.log("%cΛIRMΛSH Engine " + game.version + " starting up!", "font-size: 20px;"),
+        console.log(""),
+        console.log("%c*** Important message ***", "font-size: 16px; color: red;"),
+        console.log("%cDo not paste any commands given by players in this console window", "font-size: 14px; color: red;"),
+        console.log("")
+    }
+    ,
+    Tools.detectCapabilities = function() {
+        r(),
+        config.mobile && !config.settings.mobileshown && (UI.popBigMsg(1),
+        config.settings.mobileshown = !0,
+        Tools.setSettings({
+            mobileshown: !0
+        })),
+        config.mobile && Input.setupLogin()
+    }
+    ;
+    var r = function() {
+        config.mobile = "ontouchstart"in document.documentElement && void 0 !== window.orientation || -1 !== navigator.userAgent.indexOf("IEMobile"),
+        config.ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream,
+        "#forcemobile" == window.location.hash && (config.mobile = !0),
+        "#nomobile" == window.location.hash && (config.mobile = !1)
+    };
+    Tools.loadSettings = function() {
+        var e = s();
+        config.storage = e,
+        DEVELOPMENT && console.log(e),
+        null != e.id && (config.settings.id = e.id),
+        null != e.session && (config.settings.session = e.session),
+        null != e.name && (config.settings.name = e.name),
+        null != e.region && (config.settings.region = e.region),
+        null != e.helpshown && (config.settings.helpshown = e.helpshown),
+        null != e.mobileshown && (config.settings.mobileshown = e.mobileshown),
+        null != e.flag && (config.settings.flag = e.flag),
+        null != e.hidpi && (config.settings.hidpi = e.hidpi),
+        null != e.sound && (config.settings.sound = e.sound),
+        null != e.keybinds && (config.settings.keybinds = e.keybinds),
+        null != e.mousemode && (config.settings.mousemode = e.mousemode),
+        i()
+    }
+    ;
+    var i = function() {
+        if (null == config.settings.id) {
+            var e = Tools.randomID(16);
+            config.settings.id = e,
+            Tools.setSettings({
+                id: e
+            })
+        }
+        null != config.settings.name && $("#playername").val(config.settings.name),
+        null != config.settings.region && (game.playRegion = config.settings.region),
+        null != config.settings.flag && (game.myFlag = config.settings.flag),
+        null == config.settings.sound && (config.settings.sound = !0),
+        config.settings.mousemode && Input.toggleMouse(!0),
+        UI.updateSound(),
+        config.settings.oldhidpi = config.settings.hidpi
+    };
+    Tools.randomID = function(e) {
+        var t = new Uint8Array(e);
+        return window.crypto.getRandomValues(t),
+        o(t).substr(0, e)
+    }
+    ;
+    var o = function(e) {
+        for (var t, n = "", r = 0; r < e.length; r++)
+            n += t = 1 === (t = (255 & e[r]).toString(16)).length ? "0" + t : t;
+        return n
+    };
+    Tools.setSettings = function(e) {
+        if (null != window.localStorage) {
+            for (var t in e)
+                config.storage[t] = e[t];
+            try {
+                localStorage.setItem("settings", JSON.stringify(config.storage))
+            } catch (e) {}
+        }
+    }
+    ,
+    Tools.removeSetting = function(e) {
+        if (null != window.localStorage) {
+            null != config.storage[e] && delete config.storage[e];
+            try {
+                localStorage.setItem("settings", JSON.stringify(config.storage))
+            } catch (e) {}
+        }
+    }
+    ,
+    Tools.wipeSettings = function() {
+        if (null != window.localStorage) {
+            config.storage = {},
+            config.settings = {};
+            try {
+                localStorage.setItem("settings", JSON.stringify(config.storage))
+            } catch (e) {}
+        }
+    }
+    ;
+    var s = function() {
+        if (null == window.localStorage)
+            return {};
+        var e = null
+          , t = {};
+        try {
+            e = localStorage.getItem("settings")
+        } catch (e) {}
+        if (null != e)
+            try {
+                t = JSON.parse(e)
+            } catch (e) {}
+        return t
+    };
+    Tools.ajaxPost = function(e, t, n) {
+        $.ajax({
+            url: e,
+            method: "POST",
+            data: t,
+            dataType: "json",
+            timeout: 1e4,
+            success: function(e) {
+                null != n && n(null != e && 1 == e.result ? e : null)
+            },
+            error: function() {
+                null != n && n(null)
+            }
+        })
+    }
+    ,
+    Tools.length = function(e, t) {
+        return Math.sqrt(e * e + t * t)
+    }
+    ,
+    Tools.oscillator = function(e, t, n) {
+        return 1 + Math.sin((game.time + (n || 0)) / t) * e
+    }
+    ,
+    Tools.converge = function(e, t, n) {
+        return Math.abs(e - t) < .01 ? t : e + n * (t - e)
+    }
+    ,
+    Tools.rand = function(e, t) {
+        return Math.random() * (t - e) + e
+    }
+    ,
+    Tools.randCircle = function() {
+        return Tools.rand(0, 6.28318530718)
+    }
+    ,
+    Tools.randInt = function(e, t) {
+        var n = Math.floor(Math.random() * (t + 1 - e) + e);
+        return n >= t && (n = t),
+        n
+    }
+    ,
+    Tools.clamp = function(e, t, n) {
+        return e <= t ? t : e >= n ? n : e
+    }
+    ,
+    Tools.lerp = function(e, t, n) {
+        return n * (t - e) + e
+    }
+    ,
+    Tools.colorLerp = function(e, t, n) {
+        n <= 0 && (n = .001),
+        n >= 1 && (n = .999);
+        var r = e >> 16
+          , i = e >> 8 & 255
+          , o = 255 & e;
+        return (1 << 24) + (r + n * ((t >> 16) - r) << 16) + (i + n * ((t >> 8 & 255) - i) << 8) + (o + n * ((255 & t) - o)) | 0
+    }
+    ,
+    Tools.distance = function(e, t, n, r) {
+        var i = e - n
+          , o = t - r;
+        return Math.sqrt(i * i + o * o)
+    }
+    ,
+    Tools.distFastCheck = function(e, t, n, r) {
+        return Math.abs(e.x - t.x) <= n && Math.abs(e.y - t.y) <= r
+    }
+    ,
+    Tools.distFastCheckFloat = function(e, t, n, r, i) {
+        return Math.abs(e - n) <= i && Math.abs(t - r) <= i
+    }
+    ,
+    Tools.updateTime = function(e) {
+        game.timeFactor = e < 60 ? e : 60,
+        game.timeFactorUncapped = game.timeFactor,
+        game.timeFactor > 10 && (game.timeFactor = 10),
+        game.time = performance.now(),
+        game.frames++
+    }
+    ,
+    Tools.reducedFactor = function() {
+        var e = (performance.now() - game.time) / 16.666;
+        return Math.abs(game.jitter) > .1 && (e += game.jitter / 16.666),
+        e
+    }
+    ;
+    var a = {
+        shockwave: [.1, .1, .11, .12, .12, .13, .14, .14, .15, .16, .17, .18, .2, .21, .22, .24, .26, .29, .31, .35, .38, .42, .47, .52, .58, .64, .71, .78, .84, .9, .95, .98, 1, 1, 1, .98, .97, .94, .9, .85, .78, .7, .62, .52, .43, .34, .26, .18, .11, .05, 0],
+        explosionSmoke: [0, 0, .02, .06, .13, .26, .45, .71, .91, .99, .99, .97, .94, .92, .89, .86, .83, .8, .77, .74, .71, .68, .65, .63, .6, .57, .54, .51, .48, .45, .42, .4, .37, .34, .31, .29, .26, .24, .21, .19, .16, .14, .12, .1, .08, .06, .04, .02, .01, 0, 0]
+    };
+    Tools.easing = {
+        outElastic: function(e, t) {
+            var n = 1 - (t || .7)
+              , r = 2 * e;
+            if (0 === e || 1 === e)
+                return e;
+            var i = n / (2 * Math.PI) * Math.asin(1);
+            return Math.pow(2, -10 * r) * Math.sin((r - i) * (2 * Math.PI) / n) + 1
+        },
+        custom: function(e, t) {
+            var n = a[t]
+              , r = n.length
+              , i = Math.floor(e * (r - 1))
+              , o = n[i];
+            return i === r - 1 ? o : Tools.lerp(o, n[i + 1], e * (r - 1) % 1)
+        }
+    },
+    Tools.setupDebug = function() {
+        DEVELOPMENT && config.debug.show && (UI.show("#debug"),
+        game.debug = {
+            last: performance.now(),
+            ticks: 0,
+            frames: game.frames
+        },
+        setInterval(Tools.updateDebug, 2123))
+    }
+    ,
+    Tools.debugLine = function(e, t) {
+        return '<div class="line"><span class="attr">' + UI.escapeHTML(e) + '</span><span class="val">' + UI.escapeHTML(t) + "</span></div>"
+    }
+    ,
+    Tools.updateDebug = function() {
+        var e = performance.now()
+          , t = 1e3 * (game.frames - game.debug.frames) / (e - game.debug.last)
+          , n = Players.count()
+          , r = Mobs.count()
+          , i = Mobs.countDoodads()
+          , o = ""
+          , s = Players.getMe();
+        null != s && (o = Tools.debugLine("Coords", Math.round(s.pos.x) + ", " + Math.round(s.pos.y)));
+        var a = Tools.debugLine("FPS", Math.round(t)) + Tools.debugLine("Ticks", (game.debug.ticks / (e - game.debug.last) * 100).toFixed(2) + "%") + Tools.debugLine("Ping", game.ping.toFixed(2) + " ms") + Tools.debugLine("Res", game.screenX + " x " + game.screenY) + '<div class="spacer"></div>' + Tools.debugLine("Players", n[0] + " / " + n[1]) + Tools.debugLine("Mobs", r[0] + " / " + r[1]) + Tools.debugLine("Particles", Particles.count()) + Tools.debugLine("Doodads", i[0] + " / " + i[1]) + '<div class="spacer"></div>' + o + Tools.debugLine("Scale", game.scale.toFixed(2)) + Tools.debugLine("Jitter", game.jitter.toFixed(3)) + '<div class="close" onclick="Tools.hideDebug()">x</div>';
+        $("#debug").html(a),
+        game.debug.last = e,
+        game.debug.ticks = 0,
+        game.debug.frames = game.frames
+    }
+    ,
+    Tools.hideDebug = function() {
+        UI.hide("#debug")
+    }
+    ,
+    Tools.debugStartFrame = function() {
+        DEVELOPMENT && config.debug.show && (game.debug.startedFrame = performance.now())
+    }
+    ,
+    Tools.debugEndFrame = function() {
+        DEVELOPMENT && config.debug.show && null != game.debug.startedFrame && (game.debug.ticks += performance.now() - game.debug.startedFrame)
+    }
+    ,
+    Tools.earningsToRank = function(e) {
+        return Math.floor(.0111 * Math.pow(e, .5)) + 1
+    }
+    ,
+    Tools.rankToEarnings = function(e) {
+        return Math.pow((e - 1) / .0111, 2)
+    }
+    ,
+    Tools.decodeKeystate = function(e, t) {
+        e.keystate.UP = 0 != (1 & t),
+        e.keystate.DOWN = 0 != (2 & t),
+        e.keystate.LEFT = 0 != (4 & t),
+        e.keystate.RIGHT = 0 != (8 & t),
+        e.boost = 0 != (16 & t),
+        e.strafe = 0 != (32 & t),
+        e.stealthed = 0 != (64 & t),
+        e.flagspeed = 0 != (128 & t)
+    }
+    ,
+    Tools.decodeUpgrades = function(e, t) {
+        e.speedupgrade = (0 != (1 & t) ? 1 : 0) + (0 != (2 & t) ? 2 : 0) + (0 != (4 & t) ? 4 : 0),
+        e.powerups.shield = 0 != (8 & t),
+        e.powerups.rampage = 0 != (16 & t)
+    }
+    ,
+    Tools.decodeMinimapCoords = function(e, t) {
+        return new Vector(128 * e - 16384 + 64,Tools.clamp(128 * t - 16384, -8192, 8192) + 64)
+    }
+    ,
+    Tools.decodeSpeed = function(e) {
+        return (e - 32768) / 1638.4
+    }
+    ,
+    Tools.decodeCoordX = function(e) {
+        return (e - 32768) / 2
+    }
+    ,
+    Tools.decodeCoordY = function(e) {
+        return (e - 32768) / 4
+    }
+    ,
+    Tools.decodeCoord24 = function(e) {
+        return (e - 8388608) / 512
+    }
+    ,
+    Tools.decodeAccel = function(e) {
+        return (e - 32768) / 32768
+    }
+    ,
+    Tools.decodeRotation = function(e) {
+        return e / 6553.6
+    }
+    ,
+    Tools.decodeHealthnergy = function(e) {
+        return e / 255
+    }
+    ,
+    Tools.decodeRegen = function(e) {
+        return (e - 32768) / 1e6
+    }
+    ;
+    var l = function(t) {
+        return Tools.clamp(Math.floor(t / e.size) + e.bucketsHalfX, 0, e.bucketsMaxX)
+    }
+      , u = function(t) {
+        return Tools.clamp(Math.floor(t / e.size) + e.bucketsHalfY, 0, e.bucketsMaxY)
+    };
+    Tools.initBuckets = function() {
+        e = {
+            size: config.bucketSize,
+            halfSize: parseInt(config.bucketSize / 2),
+            bucketsMaxX: parseInt(config.mapWidth / config.bucketSize) - 1,
+            bucketsMaxY: parseInt(config.mapHeight / config.bucketSize) - 1,
+            bucketsHalfX: parseInt(config.mapWidth / config.bucketSize / 2),
+            bucketsHalfY: parseInt(config.mapHeight / config.bucketSize / 2)
+        };
+        for (var t = 0; t <= e.bucketsMaxX; t++) {
+            game.buckets.push([]);
+            for (var n = 0; n <= e.bucketsMaxY; n++)
+                game.buckets[t].push([[]])
+        }
+        for (var r = 0; r < config.doodads.length; r++)
+            t = l(config.doodads[r][0]),
+            n = u(config.doodads[r][1]),
+            game.buckets[t][n][0].push(r)
+    }
+    ,
+    Tools.getBucketBounds = function(t, n, r) {
+        return [Tools.clamp(Math.floor((t.x - n) / e.size) + e.bucketsHalfX, 0, e.bucketsMaxX), Tools.clamp(Math.floor((t.x + n) / e.size) + e.bucketsHalfX, 0, e.bucketsMaxX), Tools.clamp(Math.floor((t.y - r) / e.size) + e.bucketsHalfY, 0, e.bucketsMaxY), Tools.clamp(Math.floor((t.y + r) / e.size) + e.bucketsHalfY, 0, e.bucketsMaxY)]
+    }
+    ,
+    Tools.deferUpdate = function(e) {
+        setTimeout(e, 1)
+    }
+    ;
+    var c = function(e, t) {
+        if (t instanceof Error) {
+            var n = {};
+            return Object.getOwnPropertyNames(t).forEach(function(e) {
+                n[e] = t[e]
+            }),
+            n
+        }
+        return t
+    };
+    Tools.handleError = function(e) {
+        ++t > 5 || (null != e.error && (e.error = JSON.stringify(e.error, c)),
+        Tools.ajaxPost("/clienterror", {
+            type: "runtime",
+            error: JSON.stringify(e, null, "\t\t")
+        }))
+    }
+    ,
+    Tools.encodeUTF8 = function(e) {
+        for (var t = 0, n = new Uint8Array(4 * e.length), r = 0; r != e.length; r++) {
+            var i = e.charCodeAt(r);
+            if (i < 128)
+                n[t++] = i;
+            else {
+                if (i < 2048)
+                    n[t++] = i >> 6 | 192;
+                else {
+                    if (i > 55295 && i < 56320) {
+                        if (++r == e.length)
+                            throw "UTF-8 encode: incomplete surrogate pair";
+                        var o = e.charCodeAt(r);
+                        if (o < 56320 || o > 57343)
+                            throw "UTF-8 encode: second char code 0x" + o.toString(16) + " at index " + r + " in surrogate pair out of range";
+                        i = 65536 + ((1023 & i) << 10) + (1023 & o),
+                        n[t++] = i >> 18 | 240,
+                        n[t++] = i >> 12 & 63 | 128
+                    } else
+                        n[t++] = i >> 12 | 224;
+                    n[t++] = i >> 6 & 63 | 128
+                }
+                n[t++] = 63 & i | 128
+            }
+        }
+        return n.subarray(0, t)
+    }
+    ,
+    Tools.decodeUTF8 = function(e) {
+        for (var t = "", n = 0; n < e.length; ) {
+            var r = e[n++];
+            if (r > 127) {
+                if (r > 191 && r < 224) {
+                    if (n >= e.length)
+                        throw "UTF-8 decode: incomplete 2-byte sequence";
+                    r = (31 & r) << 6 | 63 & e[n]
+                } else if (r > 223 && r < 240) {
+                    if (n + 1 >= e.length)
+                        throw "UTF-8 decode: incomplete 3-byte sequence";
+                    r = (15 & r) << 12 | (63 & e[n]) << 6 | 63 & e[++n]
+                } else {
+                    if (!(r > 239 && r < 248))
+                        throw "UTF-8 decode: unknown multibyte start 0x" + r.toString(16) + " at index " + (n - 1);
+                    if (n + 2 >= e.length)
+                        throw "UTF-8 decode: incomplete 4-byte sequence";
+                    r = (7 & r) << 18 | (63 & e[n]) << 12 | (63 & e[++n]) << 6 | 63 & e[++n]
+                }
+                ++n
+            }
+            if (r <= 65535)
+                t += String.fromCharCode(r);
+            else {
+                if (!(r <= 1114111))
+                    throw "UTF-8 decode: code point 0x" + r.toString(16) + " exceeds UTF-16 reach";
+                r -= 65536,
+                t += String.fromCharCode(r >> 10 | 55296),
+                t += String.fromCharCode(1023 & r | 56320)
+            }
+        }
+        return t
+    }
+})();
