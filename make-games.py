@@ -10,9 +10,9 @@ GAMES = {
             "id": "GB",
             "games": [
                 {
-                    "name": "Derps UK Server",
-                    "players": 0,
-                    "url": "ws://uk.airmashrefugees.tk:3501/",
+                    "name": "UK Server",
+                    "players": 7,
+                    "url": "wss://uk.airmashrefugees.tk/ffa",
                     "nameShort": "GB-ffa",
                     "host": "GB-ffa",
                     "type": 1,
@@ -22,10 +22,10 @@ GAMES = {
         },
         {
             "name": "USA",
-            "id": "UsA",
+            "id": "USA",
             "games": [
                 {
-                    "name": "Steamroller US Server",
+                    "name": "US Server",
                     "players": 7,
                     "url": "wss://game.airmash.steamroller.tk/ffa",
                     "nameShort": "us-ffa",
