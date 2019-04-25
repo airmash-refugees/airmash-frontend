@@ -401,26 +401,44 @@ class Player {
         this.sprites.bubble.cacheAsBitmap = true,
         this.state.bubbleTextWidth = n
     }
-    networkKey(e, t) {
-        this.lastPacket = game.timeNetwork,
-        1 == this.status && this.revive(),
-        null != t.posX && (this.reducedFactor = Tools.reducedFactor(),
-        this.pos.x = t.posX,
-        this.pos.y = t.posY,
-        this.rot = t.rot,
-        this.speed.x = t.speedX,
-        this.speed.y = t.speedY);
+    networkKey(e, data) {
+        this.lastPacket = game.timeNetwork;
+        if (1 == this.status) {
+            this.revive();
+        }
+        if (null != data.posX) {
+            this.reducedFactor = Tools.reducedFactor();
+            this.pos.x = data.posX;
+            this.pos.y = data.posY;
+            this.rot = data.rot;
+            this.speed.x = data.speedX;
+            this.speed.y = data.speedY;
+        }
         var n = this.stealthed;
-        null != t.keystate && Tools.decodeKeystate(this, t.keystate),
-        null != t.upgrades && (Tools.decodeUpgrades(this, t.upgrades),
-        this.updatePowerups()),
-        null != t.energy && (this.energy = t.energy,
-        this.energyRegen = t.energyRegen),
-        null != t.boost && (this.boost = t.boost),
-        this.team != game.myTeam && (this.stealthed || n && !this.stealthed) && this.unstealth(),
-        this.me() || !n || this.stealthed || this.unstealth(),
-        t.c == Network.SERVERPACKET.EVENT_BOUNCE && game.time - this.state.lastBounceSound > 300 && (this.state.lastBounceSound = game.time,
-        Sound.playerImpact(this.pos, this.type, this.speed.length() / config.ships[this.type].maxSpeed))
+        if (null != data.keystate) {
+            Tools.decodeKeystate(this, data.keystate);
+        }
+        if (null != data.upgrades) {
+            Tools.decodeUpgrades(this, data.upgrades);
+            this.updatePowerups();
+        }
+        if (null != data.energy) {
+            this.energy = data.energy;
+            this.energyRegen = data.energyRegen;
+        }
+        if (null != data.boost) {
+            this.boost = data.boost;
+        }
+        if (this.team != game.myTeam && (this.stealthed || n && !this.stealthed)) {
+            this.unstealth();
+        }
+        if (!(this.me() || !n || this.stealthed)) {
+            this.unstealth();
+        }
+        if (data.c == Network.SERVERPACKET.EVENT_BOUNCE && game.time - this.state.lastBounceSound > 300) {
+            this.state.lastBounceSound = game.time;
+            Sound.playerImpact(this.pos, this.type, this.speed.length() / config.ships[this.type].maxSpeed);
+        }
     }
     updateLevel(e) {
         this.me() && (1 == e.type && Games.showLevelUP(e.level),
