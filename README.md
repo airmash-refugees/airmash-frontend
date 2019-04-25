@@ -34,6 +34,9 @@ The existence of this repository is not even a grey area -- it's directly
 infringing. But it seems such infringement is the only option we have left to
 keep the game alive.
 
+Pristine copies of the original assets are available under the
+[archive.org-original](https://github.com/derps-airmash/airmash-frontend/tree/archive.org-original)
+tag.
 
 ### Patches welcome
 
