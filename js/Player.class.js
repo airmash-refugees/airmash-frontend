@@ -665,36 +665,66 @@ class Player {
             }
         }
     }
-    clientCalcs(e) {
-        switch (this.type) {
-        case 1:
-        case 2:
-        case 4:
-        case 5:
-            var t = false
-              , n = false
-              , r = this.boost ? 1.5 : 1;
-            false !== (t = this.keystate.LEFT ? .3 : this.keystate.RIGHT ? -.3 : 0) && (this.state.thrustDir = Tools.converge(this.state.thrustDir, t, .1 * e)),
-            false !== (n = this.keystate.UP ? 1 : this.keystate.DOWN ? -1 : 0) && (this.state.thrustLevel = Tools.converge(this.state.thrustLevel, n * r, .2 * e));
-            break;
-        case 3:
-            this.state.thrustDir += (.2 + this.speed.length() / 50) * e
+    clientCalcs(timeFrac) {
+        switch(this.type) {
+            case 1:
+            case 2:
+            case 4:
+            case 5:
+                var scrollviewTransform = false;
+                var angleToDraw = false;
+                var t = this.boost ? 1.5 : 1;
+                if (false !== (scrollviewTransform = this.keystate.LEFT ? .3 : this.keystate.RIGHT ? -.3 : 0)) {
+                    this.state.thrustDir = Tools.converge(this.state.thrustDir, scrollviewTransform, .1 * timeFrac);
+                }
+                if (false !== (angleToDraw = this.keystate.UP ? 1 : this.keystate.DOWN ? -1 : 0)) {
+                    this.state.thrustLevel = Tools.converge(this.state.thrustLevel, angleToDraw * t, .2 * timeFrac);
+                }
+                break;
+            case 3:
+                this.state.thrustDir += (.2 + this.speed.length() / 50) * timeFrac;
         }
-        this.culled || this.render && (!this.stealthed && this.health < .4 && Particles.planeDamage(this),
-        !this.stealthed && this.health < .2 && Particles.planeDamage(this),
-        this.boost && Particles.planeBoost(this, n >= 0),
-        5 == this.type && this.stealthed && (this.state.stealthLevel += .03 * e,
-        this.state.stealthLevel = Tools.clamp(this.state.stealthLevel, 0, this.team == game.myTeam ? .5 : 1),
-        this.opacity(1 - this.state.stealthLevel)),
-        this.state.scaleLevel += .005 * e,
-        this.state.scaleLevel >= 1 ? (this.state.scaleLevel = 1,
-        this.scale = 1) : this.scale = Tools.easing.outElastic(this.state.scaleLevel, .5),
-        this.powerupActive && (this.state.powerupAngle += .075 * e,
-        0 == this.state.powerupFadeState ? (this.state.powerupFade += .05 * e,
-        this.state.powerupFade >= 1 && (this.state.powerupFade = 1)) : (this.state.powerupFade += .05 * e,
-        this.state.powerupFade >= 1 && (this.powerupActive = false,
-        this.sprites.powerup.visible = false,
-        this.sprites.powerupCircle.visible = false))))
+        if (!this.culled) {
+            if (this.render) {
+                if (!this.stealthed && this.health < .4) {
+                    Particles.planeDamage(this);
+                }
+                if (!this.stealthed && this.health < .2) {
+                    Particles.planeDamage(this);
+                }
+                if (this.boost) {
+                    Particles.planeBoost(this, angleToDraw >= 0);
+                }
+                if (5 == this.type && this.stealthed) {
+                    this.state.stealthLevel += .03 * timeFrac;
+                    this.state.stealthLevel = Tools.clamp(this.state.stealthLevel, 0, this.team == game.myTeam ? .5 : 1);
+                    this.opacity(1 - this.state.stealthLevel);
+                }
+                this.state.scaleLevel += .005 * timeFrac;
+                if (this.state.scaleLevel >= 1) {
+                    this.state.scaleLevel = 1;
+                    this.scale = 1;
+                } else {
+                    this.scale = Tools.easing.outElastic(this.state.scaleLevel, .5);
+                }
+                if (this.powerupActive) {
+                    this.state.powerupAngle += .075 * timeFrac;
+                    if (0 == this.state.powerupFadeState) {
+                        this.state.powerupFade += .05 * timeFrac;
+                        if (this.state.powerupFade >= 1) {
+                            this.state.powerupFade = 1;
+                        }
+                    } else {
+                        this.state.powerupFade += .05 * timeFrac;
+                        if (this.state.powerupFade >= 1) {
+                            this.powerupActive = false;
+                            this.sprites.powerup.visible = false;
+                            this.sprites.powerupCircle.visible = false;
+                        }
+                    }
+                }
+            }
+        }
     }
     updateGraphics(e) {
         var t = Tools.oscillator(.025, 1e3, this.randomness) * this.scale
