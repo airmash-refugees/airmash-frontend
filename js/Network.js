@@ -387,7 +387,14 @@
             false === p && Network.reconnectMessage())
         }
         ,
-        e.onerror = function(e) {}
+        e.onerror = function(event) {
+            console.error("WebSocket error observed:", event);
+            UI.serverMessage({
+                type: 1,
+                text: "WebSocket connection failed. Try disabling AdBlock!",
+                duration: 30000
+            });
+        }
         ,
         e.onmessage = function(e) {
             y(T(e.data))
@@ -407,7 +414,14 @@
             n = false
         }
         ,
-        t.onerror = function(e) {}
+        t.onerror = function(event) {
+            console.error("WebSocket error observed:", event);
+            UI.serverMessage({
+                type: 1,
+                text: "WebSocket connection failed. Try disabling AdBlock!",
+                duration: 30000
+            });
+        }
         ,
         t.onmessage = function(e) {
             var t = T(e.data);

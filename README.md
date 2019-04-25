@@ -23,6 +23,7 @@ more readable and maintainable:
   them
 - Server ping checks are disabled simply to avoid spamming the dev console when
   trying to figure out other issues
+- Print a nice error when WebSocket connections fail
 
 
 ### This repository contains proprietary code
