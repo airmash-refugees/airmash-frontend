@@ -21,6 +21,8 @@ more readable and maintainable:
   Git log, and have been tagged with ``// DERPS`` in the JS.
 - Hidden the login/logout links since there is no longer any backend to handle
   them
+- Server ping checks are disabled simply to avoid spamming the dev console when
+  trying to figure out other issues
 
 
 ### This repository contains proprietary code

@@ -446,6 +446,7 @@
         l = setInterval(Games.performPing, 300)
     };
     Games.performPing = function() {
+        return; // DERPS
         if (!(a > 3 || c)) {
             var e = 9999
               , t = null;
