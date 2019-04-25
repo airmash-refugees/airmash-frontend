@@ -1,9 +1,9 @@
 (function() {
     var e = null
       , t = null
-      , n = !1
+      , n = false
       , r = ""
-      , i = !1
+      , i = false
       , o = null
       , s = -1
       , a = -1
@@ -12,7 +12,7 @@
       , c = 0
       , h = 0
       , d = 0
-      , p = !1
+      , p = false
       , f = 2e3
       , g = 2e3;
     Network.sendKey = function(e, r) {
@@ -26,7 +26,7 @@
             };
             null != game.spectatingID && r && ("RIGHT" == e ? Network.spectatePrev() : "LEFT" == e && Network.spectateNext()),
             E(i),
-            t && n && E(i, !0)
+            t && n && E(i, true)
         }
     }
     ,
@@ -109,8 +109,8 @@
         null != o && clearInterval(o),
         null != e && e.close(),
         null != t && t.close(),
-        n = !1,
-        i = !1,
+        n = false,
+        i = false,
         s = -1,
         a = -1,
         l = 0,
@@ -118,7 +118,7 @@
         c = 0,
         h = 0,
         d = 0,
-        p = !1,
+        p = false,
         f = 2e3,
         g = 2e3
     }
@@ -142,7 +142,7 @@
     var m = function() {
         game.lagging || game.state == Network.STATE.PLAYING && (i ? t && n && E({
             c: P.ACK
-        }, !0) : E({
+        }, true) : E({
             c: P.ACK
         }),
         i = !i)
@@ -210,7 +210,7 @@
                 }(e),
                 UI.loggedIn(e);
                 for (t = 0; t < e.players.length; t++)
-                    Players.add(e.players[t], !0);
+                    Players.add(e.players[t], true);
                 break;
             case A.ERROR:
                 UI.errorHandler(e);
@@ -350,7 +350,7 @@
             c = t
         }
         return null != u[n] || (u[n] = t,
-        !1)
+        false)
     };
     Network.reconnectMessage = function() {
         game.reloading || UI.showMessage("alert", '<span class="info">DISCONNECTED</span>Connection reset<br><span class="button" onclick="Network.reconnect()">RECONNECT</span>', 6e5)
@@ -384,7 +384,7 @@
         e.onclose = function() {
             null != o && clearInterval(o),
             game.state !== Network.STATE.CONNECTING && (game.state = Network.STATE.CONNECTING,
-            !1 === p && Network.reconnectMessage())
+            false === p && Network.reconnectMessage())
         }
         ,
         e.onerror = function(e) {}
@@ -400,19 +400,19 @@
             E({
                 c: P.BACKUP,
                 token: game.myToken
-            }, !0)
+            }, true)
         }
         ,
         t.onclose = function() {
-            n = !1
+            n = false
         }
         ,
         t.onerror = function(e) {}
         ,
         t.onmessage = function(e) {
             var t = T(e.data);
-            t.c === A.BACKUP && (n = !0),
-            t.backup = !0,
+            t.c === A.BACKUP && (n = true),
+            t.backup = true,
             y(t)
         }
     }
@@ -450,15 +450,15 @@
           , l = new DataView(a)
           , u = 0
           , c = 1;
-        for (l.setUint8(0, e.c, !0),
+        for (l.setUint8(0, e.c, true),
         n = 0; n < o.length; n++)
             switch (o[n][1]) {
             case I.text:
                 var h = i[u].length;
-                l.setUint8(c, h, !0),
+                l.setUint8(c, h, true),
                 c += 1;
                 for (var d = 0; d < h; d++)
-                    l.setUint8(c + d, i[u][d], !0);
+                    l.setUint8(c + d, i[u][d], true);
                 i[u],
                 u++,
                 c += h;
@@ -467,27 +467,27 @@
             case I.arraysmall:
                 break;
             case I.uint8:
-                l.setUint8(c, e[o[n][0]], !0),
+                l.setUint8(c, e[o[n][0]], true),
                 c += 1;
                 break;
             case I.uint16:
-                l.setUint16(c, e[o[n][0]], !0),
+                l.setUint16(c, e[o[n][0]], true),
                 c += 2;
                 break;
             case I.uint32:
-                l.setUint32(c, e[o[n][0]], !0),
+                l.setUint32(c, e[o[n][0]], true),
                 c += 4;
                 break;
             case I.float32:
-                l.setFloat32(c, e[o[n][0]], !0),
+                l.setFloat32(c, e[o[n][0]], true),
                 c += 4;
                 break;
             case I.float64:
-                l.setFloat64(c, e[o[n][0]], !0),
+                l.setFloat64(c, e[o[n][0]], true),
                 c += 8;
                 break;
             case I.boolean:
-                l.setUint8(c, !1 === e[o[n][0]] ? 0 : 1),
+                l.setUint8(c, false === e[o[n][0]] ? 0 : 1),
                 c += 1
             }
         return a
@@ -495,7 +495,7 @@
       , T = function(e, t) {
         var n = new DataView(e)
           , r = {
-            c: n.getUint8(0, !0)
+            c: n.getUint8(0, true)
         }
           , i = 1
           , o = O[r.c];
@@ -507,14 +507,14 @@
             case I.text:
             case I.textbig:
                 if (o[s][1] == I.text) {
-                    var l = n.getUint8(i, !0);
+                    var l = n.getUint8(i, true);
                     i += 1
                 } else {
-                    l = n.getUint16(i, !0);
+                    l = n.getUint16(i, true);
                     i += 2
                 }
                 for (var u = new Uint8Array(l), c = 0; c < l; c++)
-                    u[c] = n.getUint8(i + c, !0);
+                    u[c] = n.getUint8(i + c, true);
                 var h = Tools.decodeUTF8(u);
                 r[a] = h,
                 i += l;
@@ -522,10 +522,10 @@
             case I.array:
             case I.arraysmall:
                 if (o[s][1] == I.arraysmall) {
-                    var d = n.getUint8(i, !0);
+                    var d = n.getUint8(i, true);
                     i += 1
                 } else {
-                    d = n.getUint16(i, !0);
+                    d = n.getUint16(i, true);
                     i += 2
                 }
                 r[a] = [];
@@ -536,81 +536,81 @@
                         case I.text:
                         case I.textbig:
                             if (p[m][1] == I.text) {
-                                l = n.getUint8(i, !0);
+                                l = n.getUint8(i, true);
                                 i += 1
                             } else {
-                                l = n.getUint16(i, !0);
+                                l = n.getUint16(i, true);
                                 i += 2
                             }
                             for (u = new Uint8Array(l),
                             c = 0; c < l; c++)
-                                u[c] = n.getUint8(i + c, !0);
+                                u[c] = n.getUint8(i + c, true);
                             h = Tools.decodeUTF8(u);
                             g[v] = h,
                             i += l;
                             break;
                         case I.uint8:
-                            g[v] = n.getUint8(i, !0),
+                            g[v] = n.getUint8(i, true),
                             i += 1;
                             break;
                         case I.uint16:
-                            g[v] = n.getUint16(i, !0),
+                            g[v] = n.getUint16(i, true),
                             i += 2;
                             break;
                         case I.uint24:
-                            var y = 256 * n.getUint16(i, !0);
+                            var y = 256 * n.getUint16(i, true);
                             i += 2,
-                            r[v] = y + n.getUint8(i, !0),
+                            r[v] = y + n.getUint8(i, true),
                             i += 1;
                             break;
                         case I.uint32:
-                            g[v] = n.getUint32(i, !0),
+                            g[v] = n.getUint32(i, true),
                             i += 4;
                             break;
                         case I.float32:
-                            g[v] = n.getFloat32(i, !0),
+                            g[v] = n.getFloat32(i, true),
                             i += 4;
                             break;
                         case I.float64:
-                            g[v] = n.getFloat64(i, !0),
+                            g[v] = n.getFloat64(i, true),
                             i += 8;
                             break;
                         case I.boolean:
-                            g[v] = 0 != n.getUint8(i, !0),
+                            g[v] = 0 != n.getUint8(i, true),
                             i += 1;
                             break;
                         case I.speed:
-                            g[v] = Tools.decodeSpeed(n.getUint16(i, !0)),
+                            g[v] = Tools.decodeSpeed(n.getUint16(i, true)),
                             i += 2;
                             break;
                         case I.accel:
-                            g[v] = Tools.decodeAccel(n.getUint16(i, !0)),
+                            g[v] = Tools.decodeAccel(n.getUint16(i, true)),
                             i += 2;
                             break;
                         case I.coordx:
-                            g[v] = Tools.decodeCoordX(n.getUint16(i, !0)),
+                            g[v] = Tools.decodeCoordX(n.getUint16(i, true)),
                             i += 2;
                             break;
                         case I.coordy:
-                            g[v] = Tools.decodeCoordY(n.getUint16(i, !0)),
+                            g[v] = Tools.decodeCoordY(n.getUint16(i, true)),
                             i += 2;
                             break;
                         case I.coord24:
-                            y = 256 * n.getUint16(i, !0);
+                            y = 256 * n.getUint16(i, true);
                             i += 2,
-                            r[v] = Tools.decodeCoord24(y + n.getUint8(i, !0)),
+                            r[v] = Tools.decodeCoord24(y + n.getUint8(i, true)),
                             i += 1;
                             break;
                         case I.rotation:
-                            g[v] = Tools.decodeRotation(n.getUint16(i, !0)),
+                            g[v] = Tools.decodeRotation(n.getUint16(i, true)),
                             i += 2;
                             break;
                         case I.regen:
-                            g[v] = Tools.decodeRegen(n.getUint16(i, !0)),
+                            g[v] = Tools.decodeRegen(n.getUint16(i, true)),
                             i += 2;
                             break;
                         case I.healthnergy:
-                            g[v] = Tools.decodeHealthnergy(n.getUint8(i, !0)),
+                            g[v] = Tools.decodeHealthnergy(n.getUint8(i, true)),
                             i += 1
                         }
                     }
@@ -618,67 +618,67 @@
                 }
                 break;
             case I.uint8:
-                r[a] = n.getUint8(i, !0),
+                r[a] = n.getUint8(i, true),
                 i += 1;
                 break;
             case I.uint16:
-                r[a] = n.getUint16(i, !0),
+                r[a] = n.getUint16(i, true),
                 i += 2;
                 break;
             case I.uint24:
-                y = 256 * n.getUint16(i, !0);
+                y = 256 * n.getUint16(i, true);
                 i += 2,
-                r[a] = y + n.getUint8(i, !0),
+                r[a] = y + n.getUint8(i, true),
                 i += 1;
                 break;
             case I.uint32:
-                r[a] = n.getUint32(i, !0),
+                r[a] = n.getUint32(i, true),
                 i += 4;
                 break;
             case I.float32:
-                r[a] = n.getFloat32(i, !0),
+                r[a] = n.getFloat32(i, true),
                 i += 4;
                 break;
             case I.float64:
-                r[a] = n.getFloat64(i, !0),
+                r[a] = n.getFloat64(i, true),
                 i += 8;
                 break;
             case I.boolean:
-                r[a] = 0 != n.getUint8(i, !0),
+                r[a] = 0 != n.getUint8(i, true),
                 i += 1;
                 break;
             case I.speed:
-                r[a] = Tools.decodeSpeed(n.getUint16(i, !0)),
+                r[a] = Tools.decodeSpeed(n.getUint16(i, true)),
                 i += 2;
                 break;
             case I.accel:
-                r[a] = Tools.decodeAccel(n.getUint16(i, !0)),
+                r[a] = Tools.decodeAccel(n.getUint16(i, true)),
                 i += 2;
                 break;
             case I.coordx:
-                r[a] = Tools.decodeCoordX(n.getUint16(i, !0)),
+                r[a] = Tools.decodeCoordX(n.getUint16(i, true)),
                 i += 2;
                 break;
             case I.coordy:
-                r[a] = Tools.decodeCoordY(n.getUint16(i, !0)),
+                r[a] = Tools.decodeCoordY(n.getUint16(i, true)),
                 i += 2;
                 break;
             case I.coord24:
-                y = 256 * n.getUint16(i, !0);
+                y = 256 * n.getUint16(i, true);
                 i += 2,
-                r[a] = Tools.decodeCoord24(y + n.getUint8(i, !0)),
+                r[a] = Tools.decodeCoord24(y + n.getUint8(i, true)),
                 i += 1;
                 break;
             case I.rotation:
-                r[a] = Tools.decodeRotation(n.getUint16(i, !0)),
+                r[a] = Tools.decodeRotation(n.getUint16(i, true)),
                 i += 2;
                 break;
             case I.regen:
-                r[a] = Tools.decodeRegen(n.getUint16(i, !0)),
+                r[a] = Tools.decodeRegen(n.getUint16(i, true)),
                 i += 2;
                 break;
             case I.healthnergy:
-                r[a] = Tools.decodeHealthnergy(n.getUint8(i, !0)),
+                r[a] = Tools.decodeHealthnergy(n.getUint8(i, true)),
                 i += 1;
                 break;
             default:

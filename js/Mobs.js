@@ -16,7 +16,7 @@
     ,
     Mobs.network = function(t) {
         var n = e[t.id];
-        null == n ? Mobs.add(t, !0) : n.network(t)
+        null == n ? Mobs.add(t, true) : n.network(t)
     }
     ,
     Mobs.despawn = function(t) {
@@ -76,11 +76,11 @@
           , n = Textures.init((t ? "mountain" : "") + e[2]);
         n.scale.set(e[3]),
         n.position.set(e[0], e[1]),
-        n.visible = !1,
+        n.visible = false,
         e[4] && (n.rotation = e[4]),
         e[5] && (n.alpha = e[5]),
         e[6] && (n.tint = e[6]),
-        e[7] = !1,
+        e[7] = false,
         e[8] = n,
         e[9] = t ? 0 : 1
     }
@@ -97,15 +97,15 @@
                 for (var s = 0; s < game.buckets[i][o][0].length; s++)
                     a = game.buckets[i][o][0][s],
                     e = config.doodads[a],
-                    game.state == Network.STATE.LOGIN && 0 != e[9] || Graphics.inScreen(new Vector(e[0],e[1]), 256 * e[3] + config.overdraw) && (e[7] || (e[8].visible = !0,
-                    e[7] = !0,
-                    n[a] || (n[a] = !0,
+                    game.state == Network.STATE.LOGIN && 0 != e[9] || Graphics.inScreen(new Vector(e[0],e[1]), 256 * e[3] + config.overdraw) && (e[7] || (e[8].visible = true,
+                    e[7] = true,
+                    n[a] || (n[a] = true,
                     t.push([e[0], e[1], e[2], e[3], a, e[9]]))));
         for (var a, l = t.length - 1; l >= 0; l--)
             a = t[l][4],
             e = config.doodads[a],
-            Graphics.inScreen(new Vector(e[0],e[1]), 256 * e[3] + config.overdraw) || e[7] && (e[8].visible = !1,
-            e[7] = !1,
+            Graphics.inScreen(new Vector(e[0],e[1]), 256 * e[3] + config.overdraw) || e[7] && (e[8].visible = false,
+            e[7] = false,
             t.splice(l, 1),
             delete n[a])
     }

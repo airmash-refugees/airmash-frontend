@@ -2,26 +2,26 @@
     var e = {}
       , t = {}
       , n = null
-      , r = !1
+      , r = false
       , i = 0
-      , o = !1
+      , o = false
       , s = -1
       , a = 0
-      , l = !1
+      , l = false
       , u = 0
-      , c = !1
+      , c = false
       , h = null
-      , d = !1
+      , d = false
       , p = null
-      , f = !1
-      , g = !1
-      , m = !1
+      , f = false
+      , g = false
+      , m = false
       , v = null
       , y = 0
-      , b = !1
-      , _ = !1
+      , b = false
+      , _ = false
       , x = null
-      , w = !1
+      , w = false
       , T = null
       , E = {
         x: 0,
@@ -36,10 +36,10 @@
         destroyed: null
     }
       , I = {
-        alert: !1,
-        information: !1,
-        default: !1,
-        destroyed: !1
+        alert: false,
+        information: false,
+        default: false,
+        destroyed: false
     }
       , P = {
         score: -1,
@@ -48,7 +48,7 @@
         kills: -1,
         deaths: -1
     }
-      , M = !1
+      , M = false
       , A = {}
       , O = []
       , C = 0
@@ -84,7 +84,7 @@
                     return D[n]
             } else if (e === D[n])
                 return D[n];
-        return !1
+        return false
     }
     ,
     UI.serverMessage = function(e) {
@@ -101,14 +101,14 @@
             "margin-top": "-" + Math.round(r / 2) + "px"
         }),
         $("#msg-" + e).addClass("popmsg"),
-        I[e] = !0,
+        I[e] = true,
         clearTimeout(S[e]),
         S[e] = setTimeout(UI.hideMessage, n || 2e3, e)
     }
     ,
     UI.hideMessage = function(e) {
         $("#msg-" + e).addClass("hidemsg"),
-        I[e] = !1,
+        I[e] = false,
         S[e] = setTimeout(function(t) {
             $("#msg-" + e).removeClass("popmsg").removeClass("hidemsg"),
             $("#msg-" + t).html("")
@@ -128,10 +128,10 @@
     ,
     UI.newScore = function(e) {
         if (e.id != game.myID)
-            return !1;
+            return false;
         var t = e.score - game.myScore
           , n = "";
-        if (Math.abs(t) < 1 && (t = !1),
+        if (Math.abs(t) < 1 && (t = false),
         game.myScore = e.score,
         e.score != P.score && (P.score = e.score,
         $("#score-score").html(e.score)),
@@ -167,7 +167,7 @@
         t && (M && (M.msg += "<br>"),
         n += UI.getScoreString(t)),
         M ? (UI.showMessage(M.type, M.msg + n, M.duration),
-        M = !1) : "" != n && UI.showMessage("default", n, 3e3)
+        M = false) : "" != n && UI.showMessage("default", n, 3e3)
     }
     ,
     UI.getScoreString = function(e, t, n) {
@@ -193,7 +193,7 @@
         if (!w) {
             var t = config.mobile ? ' class="mobile"' : "";
             $("body").append('<div id="spectator"' + t + "></div>"),
-            w = !0
+            w = true
         }
         $("#spectator").html(e),
         Input.addTouchRejection("#spectator")
@@ -201,7 +201,7 @@
     ,
     UI.hideSpectator = function() {
         w && ($("#spectator").remove(),
-        w = !1)
+        w = false)
     }
     ,
     UI.addPowerup = function(e, t) {
@@ -229,11 +229,11 @@
     }
     ,
     UI.scoreboardUpdate = function(t, n, r) {
-        for (var i, o, s, a, l, u = 0, c = "", h = {}, d = !1, p = 0, f = {}, g = "", m = "", v = "", y = 0; y < n.length; y++)
+        for (var i, o, s, a, l, u = 0, c = "", h = {}, d = false, p = 0, f = {}, g = "", m = "", v = "", y = 0; y < n.length; y++)
             null != (i = Players.get(n[y].id)) && (f = Tools.decodeMinimapCoords(n[y].x, n[y].y),
             i.lowResPos.x = f.x,
             i.lowResPos.y = f.y,
-            n[y].id != game.myID ? 0 == n[y].x && 0 == n[y].y || (h[i.id] = !0,
+            n[y].id != game.myID ? 0 == n[y].x && 0 == n[y].y || (h[i.id] = true,
             null == e[n[y].id] ? (v = "minimapMob",
             2 == game.gameType && 1 == i.team && (v = "minimapBlue"),
             e[n[y].id] = {
@@ -255,13 +255,13 @@
             a = t[y].score,
             l = t[y].level,
             p > r && u == r - 1 && (c += '<div class="line dottedline">&middot; &middot; &middot;</div>',
-            !0,
+            true,
             i = Players.get(game.myID),
             o = p + ".",
             a = game.myScore,
             l = game.myLevel,
             s = " sel",
-            d = !0),
+            d = true),
             g = "",
             2 == game.gameType && (g = " team-" + i.team),
             m = "",
@@ -283,7 +283,7 @@
     UI.toggleChatBox = function(e) {
         if (!config.mobile)
             if (r) {
-                if (r = !1,
+                if (r = false,
                 e) {
                     var t = $("#chatinput").val();
                     "" !== t && "" !== t.trim() && (UI.parseCommand(t.trim()) || Network.sendChat(t)),
@@ -294,8 +294,8 @@
                 $("#chatinput").blur()
             } else
                 l && UI.maximizeChat(),
-                Input.clearKeys(!0),
-                r = !0,
+                Input.clearKeys(true),
+                r = true,
                 UI.show("#chatinput"),
                 $("#chatinput").focus()
     }
@@ -306,16 +306,16 @@
     }
     ;
     var U = function() {
-        o || (o = !0,
+        o || (o = true,
         $("#chat-0").length && $("#chat-0").remove())
     };
     UI.parseCommand = function(e) {
         if ("/" !== e[0])
-            return !1;
+            return false;
         var t = e.split(" ")
           , n = t[0].substr(1).toLowerCase();
         if (0 == n.length)
-            return !1;
+            return false;
         if ("s" === n) {
             var r = e.indexOf(" ")
               , i = e.substr(r + 1);
@@ -336,8 +336,8 @@
             var s;
             null == (s = Players.getByName(G(t[1]))) ? UI.addChatMessage("Unknown player") : Network.sendCommand("spectate", s.id + "")
         } else
-            "flag" === n || "flags" === n ? 2 == t.length ? Network.sendCommand("flag", e.substr(n.length + 2)) : UI.addChatMessage("Type /flag XX where XX is the 2-letter ISO code of a country", !0) : "emotes" === n ? UI.addChatMessage("Emotes available: /tf /pepe /clap /lol /bro /kappa /cry /rage", !0) : "help" === n ? UI.toggleHelp() : "debug" === n || (UI.isEmote(n) ? Network.sendSay(":" + n + ":") : Network.sendCommand(n, e.substr(n.length + 2)));
-        return !0
+            "flag" === n || "flags" === n ? 2 == t.length ? Network.sendCommand("flag", e.substr(n.length + 2)) : UI.addChatMessage("Type /flag XX where XX is the 2-letter ISO code of a country", true) : "emotes" === n ? UI.addChatMessage("Emotes available: /tf /pepe /clap /lol /bro /kappa /cry /rage", true) : "help" === n ? UI.toggleHelp() : "debug" === n || (UI.isEmote(n) ? Network.sendSay(":" + n + ":") : Network.sendCommand(n, e.substr(n.length + 2)));
+        return true
     }
     ,
     UI.addChatLine = function(e, n, r) {
@@ -360,7 +360,7 @@
             l)
                 u++,
                 $("#chatunreadlines").html(u),
-                1 == u && UI.show("#chatunreadlines", !0);
+                1 == u && UI.show("#chatunreadlines", true);
             else {
                 var h = $("#chatbox");
                 1 != r && 2 != r && e.id != game.myID && h.is(":hover") || (h.perfectScrollbar("update"),
@@ -384,7 +384,7 @@
     UI.showChatLevel = function(e) {
         var t = null;
         2 == e ? t = "Type /flag XX where XX is the 2-letter ISO code of a country" : 3 == e ? t = "Emotes available: /tf /pepe /clap /lol /bro /kappa /cry /rage" : 4 == e && (t = "Flag Pack #1: communist confederate imperial rainbow jolly"),
-        null != t && UI.addChatMessage(t, !0)
+        null != t && UI.addChatMessage(t, true)
     }
     ,
     UI.updateStats = function(e) {
@@ -413,11 +413,11 @@
     };
     UI.controlKey = function(e, t, n) {
         if (game.state != Network.STATE.PLAYING)
-            return !0;
+            return true;
         if (n)
             if (13 != e) {
                 if (27 == e)
-                    return r && UI.toggleChatBox(!1),
+                    return r && UI.toggleChatBox(false),
                     void UI.closeAllPanels();
                 if (191 != e)
                     if (75 != e)
@@ -482,7 +482,7 @@
                 else
                     UI.shortcutChat("/")
             } else
-                UI.toggleChatBox(!0)
+                UI.toggleChatBox(true)
     }
     ,
     UI.chatBoxOpen = function() {
@@ -493,7 +493,7 @@
         game.graphics.gui.minimap = Textures.init("minimap"),
         game.graphics.gui.minimap_box = Textures.init("minimapBox"),
         UI.resizeMinimap(),
-        UI.visibilityMinimap(!1)
+        UI.visibilityMinimap(false)
     }
     ,
     UI.visibilityMinimap = function(e) {
@@ -507,7 +507,7 @@
         game.graphics.gui.minimap_box.scale.set(.03 + 2 * config.minimapSize * (game.screenX / game.scale / 32768) / 64, .03 + config.minimapSize * (game.screenY / game.scale / 16384) / 64);
         for (var t in e)
             L(e[t]);
-        Games.update(!0)
+        Games.update(true)
     }
     ,
     UI.setupHUD = function() {
@@ -525,7 +525,7 @@
         game.graphics.gui.hudEnergy.position.set(-250, 174),
         game.graphics.gui.hudEnergy_mask.position.set(-250, 174),
         UI.resizeHUD(),
-        UI.visibilityHUD(!1)
+        UI.visibilityHUD(false)
     }
     ,
     UI.visibilityHUD = function(e) {
@@ -672,7 +672,7 @@
     ,
     UI.minimizeChat = function(e) {
         l || (r && UI.toggleChatBox(),
-        l = !0,
+        l = true,
         u = 0,
         UI.hide("#chatbox"),
         UI.hide("#chatunreadlines"),
@@ -682,7 +682,7 @@
     ,
     UI.maximizeChat = function() {
         if (l) {
-            l = !1,
+            l = false,
             UI.hide("#maximizechat"),
             UI.hide("#chatunreadlines"),
             UI.show("#chatbox");
@@ -693,14 +693,14 @@
     ,
     UI.closeScore = function() {
         c && (UI.hidePanel("#scoredetailed"),
-        c = !1,
+        c = false,
         clearInterval(h))
     }
     ,
     UI.openScore = function() {
         c || (UI.closeAllPanels("score"),
         UI.showPanel("#scoredetailed"),
-        c = !0,
+        c = true,
         Network.getScores(),
         clearInterval(h),
         h = setInterval(Network.getScores, 5e3))
@@ -712,13 +712,13 @@
     ,
     UI.openLogin = function() {
         _ || (UI.showPanel("#loginselector"),
-        _ = !0,
+        _ = true,
         Games.closeDropdowns())
     }
     ,
     UI.closeLogin = function() {
         _ && (UI.hidePanel("#loginselector"),
-        _ = !1)
+        _ = false)
     }
     ,
     UI.showPanel = function(e) {
@@ -771,12 +771,12 @@
         $("#invite-link").html(game.inviteLink),
         $("#invite-link").attr("href", game.inviteLink),
         UI.showPanel("#invitefriends"),
-        b = !0)
+        b = true)
     }
     ,
     UI.closeInvite = function() {
         b && (UI.hidePanel("#invitefriends"),
-        b = !1)
+        b = false)
     }
     ,
     UI.toggleInvite = function() {
@@ -785,7 +785,7 @@
     ,
     UI.closeMainMenu = function() {
         g && (UI.hidePanel("#mainmenu"),
-        g = !1)
+        g = false)
     }
     ,
     UI.updateMainMenuSettings = function() {
@@ -796,7 +796,7 @@
         g || (UI.closeAllPanels("mainmenu"),
         UI.updateMainMenuSettings(),
         UI.showPanel("#mainmenu"),
-        g = !0)
+        g = true)
     }
     ,
     UI.toggleMainMenu = function() {
@@ -811,7 +811,7 @@
         "invite" !== e && UI.closeInvite(),
         "login" !== e && UI.closeLogin(),
         "keybinds" !== e && Input.closeKeybinds(),
-        $("#custom-msg").length && UI.hidePanel("#custom-msg", !1, !0)
+        $("#custom-msg").length && UI.hidePanel("#custom-msg", false, true)
     }
     ;
     var B = function(e) {
@@ -879,20 +879,20 @@
         null != r && r != game.myID) {
             var i = Players.get(r);
             if (null == i)
-                return !0;
+                return true;
             var o = {
                 left: "20px",
                 top: $(e.target).parent()[0].getBoundingClientRect().top - 166 + "px"
             };
             d || (o.display = "block",
-            d = !0);
+            d = true);
             var s = null == t[i.id] ? "Ignore" : "Unignore"
               , a = '<div class="header">' + UI.escapeHTML(i.name) + '</div><div class="item" onclick="UI.contextWhisper()">Whisper</div><div class="item" onclick="UI.context' + s + '()">' + s + '</div><div class="item" onclick="UI.contextVotemute()">Vote mute</div><div class="arrow"></div>';
             return $("#contextmenu").html(a),
             $("#contextmenu").css(o),
             p = i.id,
             e.stopPropagation(),
-            !1
+            false
         }
         UI.closeMenu()
     }
@@ -911,25 +911,25 @@
     ,
     UI.chatIgnore = function(e) {
         var n = Players.get(e);
-        null != n && e != game.myID && null == t[n.id] && (t[n.id] = !0,
-        UI.addChatMessage("Ignoring player " + UI.escapeHTML(n.name) + "&nbsp;&nbsp;&bull;&nbsp;&nbsp;To unignore type /unignore " + UI.escapeHTML(j(n.name)), !0))
+        null != n && e != game.myID && null == t[n.id] && (t[n.id] = true,
+        UI.addChatMessage("Ignoring player " + UI.escapeHTML(n.name) + "&nbsp;&nbsp;&bull;&nbsp;&nbsp;To unignore type /unignore " + UI.escapeHTML(j(n.name)), true))
     }
     ,
     UI.chatUnignore = function(e) {
         t[e.id] && (delete t[e.id],
-        UI.addChatMessage("Removed player " + UI.escapeHTML(e.name) + " from ignore list", !0))
+        UI.addChatMessage("Removed player " + UI.escapeHTML(e.name) + " from ignore list", true))
     }
     ,
     UI.chatVotemute = function(e) {
         if (e.id != game.myID) {
             Network.voteMute(e.id);
             var t = Math.floor(Math.sqrt(Players.count()[1])) + 1;
-            UI.addChatMessage("Voted to mute " + UI.escapeHTML(e.name) + "&nbsp;&nbsp;&bull;&nbsp;&nbsp;" + t + " total votes are required", !0)
+            UI.addChatMessage("Voted to mute " + UI.escapeHTML(e.name) + "&nbsp;&nbsp;&bull;&nbsp;&nbsp;" + t + " total votes are required", true)
         }
     }
     ,
     UI.chatVotemutePass = function(e) {
-        UI.addChatMessage("The vote to mute " + UI.escapeHTML(e.name) + " has passed", !0)
+        UI.addChatMessage("The vote to mute " + UI.escapeHTML(e.name) + " has passed", true)
     }
     ,
     UI.chatMuted = function() {
@@ -963,13 +963,13 @@
     ,
     UI.closeMenu = function() {
         d && (UI.hide("#contextmenu"),
-        d = !1)
+        d = false)
     }
     ,
     UI.nameEntered = function() {
         var e = $("#playername").val().trim();
         e.length > 0 ? (game.myOriginalName = e,
-        Games.start(e, !0)) : Games.highlightInput("#playername")
+        Games.start(e, true)) : Games.highlightInput("#playername")
     }
     ,
     UI.selectUpgrade = function(e) {
@@ -1019,14 +1019,14 @@
     ,
     UI.showHelp = function(e) {
         f || (UI.closeAllPanels("help"),
-        !0 === e ? $("#howtoplay").addClass("hide") : $("#howtoplay").removeClass("hide"),
+        true === e ? $("#howtoplay").addClass("hide") : $("#howtoplay").removeClass("hide"),
         UI.showPanel("#howtoplay"),
-        f = !0)
+        f = true)
     }
     ,
     UI.hideHelp = function() {
         f && (UI.hidePanel("#howtoplay"),
-        f = !1)
+        f = false)
     }
     ,
     UI.toggleHelp = function() {
@@ -1049,7 +1049,7 @@
     UI.gameStart = function(e, t) {
         t && ($("#login-ui").remove(),
         UI.show("#logosmall"),
-        UI.show("#menu", !0),
+        UI.show("#menu", true),
         config.mobile || UI.show("#chatbox"),
         UI.show("#roomnamecontainer"),
         UI.show("#scoreboard"),
@@ -1057,10 +1057,10 @@
         UI.show("#settings"),
         UI.show("#sidebar"),
         config.mobile && H(),
-        config.settings.helpshown || (UI.showHelp(!0),
-        config.settings.helpshown = !0,
+        config.settings.helpshown || (UI.showHelp(true),
+        config.settings.helpshown = true,
         Tools.setSettings({
-            helpshown: !0
+            helpshown: true
         }))),
         UI.hide("#gamespecific"),
         $("#gameinfo").html("&nbsp;"),
@@ -1093,7 +1093,7 @@
             kills: -1,
             deaths: -1
         },
-        M = !1,
+        M = false,
         A = {},
         t = {},
         UI.resetUpgrades(),
@@ -1116,8 +1116,8 @@
         $("#roomname").html(game.roomName),
         $("#scoreheader").html(game.roomName + "&nbsp;&nbsp;"),
         $("#open-menu").html('<span class="arrowdown"></span>' + game.roomName + '&nbsp;&nbsp;<span class="region">&bull;&nbsp;&nbsp;' + game.regionName + "</span>"),
-        UI.visibilityHUD(!0),
-        UI.visibilityMinimap(!0),
+        UI.visibilityHUD(true),
+        UI.visibilityMinimap(true),
         UI.updateHUD(1, 1)
     }
     ,
@@ -1158,7 +1158,7 @@
         $("#tooltip").html(i),
         y = n,
         null != v && clearTimeout(v),
-        m || (m = !0,
+        m || (m = true,
         UI.show("#tooltip"))
     }
     ,
@@ -1167,7 +1167,7 @@
         v = setTimeout(function() {
             m && (UI.hide("#tooltip"),
             $("#tooltip").html(""),
-            m = !1,
+            m = false,
             v = null)
         }, 250))
     }
@@ -1214,9 +1214,9 @@
         $(window).resize(F),
         $(window).on("orientationchange", F),
         $(window).on("contextmenu", function(e) {
-            return UI.popMenu(e, !0),
+            return UI.popMenu(e, true),
             e.preventDefault(),
-            !1
+            false
         }),
         $(window).on("focus", Input.gameFocus),
         $(window).on("blur", Input.gameBlur),
@@ -1278,15 +1278,15 @@
         }),
         $("#resetbinds").on("click", Input.resetBinds),
         config.mobile || ($("#chatbox").perfectScrollbar({
-            suppressScrollX: !0,
+            suppressScrollX: true,
             handlers: ["click-rail", "drag-scrollbar", "wheel", "touch"]
         }),
         $("#chatinput").on("blur", function() {
-            r && UI.toggleChatBox(!1)
+            r && UI.toggleChatBox(false)
         }),
         $("#resizechat").on("mousedown", UI.startDragChat)),
         $("#scorecontainer").perfectScrollbar({
-            suppressScrollX: !0,
+            suppressScrollX: true,
             handlers: ["click-rail", "drag-scrollbar", "wheel", "touch"]
         }),
         $("#selectupgrade-1").on("click", function() {

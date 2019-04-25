@@ -2,7 +2,7 @@
     var e = {}
       , t = 0
       , n = {
-        started: !1,
+        started: false,
         startX: 200,
         startY: -2450,
         pan: 0,
@@ -18,7 +18,7 @@
                     id: i + 1,
                     team: 1,
                     status: 0,
-                    reel: !0,
+                    reel: true,
                     name: "",
                     type: t[i],
                     posX: 0,
@@ -26,10 +26,10 @@
                     rot: 0,
                     flag: 1
                 }),
-                (e = Players.get(i + 1)).keystate.UP = !0,
+                (e = Players.get(i + 1)).keystate.UP = true,
                 e._offset = r[i]
         }
-        n.started = !0,
+        n.started = true,
         n.dist > 2e3 ? n.direction = -1 : n.dist < 100 && (n.direction = 1),
         n.dist += .5 * n.direction * game.timeFactor,
         n.pan += 1 / n.dist * game.timeFactor,
@@ -67,9 +67,9 @@
     Tools.detectCapabilities = function() {
         r(),
         config.mobile && !config.settings.mobileshown && (UI.popBigMsg(1),
-        config.settings.mobileshown = !0,
+        config.settings.mobileshown = true,
         Tools.setSettings({
-            mobileshown: !0
+            mobileshown: true
         })),
         config.mobile && Input.setupLogin()
     }
@@ -77,8 +77,8 @@
     var r = function() {
         config.mobile = "ontouchstart"in document.documentElement && void 0 !== window.orientation || -1 !== navigator.userAgent.indexOf("IEMobile"),
         config.ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream,
-        "#forcemobile" == window.location.hash && (config.mobile = !0),
-        "#nomobile" == window.location.hash && (config.mobile = !1)
+        "#forcemobile" == window.location.hash && (config.mobile = true),
+        "#nomobile" == window.location.hash && (config.mobile = false)
     };
     Tools.loadSettings = function() {
         var e = s();
@@ -109,8 +109,8 @@
         null != config.settings.name && $("#playername").val(config.settings.name),
         null != config.settings.region && (game.playRegion = config.settings.region),
         null != config.settings.flag && (game.myFlag = config.settings.flag),
-        null == config.settings.sound && (config.settings.sound = !0),
-        config.settings.mousemode && Input.toggleMouse(!0),
+        null == config.settings.sound && (config.settings.sound = true),
+        config.settings.mousemode && Input.toggleMouse(true),
         UI.updateSound(),
         config.settings.oldhidpi = config.settings.hidpi
     };

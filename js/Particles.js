@@ -208,7 +208,7 @@
     Math.PI;
     Particles.setup = function() {
         t.smoke = new e(game.graphics.layers.smoke,2e3),
-        t.shadows = new e(game.graphics.layers.shadows,2e3,null,!0),
+        t.shadows = new e(game.graphics.layers.shadows,2e3,null,true),
         t.explosions = new e(game.graphics.layers.explosions,2e3)
     }
     ,

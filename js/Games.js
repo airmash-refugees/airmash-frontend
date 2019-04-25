@@ -1,7 +1,7 @@
 (function() {
-    var e = !1
-      , t = !1
-      , n = !1
+    var e = false
+      , t = false
+      , n = false
       , r = ["", "Free For All", "Capture The Flag", "Battle Royale"]
       , i = ["", "ffa", "ctf", "br"]
       , o = 0
@@ -9,15 +9,15 @@
       , a = 0
       , l = null
       , u = null
-      , c = !1
-      , h = !1
+      , c = false
+      , h = false
       , d = null
       , p = []
-      , f = !1
+      , f = false
       , g = {}
       , m = {}
       , v = null
-      , y = !1
+      , y = false
       , b = {
         radius: 0,
         pos: Vector.zero(),
@@ -30,10 +30,10 @@
     };
     Games.setup = function() {
         $("#playregion").on("click", function(e) {
-            Games.updateRegion(!0, e)
+            Games.updateRegion(true, e)
         }),
         $("#playtype").on("click", function(e) {
-            Games.updateType(!0, e)
+            Games.updateType(true, e)
         }),
         $("#open-menu").on("click", function(e) {
             Games.popGames(),
@@ -69,19 +69,19 @@
         $("#lifetime-signin").on("click", Games.redirRoot),
         null != config.settings.session ? Games.playerAuth() : Games.playerGuest(),
         w(function() {
-            if (h = !0,
+            if (h = true,
             T(),
             DEVELOPMENT && "#tony" == window.location.hash)
                 return game.playRegion = "eu",
                 game.playRoom = "ffa1",
-                game.playInvited = !0,
+                game.playInvited = true,
                 game.myOriginalName = window.location.hash.substr(1),
-                void Games.start(game.myOriginalName, !0);
+                void Games.start(game.myOriginalName, true);
             f || (I(),
-            Games.updateRegion(!1),
-            Games.updateType(!1),
+            Games.updateRegion(false),
+            Games.updateType(false),
             C())
-        }, !0)
+        }, true)
     }
     ,
     Games.popupLogin = function(e) {
@@ -108,8 +108,8 @@
     window.loginFailure = function() {}
     ,
     Games.playerGuest = function() {
-        UI.show("#playbutton", !0),
-        UI.show("#loginbutton", !0)
+        UI.show("#playbutton", true),
+        UI.show("#loginbutton", true)
     }
     ,
     Games.playerAuth = function() {
@@ -117,7 +117,7 @@
             session: config.settings.session
         }, function(e) {
             if (null != e) {
-                game.loggedIn = !0,
+                game.loggedIn = true,
                 game.myUserID = e.user;
                 var t = UI.escapeHTML(e.authName.substr(0, 30)) + '<span class="grey">(' + ["", "Facebook", "Google", "Twitter", "Reddit", "Twitch"][e.authType] + ")</span>"
                   , n = t + '<span class="link" onclick="Games.logout()">Logout</span>'
@@ -128,7 +128,7 @@
                 $("#loginbutton").remove(),
                 $("#lifetime-account").remove(),
                 $("#playbutton").html("PLAY"),
-                UI.show("#playbutton", !0)
+                UI.show("#playbutton", true)
             } else
                 Games.playerGuest()
         })
@@ -147,7 +147,7 @@
         $.ajax({
             url: n,
             dataType: "json",
-            cache: !1,
+            cache: false,
             success: function(n) {
                 try {
                     p = JSON.parse(n.data)
@@ -181,7 +181,7 @@
                 o += p[t].games[n].players,
                 e++;
         if (0 == e)
-            f = !0,
+            f = true,
             UI.showMessage("alert", '<span class="mainerror">We are currently performing server maintenance<br>Please try again in a few minutes</span>', 3e4);
         else {
             var r = '<div class="item smallerpad">' + o + "</div>player" + (o > 1 ? "s" : "") + " online";
@@ -229,7 +229,7 @@
                   , r = e.substr(t + 1);
                 null != S(n, r) && (game.playRegion = n,
                 game.playRoom = r,
-                game.playInvited = !0)
+                game.playInvited = true)
             }
         }
     };
@@ -237,7 +237,7 @@
         e.stopPropagation(),
         Sound.UIClick(),
         game.playRegion = t,
-        Games.updateRegion(!1),
+        Games.updateRegion(false),
         Games.updateType()
     }
     ,
@@ -245,12 +245,12 @@
         e.stopPropagation(),
         Sound.UIClick(),
         game.playRoom = t,
-        Games.updateType(!1)
+        Games.updateType(false)
     }
     ,
     Games.closeDropdowns = function() {
-        t && Games.updateType(!1),
-        e && Games.updateRegion(!1)
+        t && Games.updateType(false),
+        e && Games.updateRegion(false)
     }
     ,
     Games.updateRegion = function(n, r) {
@@ -262,7 +262,7 @@
             n && UI.closeLogin(),
             null == n && (n = e),
             n) {
-                t && Games.updateType(!1),
+                t && Games.updateType(false),
                 i += '<div class="item"><div class="region header">REGION</div><div class="players header">PLAYERS</div><div class="ping header">PING</div><div class="clear"></div></div>';
                 var s = "";
                 null != u && (s = '<span class="autoregion">(' + p[u].name + ")</span>"),
@@ -321,7 +321,7 @@
             n && UI.closeLogin(),
             null == n && (n = t),
             n) {
-                e && Games.updateRegion(!1),
+                e && Games.updateRegion(false),
                 s += '<div class="item"><div class="gametype header">GAME</div><div class="players header">PLAYERS</div><div class="clear"></div></div>';
                 if (null == (p = P()))
                     return;
@@ -371,7 +371,7 @@
             UI.hide("#menu"),
             $("#gameselector").html(e),
             UI.show("#gameselector"),
-            n = !0,
+            n = true,
             O(),
             Sound.UIClick()
         }
@@ -395,7 +395,7 @@
         return e
     };
     Games.redirRoot = function() {
-        game.reloading = !0,
+        game.reloading = true,
         window.location = "/"
     }
     ;
@@ -408,7 +408,7 @@
     Games.closeGames = function() {
         n && (UI.hide("#gameselector"),
         UI.show("#menu"),
-        n = !1,
+        n = false,
         Sound.UIClick())
     }
     ,
@@ -472,7 +472,7 @@
             $.ajax({
                 url: t,
                 dataType: "json",
-                cache: !1,
+                cache: false,
                 timeout: 2e3,
                 success: function(t) {
                     if (!c && (a--,
@@ -498,10 +498,10 @@
         }
     };
     Games.findClosest = function() {
-        for (var e = 9999, t = !1, n = 0; n < p.length; n++)
+        for (var e = 9999, t = false, n = 0; n < p.length; n++)
             null != p[n].ping && p[n].ping < e && (e = p[n].ping,
             u = n,
-            t = !0);
+            t = true);
         t && "closest" === game.playRegion && Games.updateType()
     }
     ,
@@ -546,7 +546,7 @@
         i.removeAllRanges(),
         o.selectNode(t),
         i.addRange(o);
-        var s = !1;
+        var s = false;
         try {
             s = r.document.execCommand("copy")
         } catch (e) {}
@@ -562,7 +562,7 @@
             if (null != r) {
                 game.playRegion = r,
                 null != l && clearInterval(l),
-                c = !0;
+                c = true;
                 var o = game.playRoom
                   , s = i.indexOf(o);
                 if (-1 != s) {
@@ -602,7 +602,7 @@
             UI.show("#gamespecific"),
             g = {
                 flagBlue: {
-                    visible: !1,
+                    visible: false,
                     playerId: null,
                     direction: 1,
                     diffX: 0,
@@ -611,17 +611,17 @@
                     basePos: new Vector(-9669,-1471),
                     sprite: Textures.init("ctfFlagBlue", {
                         scale: .4,
-                        visible: !1
+                        visible: false
                     }),
                     spriteShadow: Textures.init("ctfFlagShadow", {
                         scale: .4 * 1.1,
-                        visible: !1
+                        visible: false
                     }),
                     minimapSprite: Textures.init("minimapFlagBlue"),
                     minimapBase: Textures.init("minimapBaseBlue")
                 },
                 flagRed: {
-                    visible: !1,
+                    visible: false,
                     playerId: null,
                     direction: 1,
                     diffX: 0,
@@ -630,11 +630,11 @@
                     basePos: new Vector(8602,-944),
                     sprite: Textures.init("ctfFlagRed", {
                         scale: .4,
-                        visible: !1
+                        visible: false
                     }),
                     spriteShadow: Textures.init("ctfFlagShadow", {
                         scale: .4 * 1.1,
-                        visible: !1
+                        visible: false
                     }),
                     minimapSprite: Textures.init("minimapFlagRed"),
                     minimapBase: Textures.init("minimapBaseRed")
@@ -694,7 +694,7 @@
             t.diffX = s.pos.x,
             $(n).html(i)
         }
-        k(t, !1)
+        k(t, false)
     }
     ;
     var k = function(e, t) {
@@ -758,7 +758,7 @@
             $("body").append(t),
             UI.showPanel("#custom-msg"),
             setTimeout(function() {
-                UI.hidePanel("#custom-msg", !1, !0)
+                UI.hidePanel("#custom-msg", false, true)
             }, 1e3 * e.t),
             Sound.gameComplete()
         }
@@ -770,7 +770,7 @@
             $("body").append(t),
             UI.showPanel("#custom-msg"),
             setTimeout(function() {
-                UI.hidePanel("#custom-msg", !1, !0)
+                UI.hidePanel("#custom-msg", false, true)
             }, 1e3 * e.t),
             Sound.gameComplete()
         }
@@ -791,7 +791,7 @@
     ,
     Games.popFirewall = function(e, t) {
         t <= 0 && (t = 0),
-        y || (y = !0,
+        y || (y = true,
         v = new PIXI.Graphics,
         game.graphics.gui.minimap.mask = v),
         v.clear(),
@@ -817,7 +817,7 @@
                     if (o = 64 * (Math.floor(n.x / 64) + .5) + 64 * g,
                     s = 64 * (Math.floor(n.y / 64) + .5) + 64 * b,
                     !((u = Tools.distance(o, s, e.x, e.y)) < t) && (a = o + "_" + s,
-                    l[a] = !0,
+                    l[a] = true,
                     null == m[a])) {
                         var _ = Textures.sprite("hotsmoke_" + Tools.randInt(1, 4));
                         _.scale.set(Tools.rand(1.5, 2.5)),
@@ -861,7 +861,7 @@
             game.graphics.gui.minimap.mask = null,
             null != v && (v.destroy(),
             v = null),
-            y = !1
+            y = false
         }
     };
     Games.handleFirewall = function(e) {

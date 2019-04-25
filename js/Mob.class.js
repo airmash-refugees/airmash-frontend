@@ -11,11 +11,11 @@ class Mob {
         this.exhaust = config.mobs[this.type].exhaust,
         this.lastAccelX = 0,
         this.lastAccelY = 0,
-        this.stationary = !1,
-        this.spriteRot = this.speed.angle() + Math.PI) : this.stationary = !0,
+        this.stationary = false,
+        this.spriteRot = this.speed.angle() + Math.PI) : this.stationary = true,
         this.sprites = {},
         this.state = {
-            inactive: !1,
+            inactive: false,
             despawnTicker: 0,
             despawnType: 0,
             baseScale: 1,
@@ -23,10 +23,10 @@ class Mob {
             luminosity: 1
         },
         this.randomness = Tools.rand(0, 1e5),
-        this.culled = !1,
-        this.visibility = !0,
-        this.reducedFactor = !1,
-        this.forDeletion = !1,
+        this.culled = false,
+        this.visibility = true,
+        this.reducedFactor = false,
+        this.forDeletion = false,
         this.spawnTime = game.time,
         this.lastPacket = game.timeNetwork,
         this.setupSprite()
@@ -92,18 +92,18 @@ class Mob {
     }
     despawn(e) {
         if (4 == this.type || 8 == this.type || 9 == this.type)
-            return this.state.inactive = !0,
+            return this.state.inactive = true,
             this.state.despawnTicker = 0,
             this.state.despawnType = e,
             void (1 == e && 4 != this.type && Sound.powerup(this.type, this.pos));
-        this.state.inactive = !0,
+        this.state.inactive = true,
         this.state.despawnTicker = 0,
-        this.sprites.thruster.renderable = !1,
-        this.sprites.thrusterGlow.renderable = !1,
-        this.sprites.smokeGlow.renderable = !1,
+        this.sprites.thruster.renderable = false,
+        this.sprites.thrusterGlow.renderable = false,
+        this.sprites.smokeGlow.renderable = false,
         this.accel.x = 0,
         this.accel.y = 0,
-        this.missile && Sound.updateThruster(1, this, !1)
+        this.missile && Sound.updateThruster(1, this, false)
     }
     destroy(e) {
         switch (this.type) {
@@ -131,7 +131,7 @@ class Mob {
             game.graphics.layers.shadows.removeChild(this.sprites.shadow)
         }
         e.c === Network.SERVERPACKET.MOB_DESPAWN_COORDS && (Mobs.explosion(this.pos, e.type),
-        this.missile && Sound.updateThruster(1, this, !1))
+        this.missile && Sound.updateThruster(1, this, false))
     }
     network(e) {
         this.lastPacket = game.timeNetwork,
@@ -156,8 +156,8 @@ class Mob {
     }
     update(e) {
         if (this.visibilityUpdate(),
-        !(!1 !== this.reducedFactor && (e -= this.reducedFactor,
-        this.reducedFactor = !1,
+        !(false !== this.reducedFactor && (e -= this.reducedFactor,
+        this.reducedFactor = false,
         e <= 0))) {
             var t, n, r, i = e > .51 ? Math.round(e) : 1, o = e / i;
             for (t = 0; t < i; t++)
@@ -202,7 +202,7 @@ class Mob {
                         this.sprites.shadow.alpha = n
                     }
                     if (this.state.despawnTicker > 1)
-                        return void (this.forDeletion = !0);
+                        return void (this.forDeletion = true);
                     t = Tools.clamp(1 - this.state.despawnTicker, .3, 1)
                 }
                 if (!this.culled && t > .3) {
@@ -217,7 +217,7 @@ class Mob {
             case 9:
                 if (this.state.inactive && (this.state.despawnTicker += .05 * e,
                 this.state.despawnTicker > 1))
-                    return void (this.forDeletion = !0)
+                    return void (this.forDeletion = true)
             }
     }
     updateGraphics(e) {

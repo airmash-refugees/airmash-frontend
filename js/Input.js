@@ -6,9 +6,9 @@
       , i = 0
       , o = 2 * Math.PI
       , s = null
-      , a = !1
+      , a = false
       , l = {}
-      , u = !1
+      , u = false
       , c = null
       , h = 0
       , d = {
@@ -41,24 +41,24 @@
     }
       , p = {}
       , f = {
-        LEFT: !0,
-        RIGHT: !0,
-        UP: !0,
-        DOWN: !0,
-        FIRE: !0,
-        SPECIAL: !0,
-        STRAFELEFT: !0,
-        STRAFERIGHT: !0
+        LEFT: true,
+        RIGHT: true,
+        UP: true,
+        DOWN: true,
+        FIRE: true,
+        SPECIAL: true,
+        STRAFELEFT: true,
+        STRAFERIGHT: true
     }
       , g = {}
       , m = {
-        MAINMENU: !0,
-        FULLSCREEN: !0,
-        INVITE: !0,
-        SOUND: !0,
-        SHOWSCORE: !0,
-        SHOWGAMES: !0,
-        HELP: !0
+        MAINMENU: true,
+        FULLSCREEN: true,
+        INVITE: true,
+        SOUND: true,
+        SHOWSCORE: true,
+        SHOWGAMES: true,
+        HELP: true
     }
       , v = [["Forward", "UP"], ["Backward", "DOWN"], ["Turn Left", "LEFT"], ["Turn Right", "RIGHT"], ["Fire", "FIRE"], ["Special", "SPECIAL"], ["Strafe Left", "STRAFELEFT"], ["Strafe Right", "STRAFERIGHT"], [""], ["Spectate", "SPECTATE"], ["Upgrade Speed", "UPGRADE1"], ["Upgrade Defense", "UPGRADE2"], ["Upgrade Energy", "UPGRADE3"], ["Upgrade Missiles", "UPGRADE4"], ["Scoreboard", "SHOWSCORE"], ["Main Menu", "MAINMENU"], ["Show Games", "SHOWGAMES"], ["Fullscreen", "FULLSCREEN"], ["Maximize Chat", "MAXIMIZECHAT"], ["Minimize Chat", "MINIMIZECHAT"], [""], ["In-game Say", "SAY"], ["Team Chat", "TEAM"], ["Reply", "REPLY"], ["Toggle Sound", "SOUND"], ["Help", "HELP"], ["Invite Friends", "INVITE"], ["Mouse Mode", "MOUSEMODE"]]
       , y = {}
@@ -167,17 +167,17 @@
             y[b[e]] = e;
         p = JSON.parse(JSON.stringify(d)),
         I(),
-        M(!0),
+        M(true),
         $(window).on("keydown", w),
         $(window).on("keyup", T),
         $(window).on("gamepadconnected", function(e) {
             UI.showMessage("alert", '<span class="info">GAMEPAD CONNECTED</span>' + UI.escapeHTML(e.originalEvent.gamepad.id), 3e3),
-            a = !0,
+            a = true,
             S()
         }),
         $(window).on("gamepaddisconnected", function(e) {
             UI.showMessage("alert", '<span class="info">GAMEPAD DISCONNECTED</span>' + UI.escapeHTML(e.originalEvent.gamepad.id), 3e3),
-            a = !1,
+            a = false,
             S()
         })
     }
@@ -191,14 +191,14 @@
             else {
                 var o = Input.getBind(i);
                 if (!E(i))
-                    return null == f[o] ? (n[i] || (n[i] = !0,
-                    UI.controlKey(i, o, !0)),
+                    return null == f[o] ? (n[i] || (n[i] = true,
+                    UI.controlKey(i, o, true)),
                     r.preventDefault(),
-                    !1) : (e[o] || (e[o] = !0,
+                    false) : (e[o] || (e[o] = true,
                     C(o)),
-                    t[i] || (t[i] = !0),
+                    t[i] || (t[i] = true),
                     r.preventDefault(),
-                    !1)
+                    false)
             }
         }
     }
@@ -206,13 +206,13 @@
         if (game.state == Network.STATE.PLAYING || game.state == Network.STATE.CONNECTING) {
             var i = r.which
               , o = Input.getBind(i);
-            if (null == f[o] && n[i] && (n[i] = !1),
+            if (null == f[o] && n[i] && (n[i] = false),
             !E(i))
-                return e[o] && (e[o] = !1,
+                return e[o] && (e[o] = false,
                 R(o)),
-                t[i] && (t[i] = !1),
+                t[i] && (t[i] = false),
                 r.preventDefault(),
-                !1
+                false
         }
     }
       , E = function(e, t) {
@@ -220,13 +220,13 @@
     }
       , S = function() {
         l = {
-            forward: !0,
-            left: !1,
-            right: !1,
-            up: !1,
-            down: !1,
-            fire: !1,
-            special: !1,
+            forward: true,
+            left: false,
+            right: false,
+            up: false,
+            down: false,
+            fire: false,
+            special: false,
             angle: 0,
             force: 0
         }
@@ -285,9 +285,9 @@
                 }) : Tools.removeSetting("keybinds")
             }(),
             c = null,
-            !0
+            true
         }
-        return !1
+        return false
     }
       , M = function(e) {
         var t = ""
@@ -316,12 +316,12 @@
         config.mobile || u || (UI.closeAllPanels("keybinds"),
         M(),
         UI.showPanel("#keybinds"),
-        u = !0)
+        u = true)
     }
     ,
     Input.closeKeybinds = function() {
         u && (UI.hidePanel("#keybinds", u),
-        u = !1,
+        u = false,
         c = null)
     }
     ,
@@ -353,12 +353,12 @@
                       , d = h.length()
                       , p = -h.angle() + Math.PI / 2
                       , f = p = (p % o + o) % o;
-                    d > .2 ? (l.forward = !0,
-                    O(f, d)) : (l.forward && !n && A("UP", !1),
-                    l.forward = !1)
+                    d > .2 ? (l.forward = true,
+                    O(f, d)) : (l.forward && !n && A("UP", false),
+                    l.forward = false)
                 }
             } else
-                a = !1
+                a = false
         }
     }
     ,
@@ -376,11 +376,11 @@
                 if (e[r]) {
                     if (n && (t[38] || t[40] || t[37] || t[39]))
                         continue;
-                    e[r] = !1,
+                    e[r] = false,
                     R(r)
                 }
             for (var i in t)
-                (!n || 38 != i && 40 != i && 37 != i && 39 != i) && (t[i] = !1)
+                (!n || 38 != i && 40 != i && 37 != i && 39 != i) && (t[i] = false)
         }
     }
     ,
@@ -415,28 +415,28 @@
         Input.addTouchRejection("#settings,#sidebar,#roomnamecontainer,#menu,#gameselector,#mainmenu,#scoredetailed,#invitefriends,#msg-alert,#msg-information");
         $("body").append('<div id="touch-joystick"></div><div id="touch-fire"><div class="circle"></div></div><div id="touch-special"><div class="circle"></div></div>'),
         $("#touch-fire").on("touchstart", function(e) {
-            A("FIRE", !0),
+            A("FIRE", true),
             $("#touch-fire > .circle").css({
                 "background-color": "rgba(255, 255, 255, 0.5)"
             }),
             e.preventDefault()
         }),
         $("#touch-fire").on("touchend", function(e) {
-            A("FIRE", !1),
+            A("FIRE", false),
             $("#touch-fire > .circle").css({
                 "background-color": "rgba(255, 255, 255, 0.2)"
             }),
             e.preventDefault()
         }),
         $("#touch-special").on("touchstart", function(e) {
-            A("SPECIAL", !0),
+            A("SPECIAL", true),
             $("#touch-special > .circle").css({
                 "background-color": "rgba(255, 255, 255, 0.5)"
             }),
             e.preventDefault()
         }),
         $("#touch-special").on("touchend", function(e) {
-            A("SPECIAL", !1),
+            A("SPECIAL", false),
             $("#touch-special > .circle").css({
                 "background-color": "rgba(255, 255, 255, 0.2)"
             }),
@@ -466,7 +466,7 @@
                     return;
                 UI.showMessage("alert", '<span class="info">MOUSE MODE</span>Enabled<div class="mousemode"><span class="info">LEFT CLICK</span>Fire&nbsp;&nbsp;&nbsp;<span class="info">RIGHT CLICK</span>Special&nbsp;&nbsp;&nbsp;<span class="info">WASD</span>Move</div>', 7e3),
                 Tools.setSettings({
-                    mousemode: !0
+                    mousemode: true
                 })
             } else
                 UI.showMessage("alert", '<span class="info">MOUSE MODE</span>Disabled', 3e3),
@@ -477,7 +477,7 @@
         var t = e.originalEvent;
         if ((0 == t.button || 2 == t.button) && null != t.target.tagName && "canvas" == t.target.tagName.toLowerCase()) {
             var n = 0 == t.button ? "FIRE" : "SPECIAL";
-            A(n, !0),
+            A(n, true),
             e.preventDefault()
         }
     }
@@ -487,11 +487,11 @@
         if (0 == t.button || 2 == t.button)
             if (null != t.target.tagName && "canvas" == t.target.tagName.toLowerCase()) {
                 var n = 0 == t.button ? "FIRE" : "SPECIAL";
-                A(n, !1),
+                A(n, false),
                 e.preventDefault()
             } else
-                A("FIRE", !1),
-                A("SPECIAL", !1)
+                A("FIRE", false),
+                A("SPECIAL", false)
     }
     ;
     var A = function(t, n) {
@@ -511,10 +511,10 @@
                 var a = o > 0 ? "RIGHT" : "LEFT"
                   , l = o <= 0 ? "RIGHT" : "LEFT";
                 A("UP", !(null != t && t < .5)),
-                A(a, !0),
-                A(l, !1),
+                A(a, true),
+                A(l, false),
                 r = setTimeout(function() {
-                    A(a, !1)
+                    A(a, false)
                 }, s)
             }
         }
@@ -526,17 +526,17 @@
     }
     ,
     Input.touchEnd = function(e, t) {
-        A("UP", !1),
-        A("LEFT", !1),
-        A("RIGHT", !1)
+        A("UP", false),
+        A("LEFT", false),
+        A("RIGHT", false)
     }
     ,
     Input.gameFocus = function() {
-        game.focus = !0
+        game.focus = true
     }
     ,
     Input.gameBlur = function() {
-        game.focus = !1,
+        game.focus = false,
         Input.clearKeys()
     }
     ;
@@ -544,11 +544,11 @@
         if (3 == game.myType && ("STRAFELEFT" === e || "STRAFERIGHT" === e))
             return C("SPECIAL"),
             void C("STRAFELEFT" === e ? "LEFT" : "RIGHT");
-        -1 !== x.indexOf(e) && Network.sendKey(e, !0)
+        -1 !== x.indexOf(e) && Network.sendKey(e, true)
     }
       , R = function(t) {
         if (3 != game.myType || "STRAFELEFT" !== t && "STRAFERIGHT" !== t)
-            -1 !== _.indexOf(t) && Network.sendKey(t, !1);
+            -1 !== _.indexOf(t) && Network.sendKey(t, false);
         else {
             R("STRAFELEFT" === t ? "LEFT" : "RIGHT");
             e["STRAFERIGHT" === t ? "STRAFELEFT" : "STRAFERIGHT"] || R("SPECIAL")

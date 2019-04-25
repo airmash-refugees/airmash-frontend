@@ -23,9 +23,9 @@
         PIXI.utils.skipHello(),
         PIXI.settings.PRECISION_FRAGMENT = PIXI.PRECISION.HIGH;
         var t = {
-            autoResize: !0,
-            clearBeforeRender: !1,
-            preserveDrawingBuffer: !0
+            autoResize: true,
+            clearBeforeRender: false,
+            preserveDrawingBuffer: true
         };
         config.settings.hidpi && (t.resolution = 2);
         try {
@@ -107,7 +107,7 @@
     Graphics.toggleHiDPI = function() {
         config.settings.hidpi = !(1 == config.settings.hidpi),
         config.settings.hidpi ? Tools.setSettings({
-            hidpi: !0
+            hidpi: true
         }) : Tools.removeSetting("hidpi"),
         UI.updateMainMenuSettings(),
         1 == config.settings.oldhidpi == config.settings.hidpi ? UI.showMessage("alert", "", 1e3) : UI.showMessage("alert", 'Reload game to apply HiDPI settings<br><span class="button" onclick="Games.redirRoot()">RELOAD</span>', 1e4)
@@ -311,9 +311,9 @@
         e.render(i.map, n.render)
     };
     Graphics.render = function() {
-        e.render(i.shadows, n.shadows, !0),
-        e.render(i.hudEnergy, r.hudTextureEnergy, !0),
-        e.render(i.hudHealth, r.hudTextureHealth, !0),
+        e.render(i.shadows, n.shadows, true),
+        e.render(i.hudEnergy, r.hudTextureEnergy, true),
+        e.render(i.hudHealth, r.hudTextureHealth, true),
         e.render(i.game)
     }
 })();

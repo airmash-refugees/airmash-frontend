@@ -41,7 +41,7 @@
     Players.getIDs = function() {
         var t = {};
         for (var n in e)
-            t[n] = !0;
+            t[n] = true;
         return t
     }
     ,
@@ -93,14 +93,14 @@
             null != (i = e[r[a].id]) && (s.push(i.id),
             i.state.badge != a && (i.state.badge = a,
             i.changeBadge(n[a])),
-            i.state.hasBadge || (i.state.hasBadge = !0,
-            i.render && (i.sprites.badge.visible = !0)));
+            i.state.hasBadge || (i.state.hasBadge = true,
+            i.render && (i.sprites.badge.visible = true)));
         for (var l = 0; l < t.length; l++)
             if (-1 == s.indexOf(t[l])) {
                 if (null == (i = e[t[l]]))
                     continue;
-                i.state.hasBadge && (i.state.hasBadge = !1,
-                i.sprites.badge.visible = !1)
+                i.state.hasBadge && (i.state.hasBadge = false,
+                i.sprites.badge.visible = false)
             }
         t = s
     }
@@ -162,7 +162,7 @@
             if (0 != t.killer || 0 != t.posX || 0 != t.posY) {
                 if (n.kill(t),
                 n.me()) {
-                    UI.visibilityHUD(!1);
+                    UI.visibilityHUD(false);
                     var r = e[t.killer];
                     null != r && UI.killedBy(r),
                     UI.showSpectator('<div onclick="Network.spectateNext()" class="spectate">ENTER SPECTATOR MODE</div>')
@@ -174,9 +174,9 @@
                     e.kill({
                         posX: 0,
                         posY: 0,
-                        spectate: !0
+                        spectate: true
                     }),
-                    UI.visibilityHUD(!1)
+                    UI.visibilityHUD(false)
                 }(n)
     }
     ,
@@ -184,7 +184,7 @@
         t == game.spectatingID && ($("#spectator-tag").html("Spectating"),
         Games.spectatorSwitch(t));
         var n = e[t];
-        null != n && (n.destroy(!0),
+        null != n && (n.destroy(true),
         delete e[t])
     }
     ,
@@ -203,7 +203,7 @@
     ,
     Players.wipe = function() {
         for (var t in e)
-            e[t].destroy(!0),
+            e[t].destroy(true),
             delete e[t]
     }
 })();

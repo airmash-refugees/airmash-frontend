@@ -37,7 +37,7 @@
         src: ["assets/sounds.mp3?4"],
         volume: 0,
         sprite: {
-            chopper: [0, 3206.1451247165533, !0],
+            chopper: [0, 3206.1451247165533, true],
             click: [5e3, 374.9886621315195],
             complete: [7e3, 1910.9750566893417],
             explosion1: [1e4, 4137.460317460316],
@@ -50,13 +50,13 @@
             launch1: [51e3, 1492.4943310657568],
             launch2: [54e3, 1511.2244897959215],
             levelup: [57e3, 1886.4172335600883],
-            missile: [6e4, 8335.351473922898, !0],
+            missile: [6e4, 8335.351473922898, true],
             powerup_rampage: [7e4, 7423.083900226758],
             powerup_shield: [79e3, 2070.4761904761854],
             powerup_upgrade: [83e3, 1640.8616780045406],
             repel: [86e3, 2e3],
             respawn: [89e3, 1315.9410430838961],
-            thruster: [92e3, 9499.841269841269, !0],
+            thruster: [92e3, 9499.841269841269, true],
             upgrade: [103e3, 2062.517006802722]
         }
     };
@@ -79,7 +79,7 @@
         Tools.setSettings({
             sound: config.settings.sound
         }),
-        UI.updateSound(!0),
+        UI.updateSound(true),
         M()
     }
     ;
@@ -179,11 +179,11 @@
                 num: 1,
                 time: game.time
             },
-            !1;
+            false;
         var r = null != n ? n : 1e3;
         return game.time - l[e].time > r ? (l[e].num = 1,
         l[e].time = game.time,
-        !1) : (l[e].num++,
+        false) : (l[e].num++,
         l[e].num > t)
     }
       , C = function(n, r, i, o, s, a) {
@@ -232,7 +232,7 @@
         if (null != n[e]) {
             var t = n[e].soundId
               , a = n[e].vol;
-            R(t, n[e].sound, null, null, null, [a, 0, 200, !0]),
+            R(t, n[e].sound, null, null, null, [a, 0, 200, true]),
             function(e, t, n) {
                 o[++s] = {
                     id: e,
@@ -301,7 +301,7 @@
                     if (0 == e && 3 == t.type && (c = x[t.type] + t.speed.length() / 20),
                     game.time - n[a].started < 250)
                         return;
-                    R(n[a].soundId, n[a].sound, null, t.pos, c, [n[a].vol, u, 100, !0]),
+                    R(n[a].soundId, n[a].sound, null, t.pos, c, [n[a].vol, u, 100, true]),
                     n[a].last = game.time,
                     n[a].vol = u
                 }

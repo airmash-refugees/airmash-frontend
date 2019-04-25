@@ -22,36 +22,36 @@ class Player {
         this.energy = 1,
         this.healthRegen = 1,
         this.energyRegen = 1,
-        this.boost = !1,
-        this.strafe = !1,
-        this.flagspeed = !1,
-        this.stealthed = !1,
+        this.boost = false,
+        this.strafe = false,
+        this.flagspeed = false,
+        this.stealthed = false,
         this.alpha = 1,
         this.scale = 1,
         this.powerups = {
-            shield: !1,
-            rampage: !1
+            shield: false,
+            rampage: false
         },
         this.powerupsShown = {
-            shield: !1,
-            rampage: !1
+            shield: false,
+            rampage: false
         },
-        this.powerupActive = !1,
-        this.render = !0,
-        this.hidden = !1,
-        this.culled = !1,
-        this.timedout = !1,
-        this.reducedFactor = !1,
+        this.powerupActive = false,
+        this.render = true,
+        this.hidden = false,
+        this.culled = false,
+        this.timedout = false,
+        this.reducedFactor = false,
         this.lastPacket = game.timeNetwork,
         this.state = {
             thrustLevel: 0,
             thrustDir: 0,
-            bubble: !1,
+            bubble: false,
             bubbleProgress: 0,
             bubbleFade: 0,
             bubbleTime: 0,
             bubbleTextWidth: 0,
-            hasBadge: !1,
+            hasBadge: false,
             badge: 0,
             stealthLevel: 0,
             scaleLevel: 1,
@@ -62,8 +62,8 @@ class Player {
         },
         this.setupGraphics(),
         0 == this.status ? (Tools.decodeUpgrades(this, e.upgrades),
-        this.updatePowerups()) : (this.hidden = !0,
-        this.me() && UI.visibilityHUD(!1)),
+        this.updatePowerups()) : (this.hidden = true,
+        this.me() && UI.visibilityHUD(false)),
         this.reel ? (this._prevPos = null,
         this._offset = null) : this.visibilityUpdate(),
         (!t && this.render || this.me()) && (this.scale = 0,
@@ -77,11 +77,11 @@ class Player {
             layer: "aircraftme"
         }),
         this.sprites.powerup = Textures.init("powerupShield", {
-            visible: !1,
+            visible: false,
             alpha: .75
         }),
         this.sprites.powerupCircle = Textures.init("powerupCircle", {
-            visible: !1,
+            visible: false,
             alpha: .75
         }),
         this.type) {
@@ -176,7 +176,7 @@ class Player {
             fontFamily: "MontserratWeb, Helvetica, sans-serif",
             fontSize: "33px",
             fill: e,
-            dropShadow: !0,
+            dropShadow: true,
             dropShadowBlur: 10,
             dropShadowDistance: 0,
             padding: 4
@@ -192,7 +192,7 @@ class Player {
         this.sprites.flag.anchor.set(.5, .5),
         this.sprites.badge = Textures.sprite("badge_gold"),
         this.sprites.badge.scale.set(.3),
-        this.sprites.badge.visible = !1,
+        this.sprites.badge.visible = false,
         game.graphics.layers.playernames.addChild(this.sprites.badge),
         game.graphics.layers.playernames.addChild(this.sprites.flag),
         game.graphics.layers.playernames.addChild(this.sprites.name)
@@ -221,7 +221,7 @@ class Player {
             fill: "white"
         }),
         this.sprites.bubble.addChild(this.sprites.bubbleText),
-        this.sprites.bubble.visible = !1,
+        this.sprites.bubble.visible = false,
         this.sprites.bubble.pivot.set(.5, 34),
         game.graphics.layers.bubbles.addChild(this.sprites.bubble)
     }
@@ -266,13 +266,13 @@ class Player {
         this.lastPacket = game.timeNetwork,
         this.energy = e.energy,
         this.energyRegen = e.energyRegen,
-        e.state ? (this.stealthed = !0,
+        e.state ? (this.stealthed = true,
         this.state.stealthLevel = 0,
         this.team != game.myTeam && (this.keystate.LEFT && delete this.keystate.LEFT,
         this.keystate.RIGHT && delete this.keystate.RIGHT)) : this.unstealth()
     }
     unstealth() {
-        this.stealthed = !1,
+        this.stealthed = false,
         this.state.stealthLevel = 0,
         this.opacity(1)
     }
@@ -300,10 +300,10 @@ class Player {
         this.speed = Vector.zero(),
         this.me() && UI.resetPowerups(),
         this.resetPowerups(),
-        this.hidden = !0,
+        this.hidden = true,
         this.visibilityUpdate(),
         this.stealthed && this.unstealth(),
-        !this.culled && !0 !== e.spectate) {
+        !this.culled && true !== e.spectate) {
             switch (this.type) {
             case 1:
                 Particles.explosion(this.pos.clone(), Tools.rand(1.5, 2), Tools.randInt(2, 3));
@@ -367,28 +367,28 @@ class Player {
         this.sprites.name.destroy(),
         this.sprites.flag.destroy(),
         this.sprites.bubble.destroy({
-            children: !0
+            children: true
         }))
     }
     sayBubble(e) {
         this.state.bubbleTime = game.time,
         this.state.bubbleFade = 0,
-        this.state.bubble || (this.state.bubble = !0,
+        this.state.bubble || (this.state.bubble = true,
         this.state.bubbleProgress = 0,
-        this.sprites.bubble.visible = !0,
+        this.sprites.bubble.visible = true,
         this.sprites.bubble.alpha = 0,
         this.sprites.bubble.scale.set(0, 0)),
-        this.sprites.bubble.cacheAsBitmap = !1;
-        var t = UI.isEmote(e.text, !0);
+        this.sprites.bubble.cacheAsBitmap = false;
+        var t = UI.isEmote(e.text, true);
         if (t) {
-            this.sprites.bubbleText.visible = !1,
+            this.sprites.bubbleText.visible = false,
             this.sprites.emote.texture = Textures.get("emote_" + t),
-            this.sprites.emote.visible = !0;
+            this.sprites.emote.visible = true;
             var n = 26;
             this.sprites.emote.position.set(0, 0)
         } else {
-            this.sprites.bubbleText.visible = !0,
-            this.sprites.emote.visible = !1,
+            this.sprites.bubbleText.visible = true,
+            this.sprites.emote.visible = false,
             this.sprites.bubbleText.text = e.text;
             n = this.sprites.bubbleText.width;
             this.sprites.bubbleText.position.set(-n / 2, -7)
@@ -398,7 +398,7 @@ class Player {
         this.sprites.bubbleCenter.position.set(-n / 2 - 9, -21),
         this.sprites.bubbleCenter.scale.set(n / 82 + 18 / 82, .5),
         this.sprites.bubblePoint.position.set(-9, 18),
-        this.sprites.bubble.cacheAsBitmap = !0,
+        this.sprites.bubble.cacheAsBitmap = true,
         this.state.bubbleTextWidth = n
     }
     networkKey(e, t) {
@@ -433,7 +433,7 @@ class Player {
             fontFamily: "MontserratWeb, Helvetica, sans-serif",
             fontSize: "28px",
             fill: "rgb(200, 200, 200)",
-            dropShadow: !0,
+            dropShadow: true,
             dropShadowBlur: 6,
             dropShadowDistance: 0,
             padding: 4
@@ -451,31 +451,31 @@ class Player {
         UI.addPowerup(e.type, e.duration)
     }
     resetPowerups() {
-        this.powerupActive && (this.sprites.powerup.visible = !1,
-        this.sprites.powerupCircle.visible = !1),
-        this.powerups.shield = !1,
-        this.powerupsShown.shield = !1,
-        this.powerups.rampage = !1,
-        this.powerupsShown.rampage = !1,
-        this.powerupActive = !1,
+        this.powerupActive && (this.sprites.powerup.visible = false,
+        this.sprites.powerupCircle.visible = false),
+        this.powerups.shield = false,
+        this.powerupsShown.shield = false,
+        this.powerups.rampage = false,
+        this.powerupsShown.rampage = false,
+        this.powerupActive = false,
         this.state.powerupFade = 0,
         this.state.powerupFadeState = 0
     }
     updatePowerups() {
-        var e = !1;
+        var e = false;
         this.powerups.shield != this.powerupsShown.shield && (this.powerupsShown.shield = this.powerups.shield,
         this.powerups.shield && (this.sprites.powerup.texture = Textures.get("powerup_shield"),
         this.sprites.powerupCircle.tint = 16777215),
-        e = !0),
+        e = true),
         this.powerups.rampage != this.powerupsShown.rampage && (this.powerupsShown.rampage = this.powerups.rampage,
         this.powerups.rampage && (this.sprites.powerup.texture = Textures.get("powerup_rampage"),
         this.sprites.powerupCircle.tint = 16712448),
-        e = !0),
+        e = true),
         e && (this.powerupActive = this.powerups.shield || this.powerups.rampage,
         this.powerupActive ? (this.state.powerupFade = 0,
         this.state.powerupFadeState = 0,
-        this.sprites.powerup.visible = !0,
-        this.sprites.powerupCircle.visible = !0) : (this.powerupActive = !0,
+        this.sprites.powerup.visible = true,
+        this.sprites.powerupCircle.visible = true) : (this.powerupActive = true,
         this.state.powerupFade = 0,
         this.state.powerupFadeState = 1))
     }
@@ -487,10 +487,10 @@ class Player {
         this.me() && 0 == this.status && Graphics.shakeCamera(t, 8)
     }
     changeType(e) {
-        this.type != e.type && (this.destroy(!1),
+        this.type != e.type && (this.destroy(false),
         this.type = e.type,
-        this.setupGraphics(!0),
-        this.visibilityUpdate(!0))
+        this.setupGraphics(true),
+        this.visibilityUpdate(true))
     }
     respawn(e) {
         this.lastPacket = game.timeNetwork,
@@ -505,13 +505,13 @@ class Player {
         this.energy = 1,
         this.healthRegen = 1,
         this.energyRegen = 1,
-        this.boost = !1,
-        this.strafe = !1,
-        this.flagspeed = !1,
+        this.boost = false,
+        this.strafe = false,
+        this.flagspeed = false,
         this.state.thrustLevel = 0,
         this.state.thrustDir = 0,
-        this.hidden = !1,
-        this.timedout = !1,
+        this.hidden = false,
+        this.timedout = false,
         this.visibilityUpdate(),
         this.me() && UI.resetPowerups(),
         Tools.decodeUpgrades(this, e.upgrades),
@@ -522,17 +522,17 @@ class Player {
         this.me() && (game.myType = this.type,
         game.spectatingID = null,
         UI.aircraftSelected(this.type),
-        UI.visibilityHUD(!0),
+        UI.visibilityHUD(true),
         UI.hideSpectator()),
         this.updateGraphics(1),
         Sound.playerRespawn(this)
     }
     revive() {
         this.status = 0,
-        this.boost = !1,
-        this.strafe = !1,
-        this.flagspeed = !1,
-        this.hidden = !1,
+        this.boost = false,
+        this.strafe = false,
+        this.flagspeed = false,
+        this.hidden = false,
         this.health = 1,
         this.energy = 1,
         this.healthRegen = 1,
@@ -565,8 +565,8 @@ class Player {
         this.state.bubbleFade >= 1 && (this.state.bubbleFade = 1),
         this.sprites.bubble.scale.set(1 + .2 * this.state.bubbleFade),
         this.sprites.bubble.alpha = 1 * (1 - this.state.bubbleFade),
-        this.state.bubbleFade >= 1 && (this.state.bubble = !1,
-        this.sprites.bubble.visible = !1)) : (this.sprites.bubble.scale.set(Tools.easing.outElastic(this.state.bubbleProgress, .5)),
+        this.state.bubbleFade >= 1 && (this.state.bubble = false,
+        this.sprites.bubble.visible = false)) : (this.sprites.bubble.scale.set(Tools.easing.outElastic(this.state.bubbleProgress, .5)),
         this.sprites.bubble.alpha = 1);
         var e = (this.state.bubbleTextWidth + game.screenX) % 2 == 0 ? .5 : 0
           , t = game.screenY % 2 == 0 ? 0 : .5
@@ -578,9 +578,9 @@ class Player {
         if (!this.me()) {
             var e = this.timedout;
             this.timedout = !game.lagging && game.timeNetwork - this.lastPacket > 3e3,
-            this.timedout && !e && (this.boost = !1,
-            this.strafe = !1,
-            this.flagspeed = !1,
+            this.timedout && !e && (this.boost = false,
+            this.strafe = false,
+            this.flagspeed = false,
             this.speed = Vector.zero(),
             this.keystate = {},
             this.resetPowerups())
@@ -588,10 +588,10 @@ class Player {
     }
     leaveHorizon() {
         this.me() || this.timedout || (this.lastPacket = -1e4,
-        this.timedout = !0,
-        this.boost = !1,
-        this.strafe = !1,
-        this.flagspeed = !1,
+        this.timedout = true,
+        this.boost = false,
+        this.strafe = false,
+        this.flagspeed = false,
         this.speed = Vector.zero(),
         this.keystate = {},
         this.resetPowerups())
@@ -605,8 +605,8 @@ class Player {
             !this.render)
                 return this.health += e * this.healthRegen,
                 void (this.health >= 1 && (this.health = 1));
-            if (!(!1 !== this.reducedFactor && (e -= this.reducedFactor,
-            this.reducedFactor = !1,
+            if (!(false !== this.reducedFactor && (e -= this.reducedFactor,
+            this.reducedFactor = false,
             e <= 0))) {
                 var t, n, r, i, o = e > .51 ? Math.round(e) : 1, s = e / o, a = 2 * Math.PI, l = this.boost ? 1.5 : 1;
                 for (t = 0; t < o; t++) {
@@ -653,11 +653,11 @@ class Player {
         case 2:
         case 4:
         case 5:
-            var t = !1
-              , n = !1
+            var t = false
+              , n = false
               , r = this.boost ? 1.5 : 1;
-            !1 !== (t = this.keystate.LEFT ? .3 : this.keystate.RIGHT ? -.3 : 0) && (this.state.thrustDir = Tools.converge(this.state.thrustDir, t, .1 * e)),
-            !1 !== (n = this.keystate.UP ? 1 : this.keystate.DOWN ? -1 : 0) && (this.state.thrustLevel = Tools.converge(this.state.thrustLevel, n * r, .2 * e));
+            false !== (t = this.keystate.LEFT ? .3 : this.keystate.RIGHT ? -.3 : 0) && (this.state.thrustDir = Tools.converge(this.state.thrustDir, t, .1 * e)),
+            false !== (n = this.keystate.UP ? 1 : this.keystate.DOWN ? -1 : 0) && (this.state.thrustLevel = Tools.converge(this.state.thrustLevel, n * r, .2 * e));
             break;
         case 3:
             this.state.thrustDir += (.2 + this.speed.length() / 50) * e
@@ -674,9 +674,9 @@ class Player {
         this.powerupActive && (this.state.powerupAngle += .075 * e,
         0 == this.state.powerupFadeState ? (this.state.powerupFade += .05 * e,
         this.state.powerupFade >= 1 && (this.state.powerupFade = 1)) : (this.state.powerupFade += .05 * e,
-        this.state.powerupFade >= 1 && (this.powerupActive = !1,
-        this.sprites.powerup.visible = !1,
-        this.sprites.powerupCircle.visible = !1))))
+        this.state.powerupFade >= 1 && (this.powerupActive = false,
+        this.sprites.powerup.visible = false,
+        this.sprites.powerupCircle.visible = false))))
     }
     updateGraphics(e) {
         var t = Tools.oscillator(.025, 1e3, this.randomness) * this.scale
