@@ -12,7 +12,7 @@ GAMES = {
                 {
                     "name": "UK Server",
                     "players": 7,
-                    "url": "wss://uk.airmashrefugees.tk/ffa",
+                    "url": "wss://uk.airmash.online/ffa",
                     "nameShort": "GB-ffa",
                     "host": "GB-ffa",
                     "type": 1,
