@@ -25,20 +25,20 @@
                 state: r
             };
             null != game.spectatingID && r && ("RIGHT" == e ? Network.spectatePrev() : "LEFT" == e && Network.spectateNext()),
-            E(i),
-            t && n && E(i, true)
+            sendMessageDict(i),
+            t && n && sendMessageDict(i, true)
         }
     }
     ,
     Network.sendChat = function(e) {
-        game.state == Network.STATE.PLAYING && E({
+        game.state == Network.STATE.PLAYING && sendMessageDict({
             c: P.CHAT,
             text: e
         })
     }
     ,
     Network.sendWhisper = function(e, t) {
-        game.state == Network.STATE.PLAYING && E({
+        game.state == Network.STATE.PLAYING && sendMessageDict({
             c: P.WHISPER,
             id: e,
             text: t
@@ -46,14 +46,14 @@
     }
     ,
     Network.sendSay = function(e) {
-        game.state == Network.STATE.PLAYING && E({
+        game.state == Network.STATE.PLAYING && sendMessageDict({
             c: P.SAY,
             text: e
         })
     }
     ,
     Network.sendTeam = function(e) {
-        game.state == Network.STATE.PLAYING && E({
+        game.state == Network.STATE.PLAYING && sendMessageDict({
             c: P.TEAMCHAT,
             text: e
         })
@@ -61,7 +61,7 @@
     ,
     Network.sendCommand = function(e, t) {
         game.state == Network.STATE.PLAYING && ("flag" === e && (game.lastFlagSet = t),
-        E({
+        sendMessageDict({
             c: P.COMMAND,
             com: e,
             data: t
@@ -69,7 +69,7 @@
     }
     ,
     Network.voteMute = function(e) {
-        game.state == Network.STATE.PLAYING && E({
+        game.state == Network.STATE.PLAYING && sendMessageDict({
             c: P.VOTEMUTE,
             id: e
         })
@@ -88,13 +88,13 @@
     }
     ,
     Network.getScores = function() {
-        game.state == Network.STATE.PLAYING && E({
+        game.state == Network.STATE.PLAYING && sendMessageDict({
             c: P.SCOREDETAILED
         })
     }
     ,
     Network.resizeHorizon = function() {
-        game.state == Network.STATE.PLAYING && E({
+        game.state == Network.STATE.PLAYING && sendMessageDict({
             c: P.HORIZON,
             horizonX: Math.ceil(game.halfScreenX / game.scale),
             horizonY: Math.ceil(game.halfScreenY / game.scale)
@@ -140,9 +140,9 @@
     }
     ;
     var m = function() {
-        game.lagging || game.state == Network.STATE.PLAYING && (i ? t && n && E({
+        game.lagging || game.state == Network.STATE.PLAYING && (i ? t && n && sendMessageDict({
             c: P.ACK
-        }, true) : E({
+        }, true) : sendMessageDict({
             c: P.ACK
         }),
         i = !i)
@@ -283,7 +283,7 @@
                 break;
             case A.PING:
                 !function(e) {
-                    E({
+                    sendMessageDict({
                         c: P.PONG,
                         num: e
                     })
@@ -370,7 +370,7 @@
         t && n && t.close(),
         (e = new WebSocket(r)).binaryType = "arraybuffer",
         e.onopen = function() {
-            E({
+            sendMessageDict({
                 c: P.LOGIN,
                 protocol: game.protocol,
                 name: game.myName,
@@ -397,14 +397,14 @@
         }
         ,
         e.onmessage = function(e) {
-            y(T(e.data))
+            y(decodeMessageToDict(e.data))
         }
     }
     ;
     var x = function() {
         (t = new WebSocket(r)).binaryType = "arraybuffer";
         t.onopen = function() {
-            E({
+            sendMessageDict({
                 c: P.BACKUP,
                 token: game.myToken
             }, true)
@@ -424,13 +424,13 @@
         }
         ,
         t.onmessage = function(e) {
-            var t = T(e.data);
+            var t = decodeMessageToDict(e.data);
             t.c === A.BACKUP && (n = true),
             t.backup = true,
             y(t)
         }
     }
-      , w = function(e, t) {
+      , encodeNetworkMessage = function(e, t) {
         var n, r = 1, i = [], o = M[e.c];
         if (null == o)
             return null;
@@ -506,7 +506,7 @@
             }
         return a
     }
-      , T = function(e, t) {
+      , decodeMessageToDict = function(e, t) {
         var n = new DataView(e)
           , r = {
             c: n.getUint8(0, true)
@@ -701,8 +701,12 @@
         }
         return r
     }
-      , E = function(n, r) {
-        r ? t.send(w(n)) : e.send(w(n))
+      , sendMessageDict = function(n, useBackupConn) {
+        if(useBackupConn) {
+            t.send(encodeNetworkMessage(n));
+        } else {
+            e.send(encodeNetworkMessage(n));
+        }
     }
       , S = {
         UP: 1,
