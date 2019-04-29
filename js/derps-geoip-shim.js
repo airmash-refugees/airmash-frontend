@@ -8,7 +8,7 @@ $(function()
     $.get('https://get.geojs.io/v1/ip/country.json', null, function(response)
     {
         if(response && response.country) {
-            window.game.myFlag = 'NL';
+            window.game.myFlag = response.country;
         }
     });
 });
