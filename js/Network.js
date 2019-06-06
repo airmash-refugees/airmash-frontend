@@ -8,8 +8,8 @@
       , s = -1
       , a = -1
       , l = 0
-      , u = {}
-      , c = 0
+      , messageTombstoneMap = {}
+      , lastTombstoneGcTime = 0
       , h = 0
       , d = 0
       , p = false
@@ -114,8 +114,8 @@
         s = -1,
         a = -1,
         l = 0,
-        u = {},
-        c = 0,
+        messageTombstoneMap = {},
+        lastTombstoneGcTime = 0,
         h = 0,
         d = 0,
         p = false,
@@ -341,16 +341,25 @@
         }
         1 == e.type ? Games.showBTRWin(t) : 2 == e.type && Games.showCTFWin(t)
     }
-      , shouldDiscardTimestampedMessage = function(e) {
-        var t = performance.now()
-          , n = e.c + "_" + e.clock + "_" + e.posX + "_" + e.posY + "_" + e.rot + "_" + e.speedX + "_" + e.speedY;
-        if (t - c > 15e3) {
-            for (var r in u)
-                t - u[r] > 3e4 && delete u[r];
-            c = t
+      , shouldDiscardTimestampedMessage = function(msg) {
+        var msgTombstone = msg.c + "_" + msg.clock + "_" + msg.posX + "_" + msg.posY + "_" + msg.rot + "_" + msg.speedX + "_" + msg.speedY;
+        var now = performance.now();
+
+        if((now - lastTombstoneGcTime) > 15e3) {
+            for(var key in messageTombstoneMap) {
+                if((now - messageTombstoneMap[key]) > 3e4) {
+                    delete messageTombstoneMap[key];
+                }
+            }
+            lastTombstoneGcTime = now;
         }
-        return null != u[n] || (u[n] = t,
-        false)
+
+        if(messageTombstoneMap[msgTombstone] != null) {
+            return true;
+        } else {
+            messageTombstoneMap[msgTombstone] = now;
+            return false;
+        }
     };
     Network.reconnectMessage = function() {
         game.reloading || UI.showMessage("alert", '<span class="info">DISCONNECTED</span>Connection reset<br><span class="button" onclick="Network.reconnect()">RECONNECT</span>', 6e5)
