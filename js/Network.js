@@ -15,87 +15,87 @@
       , lastReceivedError = false
       , f = 2e3
       , g = 2e3;
-    Network.sendKey = function(e, r) {
+    Network.sendKey = function(keyCode, isPressed) {
         if (game.state == Network.STATE.PLAYING) {
             sendKeyCount++;
             var msg = {
-                c: ClientMessage.KEY,
+                c: ClientPacket.KEY,
                 seq: sendKeyCount,
-                key: KeyCodes[e],
-                state: r
+                key: KeyCodes[keyCode],
+                state: isPressed
             };
-            null != game.spectatingID && r && ("RIGHT" == e ? Network.spectatePrev() : "LEFT" == e && Network.spectateNext()),
+            null != game.spectatingID && isPressed && ("RIGHT" == keyCode ? Network.spectatePrev() : "LEFT" == keyCode && Network.spectateNext()),
             sendMessageDict(msg),
             backupSock && backupSockIsConnected && sendMessageDict(msg, true)
         }
     }
     ,
-    Network.sendChat = function(e) {
+    Network.sendChat = function(text) {
         game.state == Network.STATE.PLAYING && sendMessageDict({
-            c: ClientMessage.CHAT,
-            text: e
+            c: ClientPacket.CHAT,
+            text: text
         })
     }
     ,
-    Network.sendWhisper = function(e, t) {
+    Network.sendWhisper = function(playerId, text) {
         game.state == Network.STATE.PLAYING && sendMessageDict({
-            c: ClientMessage.WHISPER,
-            id: e,
-            text: t
+            c: ClientPacket.WHISPER,
+            id: playerId,
+            text: text
         })
     }
     ,
-    Network.sendSay = function(e) {
+    Network.sendSay = function(text) {
         game.state == Network.STATE.PLAYING && sendMessageDict({
-            c: ClientMessage.SAY,
-            text: e
+            c: ClientPacket.SAY,
+            text: text
         })
     }
     ,
-    Network.sendTeam = function(e) {
+    Network.sendTeam = function(text) {
         game.state == Network.STATE.PLAYING && sendMessageDict({
-            c: ClientMessage.TEAMCHAT,
-            text: e
+            c: ClientPacket.TEAMCHAT,
+            text: text
         })
     }
     ,
-    Network.sendCommand = function(e, t) {
-        game.state == Network.STATE.PLAYING && ("flag" === e && (game.lastFlagSet = t),
+    Network.sendCommand = function(com, data) {
+        game.state == Network.STATE.PLAYING && ("flag" === com && (game.lastFlagSet = data),
         sendMessageDict({
-            c: ClientMessage.COMMAND,
-            com: e,
-            data: t
+            c: ClientPacket.COMMAND,
+            com: com,
+            data: data
         }))
     }
     ,
-    Network.voteMute = function(e) {
+    Network.voteMute = function(playerId) {
         game.state == Network.STATE.PLAYING && sendMessageDict({
-            c: ClientMessage.VOTEMUTE,
-            id: e
+            c: ClientPacket.VOTEMUTE,
+            id: playerId
         })
     }
     ,
-    Network.force = function(e) {
+    Network.force = function(repelMsg) {
         var t;
-        Players.network(ServerMessage.PLAYER_UPDATE, e);
-        for (t in e.players)
-            Players.network(ServerMessage.PLAYER_UPDATE, e.players[t]);
-        for (t in e.mobs)
-            Mobs.network(e.mobs[t]);
-        var n = new Vector(e.posX,e.posY);
+        Players.network(ServerPacket.PLAYER_UPDATE, repelMsg);
+        for (t in repelMsg.players)
+            Players.network(ServerPacket.PLAYER_UPDATE, repelMsg.players[t]);
+        for (t in repelMsg.mobs)
+            Mobs.network(repelMsg.mobs[t]);
+        var n = new Vector(repelMsg.posX,repelMsg.posY);
         Particles.spiritShockwave(n),
         Sound.effectRepel(n)
     }
     ,
     Network.getScores = function() {
         game.state == Network.STATE.PLAYING && sendMessageDict({
-            c: ClientMessage.SCOREDETAILED
+            c: ClientPacket.SCOREDETAILED
         })
     }
     ,
     Network.resizeHorizon = function() {
         game.state == Network.STATE.PLAYING && sendMessageDict({
-            c: ClientMessage.HORIZON,
+            c: ClientPacket.HORIZON,
             horizonX: Math.ceil(game.halfScreenX / game.scale),
             horizonY: Math.ceil(game.halfScreenY / game.scale)
         })
@@ -141,9 +141,9 @@
     ;
     var sendRegularAckMsg = function() {
         game.lagging || game.state == Network.STATE.PLAYING && (shouldSendNextAckOnBackupSock ? backupSock && backupSockIsConnected && sendMessageDict({
-            c: ClientMessage.ACK
+            c: ClientPacket.ACK
         }, true) : sendMessageDict({
-            c: ClientMessage.ACK
+            c: ClientPacket.ACK
         }),
         shouldSendNextAckOnBackupSock = !shouldSendNextAckOnBackupSock)
     }
@@ -155,9 +155,9 @@
         }
     }
       , dispatchIncomingMessage = function(msg) {
-        if (game.state == Network.STATE.PLAYING || msg.c == ServerMessage.LOGIN || msg.c == ServerMessage.ERROR) {
-            if ((msg.c == ServerMessage.PLAYER_UPDATE || msg.c == ServerMessage.PLAYER_FIRE || msg.c == ServerMessage.EVENT_BOOST || msg.c == ServerMessage.EVENT_BOUNCE) && msg.id == game.myID || msg.c == ServerMessage.PING) {
-                if (msg.c != ServerMessage.PING && shouldDiscardTimestampedMessage(msg))
+        if (game.state == Network.STATE.PLAYING || msg.c == ServerPacket.LOGIN || msg.c == ServerPacket.ERROR) {
+            if ((msg.c == ServerPacket.PLAYER_UPDATE || msg.c == ServerPacket.PLAYER_FIRE || msg.c == ServerPacket.EVENT_BOOST || msg.c == ServerPacket.EVENT_BOUNCE) && msg.id == game.myID || msg.c == ServerPacket.PING) {
+                if (msg.c != ServerPacket.PING && shouldDiscardTimestampedMessage(msg))
                     return;
                 game.timeNetwork = performance.now(),
                 oldTimeNetwork = game.timeNetwork,
@@ -181,34 +181,34 @@
                     game.jitter = curPacketDivClk - lastPacketDivClk - (game.timeNetwork - lastPacketTime) - jitterMemory)
                 }(msg.clock / 100);
             switch (msg.c) {
-            case ServerMessage.PLAYER_UPDATE:
-            case ServerMessage.PLAYER_FIRE:
-            case ServerMessage.CHAT_SAY:
-            case ServerMessage.PLAYER_RESPAWN:
-            case ServerMessage.PLAYER_FLAG:
-            case ServerMessage.EVENT_BOOST:
-            case ServerMessage.EVENT_BOUNCE:
+            case ServerPacket.PLAYER_UPDATE:
+            case ServerPacket.PLAYER_FIRE:
+            case ServerPacket.CHAT_SAY:
+            case ServerPacket.PLAYER_RESPAWN:
+            case ServerPacket.PLAYER_FLAG:
+            case ServerPacket.EVENT_BOOST:
+            case ServerPacket.EVENT_BOUNCE:
                 if (Players.network(msg.c, msg),
-                msg.c === ServerMessage.PLAYER_FIRE) {
+                msg.c === ServerPacket.PLAYER_FIRE) {
                     for (var t = 0; t < msg.projectiles.length; t++)
-                        msg.projectiles[t].c = ServerMessage.PLAYER_FIRE,
+                        msg.projectiles[t].c = ServerPacket.PLAYER_FIRE,
                         Mobs.add(msg.projectiles[t]);
                     msg.projectiles.length > 0 && Sound.missileLaunch(new Vector(msg.projectiles[0].posX,msg.projectiles[0].posY), msg.projectiles[0].type)
                 }
                 break;
-            case ServerMessage.LOGIN:
-                !function(e) {
+            case ServerPacket.LOGIN:
+                !function(msg) {
                     ackIntervalId = setInterval(sendRegularAckMsg, 50);
-                    game.myID = e.id;
-                    game.myTeam = e.team;
-                    game.myToken = e.token;
+                    game.myID = msg.id;
+                    game.myTeam = msg.team;
+                    game.myToken = msg.token;
                     game.state = Network.STATE.PLAYING;
-                    game.roomName = e.room;
-                    game.gameType = e.type;
+                    game.roomName = msg.room;
+                    game.gameType = msg.type;
                     game.spectatingID = null;
                     game.myLevel = 0;
                     Games.prep();
-                    lastPacketDivClk = e.clock / 100;
+                    lastPacketDivClk = msg.clock / 100;
                     lastPacketTime = performance.now();
                     initBackupSock();
                 }(msg),
@@ -216,134 +216,134 @@
                 for (t = 0; t < msg.players.length; t++)
                     Players.add(msg.players[t], true);
                 break;
-            case ServerMessage.ERROR:
+            case ServerPacket.ERROR:
                 UI.errorHandler(msg);
                 break;
-            case ServerMessage.PLAYER_NEW:
+            case ServerPacket.PLAYER_NEW:
                 Players.add(msg);
                 break;
-            case ServerMessage.PLAYER_LEAVE:
+            case ServerPacket.PLAYER_LEAVE:
                 Players.destroy(msg.id);
                 break;
-            case ServerMessage.PLAYER_TYPE:
+            case ServerPacket.PLAYER_TYPE:
                 Players.changeType(msg);
                 break;
-            case ServerMessage.PLAYER_HIT:
+            case ServerPacket.PLAYER_HIT:
                 Players.impact(msg),
                 200 != msg.type && Mobs.destroy(msg);
                 break;
-            case ServerMessage.PLAYER_KILL:
+            case ServerPacket.PLAYER_KILL:
                 Players.kill(msg);
                 break;
-            case ServerMessage.PLAYER_UPGRADE:
+            case ServerPacket.PLAYER_UPGRADE:
                 UI.updateUpgrades([msg.speed, msg.defense, msg.energy, msg.missile], msg.upgrades, msg.type);
                 break;
-            case ServerMessage.PLAYER_POWERUP:
+            case ServerPacket.PLAYER_POWERUP:
                 Players.powerup(msg);
                 break;
-            case ServerMessage.PLAYER_LEVEL:
+            case ServerPacket.PLAYER_LEVEL:
                 Players.updateLevel(msg);
                 break;
-            case ServerMessage.PLAYER_RETEAM:
+            case ServerPacket.PLAYER_RETEAM:
                 for (t = 0; t < msg.players.length; t++)
                     Players.reteam(msg.players[t]);
                 break;
-            case ServerMessage.EVENT_REPEL:
+            case ServerPacket.EVENT_REPEL:
                 Network.force(msg);
                 break;
-            case ServerMessage.EVENT_LEAVEHORIZON:
+            case ServerPacket.EVENT_LEAVEHORIZON:
                 0 == msg.type ? Players.leaveHorizon(msg) : Mobs.destroy(msg);
                 break;
-            case ServerMessage.EVENT_STEALTH:
+            case ServerPacket.EVENT_STEALTH:
                 Players.stealth(msg);
                 break;
-            case ServerMessage.MOB_UPDATE:
-            case ServerMessage.MOB_UPDATE_STATIONARY:
+            case ServerPacket.MOB_UPDATE:
+            case ServerPacket.MOB_UPDATE_STATIONARY:
                 Mobs.network(msg);
                 break;
-            case ServerMessage.MOB_DESPAWN:
+            case ServerPacket.MOB_DESPAWN:
                 Mobs.despawn(msg);
                 break;
-            case ServerMessage.MOB_DESPAWN_COORDS:
+            case ServerPacket.MOB_DESPAWN_COORDS:
                 Mobs.destroy(msg);
                 break;
-            case ServerMessage.GAME_FLAG:
+            case ServerPacket.GAME_FLAG:
                 Games.networkFlag(msg);
                 break;
-            case ServerMessage.GAME_PLAYERSALIVE:
+            case ServerPacket.GAME_PLAYERSALIVE:
                 Games.playersAlive(msg.players);
                 break;
-            case ServerMessage.SCORE_UPDATE:
+            case ServerPacket.SCORE_UPDATE:
                 UI.newScore(msg);
                 break;
-            case ServerMessage.SCORE_BOARD:
+            case ServerPacket.SCORE_BOARD:
                 UI.scoreboardUpdate(msg.data, msg.rankings, config.maxScoreboard),
                 Players.updateBadges(msg.data);
                 break;
-            case ServerMessage.SCORE_DETAILED:
-            case ServerMessage.SCORE_DETAILED_CTF:
-            case ServerMessage.SCORE_DETAILED_BTR:
+            case ServerPacket.SCORE_DETAILED:
+            case ServerPacket.SCORE_DETAILED_CTF:
+            case ServerPacket.SCORE_DETAILED_BTR:
                 UI.updateScore(msg);
                 break;
-            case ServerMessage.PING:
-                !function(e) {
+            case ServerPacket.PING:
+                !function(num) {
                     sendMessageDict({
-                        c: ClientMessage.PONG,
-                        num: e
+                        c: ClientPacket.PONG,
+                        num: num
                     })
                 }(msg.num);
                 break;
-            case ServerMessage.PING_RESULT:
+            case ServerPacket.PING_RESULT:
                 UI.updateStats(msg);
                 break;
-            case ServerMessage.CHAT_PUBLIC:
+            case ServerPacket.CHAT_PUBLIC:
                 if (config.mobile)
                     return;
                 Players.chat(msg);
                 break;
-            case ServerMessage.CHAT_TEAM:
+            case ServerPacket.CHAT_TEAM:
                 if (config.mobile)
                     return;
                 Players.teamChat(msg);
                 break;
-            case ServerMessage.CHAT_WHISPER:
+            case ServerPacket.CHAT_WHISPER:
                 if (config.mobile)
                     return;
                 Players.whisper(msg);
                 break;
-            case ServerMessage.CHAT_VOTEMUTEPASSED:
+            case ServerPacket.CHAT_VOTEMUTEPASSED:
                 if (config.mobile)
                     return;
                 Players.votemutePass(msg);
                 break;
-            case ServerMessage.CHAT_VOTEMUTED:
+            case ServerPacket.CHAT_VOTEMUTED:
                 if (config.mobile)
                     return;
                 return void UI.chatMuted();
-            case ServerMessage.SERVER_MESSAGE:
+            case ServerPacket.SERVER_MESSAGE:
                 UI.serverMessage(msg);
                 break;
-            case ServerMessage.SERVER_CUSTOM:
+            case ServerPacket.SERVER_CUSTOM:
                 handleCustomMessage(msg);
                 break;
-            case ServerMessage.GAME_SPECTATE:
+            case ServerPacket.GAME_SPECTATE:
                 Games.spectate(msg.id);
                 break;
-            case ServerMessage.GAME_FIREWALL:
+            case ServerPacket.GAME_FIREWALL:
                 Games.handleFirewall(msg);
                 break;
-            case ServerMessage.COMMAND_REPLY:
+            case ServerPacket.COMMAND_REPLY:
                 UI.showCommandReply(msg)
             }
         }
     }
       , handleCustomMessage = function(msg) {
         try {
-            var t = JSON.parse(msg.data)
+            var parsedData = JSON.parse(msg.data)
         } catch (e) {
             return
         }
-        1 == msg.type ? Games.showBTRWin(t) : 2 == msg.type && Games.showCTFWin(t)
+        1 == msg.type ? Games.showBTRWin(parsedData) : 2 == msg.type && Games.showCTFWin(parsedData)
     }
       , shouldDiscardTimestampedMessage = function(msg) {
         var msgTombstone = msg.c + "_" + msg.clock + "_" + msg.posX + "_" + msg.posY + "_" + msg.rot + "_" + msg.speedX + "_" + msg.speedY;
@@ -384,7 +384,7 @@
         (primarySock = new WebSocket(currentSockUrl)).binaryType = "arraybuffer",
         primarySock.onopen = function() {
             sendMessageDict({
-                c: ClientMessage.LOGIN,
+                c: ClientPacket.LOGIN,
                 protocol: game.protocol,
                 name: game.myName,
                 session: config.settings.session ? config.settings.session : "none",
@@ -418,7 +418,7 @@
         (backupSock = new WebSocket(currentSockUrl)).binaryType = "arraybuffer";
         backupSock.onopen = function() {
             sendMessageDict({
-                c: ClientMessage.BACKUP,
+                c: ClientPacket.BACKUP,
                 token: game.myToken
             }, true)
         }
@@ -438,7 +438,7 @@
         ,
         backupSock.onmessage = function(sockMsg) {
             var msg = decodeMessageToDict(sockMsg.data);
-            msg.c === ServerMessage.BACKUP && (backupSockIsConnected = true),
+            msg.c === ServerPacket.BACKUP && (backupSockIsConnected = true),
             msg.backup = true,
             dispatchIncomingMessage(msg)
         }
@@ -449,28 +449,28 @@
             return null;
         for (n = 0; n < schema.length; n++)
             switch (schema[n][1]) {
-            case FieldTypeCode.text:
+            case FieldType.text:
                 var s = Tools.encodeUTF8(msg[schema[n][0]]);
                 encodedStrings.push(s),
                 msgLen += 1 + s.length;
                 break;
-            case FieldTypeCode.array:
-            case FieldTypeCode.arraysmall:
+            case FieldType.array:
+            case FieldType.arraysmall:
                 break;
-            case FieldTypeCode.uint8:
+            case FieldType.uint8:
                 msgLen += 1;
                 break;
-            case FieldTypeCode.uint16:
+            case FieldType.uint16:
                 msgLen += 2;
                 break;
-            case FieldTypeCode.uint32:
-            case FieldTypeCode.float32:
+            case FieldType.uint32:
+            case FieldType.float32:
                 msgLen += 4;
                 break;
-            case FieldTypeCode.float64:
+            case FieldType.float64:
                 msgLen += 8;
                 break;
-            case FieldTypeCode.boolean:
+            case FieldType.boolean:
                 msgLen += 1
             }
         var buf = new ArrayBuffer(msgLen)
@@ -480,7 +480,7 @@
         for (dataView.setUint8(0, msg.c, true),
         n = 0; n < schema.length; n++)
             switch (schema[n][1]) {
-            case FieldTypeCode.text:
+            case FieldType.text:
                 var h = encodedStrings[curEncodedString].length;
                 dataView.setUint8(outputOffset, h, true),
                 outputOffset += 1;
@@ -490,30 +490,30 @@
                 curEncodedString++,
                 outputOffset += h;
                 break;
-            case FieldTypeCode.array:
-            case FieldTypeCode.arraysmall:
+            case FieldType.array:
+            case FieldType.arraysmall:
                 break;
-            case FieldTypeCode.uint8:
+            case FieldType.uint8:
                 dataView.setUint8(outputOffset, msg[schema[n][0]], true),
                 outputOffset += 1;
                 break;
-            case FieldTypeCode.uint16:
+            case FieldType.uint16:
                 dataView.setUint16(outputOffset, msg[schema[n][0]], true),
                 outputOffset += 2;
                 break;
-            case FieldTypeCode.uint32:
+            case FieldType.uint32:
                 dataView.setUint32(outputOffset, msg[schema[n][0]], true),
                 outputOffset += 4;
                 break;
-            case FieldTypeCode.float32:
+            case FieldType.float32:
                 dataView.setFloat32(outputOffset, msg[schema[n][0]], true),
                 outputOffset += 4;
                 break;
-            case FieldTypeCode.float64:
+            case FieldType.float64:
                 dataView.setFloat64(outputOffset, msg[schema[n][0]], true),
                 outputOffset += 8;
                 break;
-            case FieldTypeCode.boolean:
+            case FieldType.boolean:
                 dataView.setUint8(outputOffset, false === msg[schema[n][0]] ? 0 : 1),
                 outputOffset += 1
             }
@@ -524,189 +524,189 @@
           , msg = {
             c: dataView.getUint8(0, true)
         }
-          , i = 1
+          , inputPos = 1
           , schema = ServerMessageSchema[msg.c];
         if (null == schema)
             return null;
-        for (var s = 0; s < schema.length; s++) {
-            var a = schema[s][0];
-            switch (schema[s][1]) {
-            case FieldTypeCode.text:
-            case FieldTypeCode.textbig:
-                if (schema[s][1] == FieldTypeCode.text) {
-                    var l = dataView.getUint8(i, true);
-                    i += 1
+        for (var fieldIdx = 0; fieldIdx < schema.length; fieldIdx++) {
+            var fieldName = schema[fieldIdx][0];
+            switch (schema[fieldIdx][1]) {
+            case FieldType.text:
+            case FieldType.textbig:
+                if (schema[fieldIdx][1] == FieldType.text) {
+                    var l = dataView.getUint8(inputPos, true);
+                    inputPos += 1
                 } else {
-                    l = dataView.getUint16(i, true);
-                    i += 2
+                    l = dataView.getUint16(inputPos, true);
+                    inputPos += 2
                 }
                 for (var u = new Uint8Array(l), c = 0; c < l; c++)
-                    u[c] = dataView.getUint8(i + c, true);
+                    u[c] = dataView.getUint8(inputPos + c, true);
                 var h = Tools.decodeUTF8(u);
-                msg[a] = h,
-                i += l;
+                msg[fieldName] = h,
+                inputPos += l;
                 break;
-            case FieldTypeCode.array:
-            case FieldTypeCode.arraysmall:
-                if (schema[s][1] == FieldTypeCode.arraysmall) {
-                    var d = dataView.getUint8(i, true);
-                    i += 1
+            case FieldType.array:
+            case FieldType.arraysmall:
+                if (schema[fieldIdx][1] == FieldType.arraysmall) {
+                    var d = dataView.getUint8(inputPos, true);
+                    inputPos += 1
                 } else {
-                    d = dataView.getUint16(i, true);
-                    i += 2
+                    d = dataView.getUint16(inputPos, true);
+                    inputPos += 2
                 }
-                msg[a] = [];
-                for (var p = schema[s][2], f = 0; f < d; f++) {
+                msg[fieldName] = [];
+                for (var p = schema[fieldIdx][2], f = 0; f < d; f++) {
                     for (var g = {}, m = 0; m < p.length; m++) {
                         var v = p[m][0];
                         switch (p[m][1]) {
-                        case FieldTypeCode.text:
-                        case FieldTypeCode.textbig:
-                            if (p[m][1] == FieldTypeCode.text) {
-                                l = dataView.getUint8(i, true);
-                                i += 1
+                        case FieldType.text:
+                        case FieldType.textbig:
+                            if (p[m][1] == FieldType.text) {
+                                l = dataView.getUint8(inputPos, true);
+                                inputPos += 1
                             } else {
-                                l = dataView.getUint16(i, true);
-                                i += 2
+                                l = dataView.getUint16(inputPos, true);
+                                inputPos += 2
                             }
                             for (u = new Uint8Array(l),
                             c = 0; c < l; c++)
-                                u[c] = dataView.getUint8(i + c, true);
+                                u[c] = dataView.getUint8(inputPos + c, true);
                             h = Tools.decodeUTF8(u);
                             g[v] = h,
-                            i += l;
+                            inputPos += l;
                             break;
-                        case FieldTypeCode.uint8:
-                            g[v] = dataView.getUint8(i, true),
-                            i += 1;
+                        case FieldType.uint8:
+                            g[v] = dataView.getUint8(inputPos, true),
+                            inputPos += 1;
                             break;
-                        case FieldTypeCode.uint16:
-                            g[v] = dataView.getUint16(i, true),
-                            i += 2;
+                        case FieldType.uint16:
+                            g[v] = dataView.getUint16(inputPos, true),
+                            inputPos += 2;
                             break;
-                        case FieldTypeCode.uint24:
-                            var y = 256 * dataView.getUint16(i, true);
-                            i += 2,
-                            msg[v] = y + dataView.getUint8(i, true),
-                            i += 1;
+                        case FieldType.uint24:
+                            var y = 256 * dataView.getUint16(inputPos, true);
+                            inputPos += 2,
+                            msg[v] = y + dataView.getUint8(inputPos, true),
+                            inputPos += 1;
                             break;
-                        case FieldTypeCode.uint32:
-                            g[v] = dataView.getUint32(i, true),
-                            i += 4;
+                        case FieldType.uint32:
+                            g[v] = dataView.getUint32(inputPos, true),
+                            inputPos += 4;
                             break;
-                        case FieldTypeCode.float32:
-                            g[v] = dataView.getFloat32(i, true),
-                            i += 4;
+                        case FieldType.float32:
+                            g[v] = dataView.getFloat32(inputPos, true),
+                            inputPos += 4;
                             break;
-                        case FieldTypeCode.float64:
-                            g[v] = dataView.getFloat64(i, true),
-                            i += 8;
+                        case FieldType.float64:
+                            g[v] = dataView.getFloat64(inputPos, true),
+                            inputPos += 8;
                             break;
-                        case FieldTypeCode.boolean:
-                            g[v] = 0 != dataView.getUint8(i, true),
-                            i += 1;
+                        case FieldType.boolean:
+                            g[v] = 0 != dataView.getUint8(inputPos, true),
+                            inputPos += 1;
                             break;
-                        case FieldTypeCode.speed:
-                            g[v] = Tools.decodeSpeed(dataView.getUint16(i, true)),
-                            i += 2;
+                        case FieldType.speed:
+                            g[v] = Tools.decodeSpeed(dataView.getUint16(inputPos, true)),
+                            inputPos += 2;
                             break;
-                        case FieldTypeCode.accel:
-                            g[v] = Tools.decodeAccel(dataView.getUint16(i, true)),
-                            i += 2;
+                        case FieldType.accel:
+                            g[v] = Tools.decodeAccel(dataView.getUint16(inputPos, true)),
+                            inputPos += 2;
                             break;
-                        case FieldTypeCode.coordx:
-                            g[v] = Tools.decodeCoordX(dataView.getUint16(i, true)),
-                            i += 2;
+                        case FieldType.coordx:
+                            g[v] = Tools.decodeCoordX(dataView.getUint16(inputPos, true)),
+                            inputPos += 2;
                             break;
-                        case FieldTypeCode.coordy:
-                            g[v] = Tools.decodeCoordY(dataView.getUint16(i, true)),
-                            i += 2;
+                        case FieldType.coordy:
+                            g[v] = Tools.decodeCoordY(dataView.getUint16(inputPos, true)),
+                            inputPos += 2;
                             break;
-                        case FieldTypeCode.coord24:
-                            y = 256 * dataView.getUint16(i, true);
-                            i += 2,
-                            msg[v] = Tools.decodeCoord24(y + dataView.getUint8(i, true)),
-                            i += 1;
+                        case FieldType.coord24:
+                            y = 256 * dataView.getUint16(inputPos, true);
+                            inputPos += 2,
+                            msg[v] = Tools.decodeCoord24(y + dataView.getUint8(inputPos, true)),
+                            inputPos += 1;
                             break;
-                        case FieldTypeCode.rotation:
-                            g[v] = Tools.decodeRotation(dataView.getUint16(i, true)),
-                            i += 2;
+                        case FieldType.rotation:
+                            g[v] = Tools.decodeRotation(dataView.getUint16(inputPos, true)),
+                            inputPos += 2;
                             break;
-                        case FieldTypeCode.regen:
-                            g[v] = Tools.decodeRegen(dataView.getUint16(i, true)),
-                            i += 2;
+                        case FieldType.regen:
+                            g[v] = Tools.decodeRegen(dataView.getUint16(inputPos, true)),
+                            inputPos += 2;
                             break;
-                        case FieldTypeCode.healthnergy:
-                            g[v] = Tools.decodeHealthnergy(dataView.getUint8(i, true)),
-                            i += 1
+                        case FieldType.healthnergy:
+                            g[v] = Tools.decodeHealthnergy(dataView.getUint8(inputPos, true)),
+                            inputPos += 1
                         }
                     }
-                    msg[a].push(g)
+                    msg[fieldName].push(g)
                 }
                 break;
-            case FieldTypeCode.uint8:
-                msg[a] = dataView.getUint8(i, true),
-                i += 1;
+            case FieldType.uint8:
+                msg[fieldName] = dataView.getUint8(inputPos, true),
+                inputPos += 1;
                 break;
-            case FieldTypeCode.uint16:
-                msg[a] = dataView.getUint16(i, true),
-                i += 2;
+            case FieldType.uint16:
+                msg[fieldName] = dataView.getUint16(inputPos, true),
+                inputPos += 2;
                 break;
-            case FieldTypeCode.uint24:
-                y = 256 * dataView.getUint16(i, true);
-                i += 2,
-                msg[a] = y + dataView.getUint8(i, true),
-                i += 1;
+            case FieldType.uint24:
+                y = 256 * dataView.getUint16(inputPos, true);
+                inputPos += 2,
+                msg[fieldName] = y + dataView.getUint8(inputPos, true),
+                inputPos += 1;
                 break;
-            case FieldTypeCode.uint32:
-                msg[a] = dataView.getUint32(i, true),
-                i += 4;
+            case FieldType.uint32:
+                msg[fieldName] = dataView.getUint32(inputPos, true),
+                inputPos += 4;
                 break;
-            case FieldTypeCode.float32:
-                msg[a] = dataView.getFloat32(i, true),
-                i += 4;
+            case FieldType.float32:
+                msg[fieldName] = dataView.getFloat32(inputPos, true),
+                inputPos += 4;
                 break;
-            case FieldTypeCode.float64:
-                msg[a] = dataView.getFloat64(i, true),
-                i += 8;
+            case FieldType.float64:
+                msg[fieldName] = dataView.getFloat64(inputPos, true),
+                inputPos += 8;
                 break;
-            case FieldTypeCode.boolean:
-                msg[a] = 0 != dataView.getUint8(i, true),
-                i += 1;
+            case FieldType.boolean:
+                msg[fieldName] = 0 != dataView.getUint8(inputPos, true),
+                inputPos += 1;
                 break;
-            case FieldTypeCode.speed:
-                msg[a] = Tools.decodeSpeed(dataView.getUint16(i, true)),
-                i += 2;
+            case FieldType.speed:
+                msg[fieldName] = Tools.decodeSpeed(dataView.getUint16(inputPos, true)),
+                inputPos += 2;
                 break;
-            case FieldTypeCode.accel:
-                msg[a] = Tools.decodeAccel(dataView.getUint16(i, true)),
-                i += 2;
+            case FieldType.accel:
+                msg[fieldName] = Tools.decodeAccel(dataView.getUint16(inputPos, true)),
+                inputPos += 2;
                 break;
-            case FieldTypeCode.coordx:
-                msg[a] = Tools.decodeCoordX(dataView.getUint16(i, true)),
-                i += 2;
+            case FieldType.coordx:
+                msg[fieldName] = Tools.decodeCoordX(dataView.getUint16(inputPos, true)),
+                inputPos += 2;
                 break;
-            case FieldTypeCode.coordy:
-                msg[a] = Tools.decodeCoordY(dataView.getUint16(i, true)),
-                i += 2;
+            case FieldType.coordy:
+                msg[fieldName] = Tools.decodeCoordY(dataView.getUint16(inputPos, true)),
+                inputPos += 2;
                 break;
-            case FieldTypeCode.coord24:
-                y = 256 * dataView.getUint16(i, true);
-                i += 2,
-                msg[a] = Tools.decodeCoord24(y + dataView.getUint8(i, true)),
-                i += 1;
+            case FieldType.coord24:
+                y = 256 * dataView.getUint16(inputPos, true);
+                inputPos += 2,
+                msg[fieldName] = Tools.decodeCoord24(y + dataView.getUint8(inputPos, true)),
+                inputPos += 1;
                 break;
-            case FieldTypeCode.rotation:
-                msg[a] = Tools.decodeRotation(dataView.getUint16(i, true)),
-                i += 2;
+            case FieldType.rotation:
+                msg[fieldName] = Tools.decodeRotation(dataView.getUint16(inputPos, true)),
+                inputPos += 2;
                 break;
-            case FieldTypeCode.regen:
-                msg[a] = Tools.decodeRegen(dataView.getUint16(i, true)),
-                i += 2;
+            case FieldType.regen:
+                msg[fieldName] = Tools.decodeRegen(dataView.getUint16(inputPos, true)),
+                inputPos += 2;
                 break;
-            case FieldTypeCode.healthnergy:
-                msg[a] = Tools.decodeHealthnergy(dataView.getUint8(i, true)),
-                i += 1;
+            case FieldType.healthnergy:
+                msg[fieldName] = Tools.decodeHealthnergy(dataView.getUint8(inputPos, true)),
+                inputPos += 1;
                 break;
             default:
                 return null
@@ -729,7 +729,7 @@
         FIRE: 5,
         SPECIAL: 6
     }
-      , FieldTypeCode = {
+      , FieldType = {
         text: 1,
         textbig: 2,
         array: 3,
@@ -750,7 +750,7 @@
         healthnergy: 18,
         regen: 19
     }
-      , ClientMessage = {
+      , ClientPacket = {
         LOGIN: 0,
         BACKUP: 1,
         HORIZON: 2,
@@ -767,22 +767,22 @@
         LOCALPING: 255
     }
       , ClientMessageSchema = {
-        [ClientMessage.LOGIN]: [["protocol", FieldTypeCode.uint8], ["name", FieldTypeCode.text], ["session", FieldTypeCode.text], ["horizonX", FieldTypeCode.uint16], ["horizonY", FieldTypeCode.uint16], ["flag", FieldTypeCode.text]],
-        [ClientMessage.BACKUP]: [["token", FieldTypeCode.text]],
-        [ClientMessage.HORIZON]: [["horizonX", FieldTypeCode.uint16], ["horizonY", FieldTypeCode.uint16]],
-        [ClientMessage.ACK]: [],
-        [ClientMessage.PONG]: [["num", FieldTypeCode.uint32]],
-        [ClientMessage.KEY]: [["seq", FieldTypeCode.uint32], ["key", FieldTypeCode.uint8], ["state", FieldTypeCode.boolean]],
-        [ClientMessage.COMMAND]: [["com", FieldTypeCode.text], ["data", FieldTypeCode.text]],
-        [ClientMessage.SCOREDETAILED]: [],
-        [ClientMessage.CHAT]: [["text", FieldTypeCode.text]],
-        [ClientMessage.WHISPER]: [["id", FieldTypeCode.uint16], ["text", FieldTypeCode.text]],
-        [ClientMessage.SAY]: [["text", FieldTypeCode.text]],
-        [ClientMessage.TEAMCHAT]: [["text", FieldTypeCode.text]],
-        [ClientMessage.VOTEMUTE]: [["id", FieldTypeCode.uint16]],
-        [ClientMessage.LOCALPING]: [["auth", FieldTypeCode.uint32]]
+        [ClientPacket.LOGIN]: [["protocol", FieldType.uint8], ["name", FieldType.text], ["session", FieldType.text], ["horizonX", FieldType.uint16], ["horizonY", FieldType.uint16], ["flag", FieldType.text]],
+        [ClientPacket.BACKUP]: [["token", FieldType.text]],
+        [ClientPacket.HORIZON]: [["horizonX", FieldType.uint16], ["horizonY", FieldType.uint16]],
+        [ClientPacket.ACK]: [],
+        [ClientPacket.PONG]: [["num", FieldType.uint32]],
+        [ClientPacket.KEY]: [["seq", FieldType.uint32], ["key", FieldType.uint8], ["state", FieldType.boolean]],
+        [ClientPacket.COMMAND]: [["com", FieldType.text], ["data", FieldType.text]],
+        [ClientPacket.SCOREDETAILED]: [],
+        [ClientPacket.CHAT]: [["text", FieldType.text]],
+        [ClientPacket.WHISPER]: [["id", FieldType.uint16], ["text", FieldType.text]],
+        [ClientPacket.SAY]: [["text", FieldType.text]],
+        [ClientPacket.TEAMCHAT]: [["text", FieldType.text]],
+        [ClientPacket.VOTEMUTE]: [["id", FieldType.uint16]],
+        [ClientPacket.LOCALPING]: [["auth", FieldType.uint32]]
     }
-      , ServerMessage = {
+      , ServerPacket = {
         LOGIN: 0,
         BACKUP: 1,
         PING: 5,
@@ -831,53 +831,53 @@
         SERVER_CUSTOM: 91
     }
       , ServerMessageSchema = {
-        [ServerMessage.LOGIN]: [["success", FieldTypeCode.boolean], ["id", FieldTypeCode.uint16], ["team", FieldTypeCode.uint16], ["clock", FieldTypeCode.uint32], ["token", FieldTypeCode.text], ["type", FieldTypeCode.uint8], ["room", FieldTypeCode.text], ["players", FieldTypeCode.array, [["id", FieldTypeCode.uint16], ["status", FieldTypeCode.uint8], ["level", FieldTypeCode.uint8], ["name", FieldTypeCode.text], ["type", FieldTypeCode.uint8], ["team", FieldTypeCode.uint16], ["posX", FieldTypeCode.coordx], ["posY", FieldTypeCode.coordy], ["rot", FieldTypeCode.rotation], ["flag", FieldTypeCode.uint16], ["upgrades", FieldTypeCode.uint8]]]],
-        [ServerMessage.BACKUP]: [],
-        [ServerMessage.PING]: [["clock", FieldTypeCode.uint32], ["num", FieldTypeCode.uint32]],
-        [ServerMessage.PING_RESULT]: [["ping", FieldTypeCode.uint16], ["playerstotal", FieldTypeCode.uint32], ["playersgame", FieldTypeCode.uint32]],
-        [ServerMessage.ACK]: [],
-        [ServerMessage.ERROR]: [["error", FieldTypeCode.uint8]],
-        [ServerMessage.COMMAND_REPLY]: [["type", FieldTypeCode.uint8], ["text", FieldTypeCode.textbig]],
-        [ServerMessage.PLAYER_NEW]: [["id", FieldTypeCode.uint16], ["status", FieldTypeCode.uint8], ["name", FieldTypeCode.text], ["type", FieldTypeCode.uint8], ["team", FieldTypeCode.uint16], ["posX", FieldTypeCode.coordx], ["posY", FieldTypeCode.coordy], ["rot", FieldTypeCode.rotation], ["flag", FieldTypeCode.uint16], ["upgrades", FieldTypeCode.uint8]],
-        [ServerMessage.PLAYER_LEAVE]: [["id", FieldTypeCode.uint16]],
-        [ServerMessage.PLAYER_UPDATE]: [["clock", FieldTypeCode.uint32], ["id", FieldTypeCode.uint16], ["keystate", FieldTypeCode.uint8], ["upgrades", FieldTypeCode.uint8], ["posX", FieldTypeCode.coord24], ["posY", FieldTypeCode.coord24], ["rot", FieldTypeCode.rotation], ["speedX", FieldTypeCode.speed], ["speedY", FieldTypeCode.speed]],
-        [ServerMessage.PLAYER_FIRE]: [["clock", FieldTypeCode.uint32], ["id", FieldTypeCode.uint16], ["energy", FieldTypeCode.healthnergy], ["energyRegen", FieldTypeCode.regen], ["projectiles", FieldTypeCode.arraysmall, [["id", FieldTypeCode.uint16], ["type", FieldTypeCode.uint8], ["posX", FieldTypeCode.coordx], ["posY", FieldTypeCode.coordy], ["speedX", FieldTypeCode.speed], ["speedY", FieldTypeCode.speed], ["accelX", FieldTypeCode.accel], ["accelY", FieldTypeCode.accel], ["maxSpeed", FieldTypeCode.speed]]]],
-        [ServerMessage.PLAYER_SAY]: [["id", FieldTypeCode.uint16], ["text", FieldTypeCode.text]],
-        [ServerMessage.PLAYER_RESPAWN]: [["id", FieldTypeCode.uint16], ["posX", FieldTypeCode.coord24], ["posY", FieldTypeCode.coord24], ["rot", FieldTypeCode.rotation], ["upgrades", FieldTypeCode.uint8]],
-        [ServerMessage.PLAYER_FLAG]: [["id", FieldTypeCode.uint16], ["flag", FieldTypeCode.uint16]],
-        [ServerMessage.PLAYER_HIT]: [["id", FieldTypeCode.uint16], ["type", FieldTypeCode.uint8], ["posX", FieldTypeCode.coordx], ["posY", FieldTypeCode.coordy], ["owner", FieldTypeCode.uint16], ["players", FieldTypeCode.arraysmall, [["id", FieldTypeCode.uint16], ["health", FieldTypeCode.healthnergy], ["healthRegen", FieldTypeCode.regen]]]],
-        [ServerMessage.PLAYER_KILL]: [["id", FieldTypeCode.uint16], ["killer", FieldTypeCode.uint16], ["posX", FieldTypeCode.coordx], ["posY", FieldTypeCode.coordy]],
-        [ServerMessage.PLAYER_UPGRADE]: [["upgrades", FieldTypeCode.uint16], ["type", FieldTypeCode.uint8], ["speed", FieldTypeCode.uint8], ["defense", FieldTypeCode.uint8], ["energy", FieldTypeCode.uint8], ["missile", FieldTypeCode.uint8]],
-        [ServerMessage.PLAYER_TYPE]: [["id", FieldTypeCode.uint16], ["type", FieldTypeCode.uint8]],
-        [ServerMessage.PLAYER_POWERUP]: [["type", FieldTypeCode.uint8], ["duration", FieldTypeCode.uint32]],
-        [ServerMessage.PLAYER_LEVEL]: [["id", FieldTypeCode.uint16], ["type", FieldTypeCode.uint8], ["level", FieldTypeCode.uint8]],
-        [ServerMessage.PLAYER_RETEAM]: [["players", FieldTypeCode.array, [["id", FieldTypeCode.uint16], ["team", FieldTypeCode.uint16]]]],
-        [ServerMessage.GAME_FLAG]: [["type", FieldTypeCode.uint8], ["flag", FieldTypeCode.uint8], ["id", FieldTypeCode.uint16], ["posX", FieldTypeCode.coord24], ["posY", FieldTypeCode.coord24], ["blueteam", FieldTypeCode.uint8], ["redteam", FieldTypeCode.uint8]],
-        [ServerMessage.GAME_SPECTATE]: [["id", FieldTypeCode.uint16]],
-        [ServerMessage.GAME_PLAYERSALIVE]: [["players", FieldTypeCode.uint16]],
-        [ServerMessage.GAME_FIREWALL]: [["type", FieldTypeCode.uint8], ["status", FieldTypeCode.uint8], ["posX", FieldTypeCode.coordx], ["posY", FieldTypeCode.coordy], ["radius", FieldTypeCode.float32], ["speed", FieldTypeCode.float32]],
-        [ServerMessage.EVENT_REPEL]: [["clock", FieldTypeCode.uint32], ["id", FieldTypeCode.uint16], ["posX", FieldTypeCode.coordx], ["posY", FieldTypeCode.coordy], ["rot", FieldTypeCode.rotation], ["speedX", FieldTypeCode.speed], ["speedY", FieldTypeCode.speed], ["energy", FieldTypeCode.healthnergy], ["energyRegen", FieldTypeCode.regen], ["players", FieldTypeCode.arraysmall, [["id", FieldTypeCode.uint16], ["keystate", FieldTypeCode.uint8], ["posX", FieldTypeCode.coordx], ["posY", FieldTypeCode.coordy], ["rot", FieldTypeCode.rotation], ["speedX", FieldTypeCode.speed], ["speedY", FieldTypeCode.speed], ["energy", FieldTypeCode.healthnergy], ["energyRegen", FieldTypeCode.regen], ["playerHealth", FieldTypeCode.healthnergy], ["playerHealthRegen", FieldTypeCode.regen]]], ["mobs", FieldTypeCode.arraysmall, [["id", FieldTypeCode.uint16], ["type", FieldTypeCode.uint8], ["posX", FieldTypeCode.coordx], ["posY", FieldTypeCode.coordy], ["speedX", FieldTypeCode.speed], ["speedY", FieldTypeCode.speed], ["accelX", FieldTypeCode.accel], ["accelY", FieldTypeCode.accel], ["maxSpeed", FieldTypeCode.speed]]]],
-        [ServerMessage.EVENT_BOOST]: [["clock", FieldTypeCode.uint32], ["id", FieldTypeCode.uint16], ["boost", FieldTypeCode.boolean], ["posX", FieldTypeCode.coord24], ["posY", FieldTypeCode.coord24], ["rot", FieldTypeCode.rotation], ["speedX", FieldTypeCode.speed], ["speedY", FieldTypeCode.speed], ["energy", FieldTypeCode.healthnergy], ["energyRegen", FieldTypeCode.regen]],
-        [ServerMessage.EVENT_BOUNCE]: [["clock", FieldTypeCode.uint32], ["id", FieldTypeCode.uint16], ["keystate", FieldTypeCode.uint8], ["posX", FieldTypeCode.coord24], ["posY", FieldTypeCode.coord24], ["rot", FieldTypeCode.rotation], ["speedX", FieldTypeCode.speed], ["speedY", FieldTypeCode.speed]],
-        [ServerMessage.EVENT_STEALTH]: [["id", FieldTypeCode.uint16], ["state", FieldTypeCode.boolean], ["energy", FieldTypeCode.healthnergy], ["energyRegen", FieldTypeCode.regen]],
-        [ServerMessage.EVENT_LEAVEHORIZON]: [["type", FieldTypeCode.uint8], ["id", FieldTypeCode.uint16]],
-        [ServerMessage.MOB_UPDATE]: [["clock", FieldTypeCode.uint32], ["id", FieldTypeCode.uint16], ["type", FieldTypeCode.uint8], ["posX", FieldTypeCode.coordx], ["posY", FieldTypeCode.coordy], ["speedX", FieldTypeCode.speed], ["speedY", FieldTypeCode.speed], ["accelX", FieldTypeCode.accel], ["accelY", FieldTypeCode.accel], ["maxSpeed", FieldTypeCode.speed]],
-        [ServerMessage.MOB_UPDATE_STATIONARY]: [["id", FieldTypeCode.uint16], ["type", FieldTypeCode.uint8], ["posX", FieldTypeCode.float32], ["posY", FieldTypeCode.float32]],
-        [ServerMessage.MOB_DESPAWN]: [["id", FieldTypeCode.uint16], ["type", FieldTypeCode.uint8]],
-        [ServerMessage.MOB_DESPAWN_COORDS]: [["id", FieldTypeCode.uint16], ["type", FieldTypeCode.uint8], ["posX", FieldTypeCode.coordx], ["posY", FieldTypeCode.coordy]],
-        [ServerMessage.SCORE_UPDATE]: [["id", FieldTypeCode.uint16], ["score", FieldTypeCode.uint32], ["earnings", FieldTypeCode.uint32], ["upgrades", FieldTypeCode.uint16], ["totalkills", FieldTypeCode.uint32], ["totaldeaths", FieldTypeCode.uint32]],
-        [ServerMessage.SCORE_BOARD]: [["data", FieldTypeCode.array, [["id", FieldTypeCode.uint16], ["score", FieldTypeCode.uint32], ["level", FieldTypeCode.uint8]]], ["rankings", FieldTypeCode.array, [["id", FieldTypeCode.uint16], ["x", FieldTypeCode.uint8], ["y", FieldTypeCode.uint8]]]],
-        [ServerMessage.SCORE_DETAILED]: [["scores", FieldTypeCode.array, [["id", FieldTypeCode.uint16], ["level", FieldTypeCode.uint8], ["score", FieldTypeCode.uint32], ["kills", FieldTypeCode.uint16], ["deaths", FieldTypeCode.uint16], ["damage", FieldTypeCode.float32], ["ping", FieldTypeCode.uint16]]]],
-        [ServerMessage.SCORE_DETAILED_CTF]: [["scores", FieldTypeCode.array, [["id", FieldTypeCode.uint16], ["level", FieldTypeCode.uint8], ["captures", FieldTypeCode.uint16], ["score", FieldTypeCode.uint32], ["kills", FieldTypeCode.uint16], ["deaths", FieldTypeCode.uint16], ["damage", FieldTypeCode.float32], ["ping", FieldTypeCode.uint16]]]],
-        [ServerMessage.SCORE_DETAILED_BTR]: [["scores", FieldTypeCode.array, [["id", FieldTypeCode.uint16], ["level", FieldTypeCode.uint8], ["alive", FieldTypeCode.boolean], ["wins", FieldTypeCode.uint16], ["score", FieldTypeCode.uint32], ["kills", FieldTypeCode.uint16], ["deaths", FieldTypeCode.uint16], ["damage", FieldTypeCode.float32], ["ping", FieldTypeCode.uint16]]]],
-        [ServerMessage.CHAT_TEAM]: [["id", FieldTypeCode.uint16], ["text", FieldTypeCode.text]],
-        [ServerMessage.CHAT_PUBLIC]: [["id", FieldTypeCode.uint16], ["text", FieldTypeCode.text]],
-        [ServerMessage.CHAT_SAY]: [["id", FieldTypeCode.uint16], ["text", FieldTypeCode.text]],
-        [ServerMessage.CHAT_WHISPER]: [["from", FieldTypeCode.uint16], ["to", FieldTypeCode.uint16], ["text", FieldTypeCode.text]],
-        [ServerMessage.CHAT_VOTEMUTEPASSED]: [["id", FieldTypeCode.uint16]],
-        [ServerMessage.CHAT_VOTEMUTED]: [],
-        [ServerMessage.SERVER_MESSAGE]: [["type", FieldTypeCode.uint8], ["duration", FieldTypeCode.uint32], ["text", FieldTypeCode.textbig]],
-        [ServerMessage.SERVER_CUSTOM]: [["type", FieldTypeCode.uint8], ["data", FieldTypeCode.textbig]]
+        [ServerPacket.LOGIN]: [["success", FieldType.boolean], ["id", FieldType.uint16], ["team", FieldType.uint16], ["clock", FieldType.uint32], ["token", FieldType.text], ["type", FieldType.uint8], ["room", FieldType.text], ["players", FieldType.array, [["id", FieldType.uint16], ["status", FieldType.uint8], ["level", FieldType.uint8], ["name", FieldType.text], ["type", FieldType.uint8], ["team", FieldType.uint16], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["rot", FieldType.rotation], ["flag", FieldType.uint16], ["upgrades", FieldType.uint8]]]],
+        [ServerPacket.BACKUP]: [],
+        [ServerPacket.PING]: [["clock", FieldType.uint32], ["num", FieldType.uint32]],
+        [ServerPacket.PING_RESULT]: [["ping", FieldType.uint16], ["playerstotal", FieldType.uint32], ["playersgame", FieldType.uint32]],
+        [ServerPacket.ACK]: [],
+        [ServerPacket.ERROR]: [["error", FieldType.uint8]],
+        [ServerPacket.COMMAND_REPLY]: [["type", FieldType.uint8], ["text", FieldType.textbig]],
+        [ServerPacket.PLAYER_NEW]: [["id", FieldType.uint16], ["status", FieldType.uint8], ["name", FieldType.text], ["type", FieldType.uint8], ["team", FieldType.uint16], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["rot", FieldType.rotation], ["flag", FieldType.uint16], ["upgrades", FieldType.uint8]],
+        [ServerPacket.PLAYER_LEAVE]: [["id", FieldType.uint16]],
+        [ServerPacket.PLAYER_UPDATE]: [["clock", FieldType.uint32], ["id", FieldType.uint16], ["keystate", FieldType.uint8], ["upgrades", FieldType.uint8], ["posX", FieldType.coord24], ["posY", FieldType.coord24], ["rot", FieldType.rotation], ["speedX", FieldType.speed], ["speedY", FieldType.speed]],
+        [ServerPacket.PLAYER_FIRE]: [["clock", FieldType.uint32], ["id", FieldType.uint16], ["energy", FieldType.healthnergy], ["energyRegen", FieldType.regen], ["projectiles", FieldType.arraysmall, [["id", FieldType.uint16], ["type", FieldType.uint8], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["speedX", FieldType.speed], ["speedY", FieldType.speed], ["accelX", FieldType.accel], ["accelY", FieldType.accel], ["maxSpeed", FieldType.speed]]]],
+        [ServerPacket.PLAYER_SAY]: [["id", FieldType.uint16], ["text", FieldType.text]],
+        [ServerPacket.PLAYER_RESPAWN]: [["id", FieldType.uint16], ["posX", FieldType.coord24], ["posY", FieldType.coord24], ["rot", FieldType.rotation], ["upgrades", FieldType.uint8]],
+        [ServerPacket.PLAYER_FLAG]: [["id", FieldType.uint16], ["flag", FieldType.uint16]],
+        [ServerPacket.PLAYER_HIT]: [["id", FieldType.uint16], ["type", FieldType.uint8], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["owner", FieldType.uint16], ["players", FieldType.arraysmall, [["id", FieldType.uint16], ["health", FieldType.healthnergy], ["healthRegen", FieldType.regen]]]],
+        [ServerPacket.PLAYER_KILL]: [["id", FieldType.uint16], ["killer", FieldType.uint16], ["posX", FieldType.coordx], ["posY", FieldType.coordy]],
+        [ServerPacket.PLAYER_UPGRADE]: [["upgrades", FieldType.uint16], ["type", FieldType.uint8], ["speed", FieldType.uint8], ["defense", FieldType.uint8], ["energy", FieldType.uint8], ["missile", FieldType.uint8]],
+        [ServerPacket.PLAYER_TYPE]: [["id", FieldType.uint16], ["type", FieldType.uint8]],
+        [ServerPacket.PLAYER_POWERUP]: [["type", FieldType.uint8], ["duration", FieldType.uint32]],
+        [ServerPacket.PLAYER_LEVEL]: [["id", FieldType.uint16], ["type", FieldType.uint8], ["level", FieldType.uint8]],
+        [ServerPacket.PLAYER_RETEAM]: [["players", FieldType.array, [["id", FieldType.uint16], ["team", FieldType.uint16]]]],
+        [ServerPacket.GAME_FLAG]: [["type", FieldType.uint8], ["flag", FieldType.uint8], ["id", FieldType.uint16], ["posX", FieldType.coord24], ["posY", FieldType.coord24], ["blueteam", FieldType.uint8], ["redteam", FieldType.uint8]],
+        [ServerPacket.GAME_SPECTATE]: [["id", FieldType.uint16]],
+        [ServerPacket.GAME_PLAYERSALIVE]: [["players", FieldType.uint16]],
+        [ServerPacket.GAME_FIREWALL]: [["type", FieldType.uint8], ["status", FieldType.uint8], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["radius", FieldType.float32], ["speed", FieldType.float32]],
+        [ServerPacket.EVENT_REPEL]: [["clock", FieldType.uint32], ["id", FieldType.uint16], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["rot", FieldType.rotation], ["speedX", FieldType.speed], ["speedY", FieldType.speed], ["energy", FieldType.healthnergy], ["energyRegen", FieldType.regen], ["players", FieldType.arraysmall, [["id", FieldType.uint16], ["keystate", FieldType.uint8], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["rot", FieldType.rotation], ["speedX", FieldType.speed], ["speedY", FieldType.speed], ["energy", FieldType.healthnergy], ["energyRegen", FieldType.regen], ["playerHealth", FieldType.healthnergy], ["playerHealthRegen", FieldType.regen]]], ["mobs", FieldType.arraysmall, [["id", FieldType.uint16], ["type", FieldType.uint8], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["speedX", FieldType.speed], ["speedY", FieldType.speed], ["accelX", FieldType.accel], ["accelY", FieldType.accel], ["maxSpeed", FieldType.speed]]]],
+        [ServerPacket.EVENT_BOOST]: [["clock", FieldType.uint32], ["id", FieldType.uint16], ["boost", FieldType.boolean], ["posX", FieldType.coord24], ["posY", FieldType.coord24], ["rot", FieldType.rotation], ["speedX", FieldType.speed], ["speedY", FieldType.speed], ["energy", FieldType.healthnergy], ["energyRegen", FieldType.regen]],
+        [ServerPacket.EVENT_BOUNCE]: [["clock", FieldType.uint32], ["id", FieldType.uint16], ["keystate", FieldType.uint8], ["posX", FieldType.coord24], ["posY", FieldType.coord24], ["rot", FieldType.rotation], ["speedX", FieldType.speed], ["speedY", FieldType.speed]],
+        [ServerPacket.EVENT_STEALTH]: [["id", FieldType.uint16], ["state", FieldType.boolean], ["energy", FieldType.healthnergy], ["energyRegen", FieldType.regen]],
+        [ServerPacket.EVENT_LEAVEHORIZON]: [["type", FieldType.uint8], ["id", FieldType.uint16]],
+        [ServerPacket.MOB_UPDATE]: [["clock", FieldType.uint32], ["id", FieldType.uint16], ["type", FieldType.uint8], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["speedX", FieldType.speed], ["speedY", FieldType.speed], ["accelX", FieldType.accel], ["accelY", FieldType.accel], ["maxSpeed", FieldType.speed]],
+        [ServerPacket.MOB_UPDATE_STATIONARY]: [["id", FieldType.uint16], ["type", FieldType.uint8], ["posX", FieldType.float32], ["posY", FieldType.float32]],
+        [ServerPacket.MOB_DESPAWN]: [["id", FieldType.uint16], ["type", FieldType.uint8]],
+        [ServerPacket.MOB_DESPAWN_COORDS]: [["id", FieldType.uint16], ["type", FieldType.uint8], ["posX", FieldType.coordx], ["posY", FieldType.coordy]],
+        [ServerPacket.SCORE_UPDATE]: [["id", FieldType.uint16], ["score", FieldType.uint32], ["earnings", FieldType.uint32], ["upgrades", FieldType.uint16], ["totalkills", FieldType.uint32], ["totaldeaths", FieldType.uint32]],
+        [ServerPacket.SCORE_BOARD]: [["data", FieldType.array, [["id", FieldType.uint16], ["score", FieldType.uint32], ["level", FieldType.uint8]]], ["rankings", FieldType.array, [["id", FieldType.uint16], ["x", FieldType.uint8], ["y", FieldType.uint8]]]],
+        [ServerPacket.SCORE_DETAILED]: [["scores", FieldType.array, [["id", FieldType.uint16], ["level", FieldType.uint8], ["score", FieldType.uint32], ["kills", FieldType.uint16], ["deaths", FieldType.uint16], ["damage", FieldType.float32], ["ping", FieldType.uint16]]]],
+        [ServerPacket.SCORE_DETAILED_CTF]: [["scores", FieldType.array, [["id", FieldType.uint16], ["level", FieldType.uint8], ["captures", FieldType.uint16], ["score", FieldType.uint32], ["kills", FieldType.uint16], ["deaths", FieldType.uint16], ["damage", FieldType.float32], ["ping", FieldType.uint16]]]],
+        [ServerPacket.SCORE_DETAILED_BTR]: [["scores", FieldType.array, [["id", FieldType.uint16], ["level", FieldType.uint8], ["alive", FieldType.boolean], ["wins", FieldType.uint16], ["score", FieldType.uint32], ["kills", FieldType.uint16], ["deaths", FieldType.uint16], ["damage", FieldType.float32], ["ping", FieldType.uint16]]]],
+        [ServerPacket.CHAT_TEAM]: [["id", FieldType.uint16], ["text", FieldType.text]],
+        [ServerPacket.CHAT_PUBLIC]: [["id", FieldType.uint16], ["text", FieldType.text]],
+        [ServerPacket.CHAT_SAY]: [["id", FieldType.uint16], ["text", FieldType.text]],
+        [ServerPacket.CHAT_WHISPER]: [["from", FieldType.uint16], ["to", FieldType.uint16], ["text", FieldType.text]],
+        [ServerPacket.CHAT_VOTEMUTEPASSED]: [["id", FieldType.uint16]],
+        [ServerPacket.CHAT_VOTEMUTED]: [],
+        [ServerPacket.SERVER_MESSAGE]: [["type", FieldType.uint8], ["duration", FieldType.uint32], ["text", FieldType.textbig]],
+        [ServerPacket.SERVER_CUSTOM]: [["type", FieldType.uint8], ["data", FieldType.textbig]]
     };
     Network.KEYPACKET = KeyCodes,
     Network.KEYLOOKUP = {
@@ -888,8 +888,8 @@
         5: "FIRE",
         6: "SPECIAL"
     },
-    Network.CLIENTPACKET = ClientMessage,
-    Network.SERVERPACKET = ServerMessage,
+    Network.CLIENTPACKET = ClientPacket,
+    Network.SERVERPACKET = ServerPacket,
     Network.STATE = {
         LOGIN: 1,
         CONNECTING: 2,
