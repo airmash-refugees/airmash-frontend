@@ -152,7 +152,7 @@
         a = performance.now(),
         l = 0)
     }
-      , y = function(e) {
+      , dispatchIncomingMessage = function(e) {
         if (game.state == Network.STATE.PLAYING || e.c == A.LOGIN || e.c == A.ERROR) {
             if ((e.c == A.PLAYER_UPDATE || e.c == A.PLAYER_FIRE || e.c == A.EVENT_BOOST || e.c == A.EVENT_BOUNCE) && e.id == game.myID || e.c == A.PING) {
                 if (e.c != A.PING && _(e))
@@ -397,7 +397,7 @@
         }
         ,
         e.onmessage = function(e) {
-            y(decodeMessageToDict(e.data))
+            dispatchIncomingMessage(decodeMessageToDict(e.data))
         }
     }
     ;
@@ -427,7 +427,7 @@
             var t = decodeMessageToDict(e.data);
             t.c === A.BACKUP && (n = true),
             t.backup = true,
-            y(t)
+            dispatchIncomingMessage(t)
         }
     }
       , encodeNetworkMessage = function(e, t) {
