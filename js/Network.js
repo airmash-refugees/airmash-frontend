@@ -155,7 +155,7 @@
       , dispatchIncomingMessage = function(e) {
         if (game.state == Network.STATE.PLAYING || e.c == A.LOGIN || e.c == A.ERROR) {
             if ((e.c == A.PLAYER_UPDATE || e.c == A.PLAYER_FIRE || e.c == A.EVENT_BOOST || e.c == A.EVENT_BOUNCE) && e.id == game.myID || e.c == A.PING) {
-                if (e.c != A.PING && _(e))
+                if (e.c != A.PING && shouldDiscardTimestampedMessage(e))
                     return;
                 game.timeNetwork = performance.now(),
                 d = game.timeNetwork,
@@ -341,7 +341,7 @@
         }
         1 == e.type ? Games.showBTRWin(t) : 2 == e.type && Games.showCTFWin(t)
     }
-      , _ = function(e) {
+      , shouldDiscardTimestampedMessage = function(e) {
         var t = performance.now()
           , n = e.c + "_" + e.clock + "_" + e.posX + "_" + e.posY + "_" + e.rot + "_" + e.speedX + "_" + e.speedY;
         if (t - c > 15e3) {
