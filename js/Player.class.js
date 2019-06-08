@@ -401,33 +401,33 @@ class Player {
         this.sprites.bubble.cacheAsBitmap = true,
         this.state.bubbleTextWidth = n
     }
-    networkKey(e, data) {
+    networkKey(msgTypeId, updateMsg) {
         this.lastPacket = game.timeNetwork;
         if (1 == this.status) {
             this.revive();
         }
-        if (null != data.posX) {
+        if (null != updateMsg.posX) {
             this.reducedFactor = Tools.reducedFactor();
-            this.pos.x = data.posX;
-            this.pos.y = data.posY;
-            this.rot = data.rot;
-            this.speed.x = data.speedX;
-            this.speed.y = data.speedY;
+            this.pos.x = updateMsg.posX;
+            this.pos.y = updateMsg.posY;
+            this.rot = updateMsg.rot;
+            this.speed.x = updateMsg.speedX;
+            this.speed.y = updateMsg.speedY;
         }
         var n = this.stealthed;
-        if (null != data.keystate) {
-            Tools.decodeKeystate(this, data.keystate);
+        if (null != updateMsg.keystate) {
+            Tools.decodeKeystate(this, updateMsg.keystate);
         }
-        if (null != data.upgrades) {
-            Tools.decodeUpgrades(this, data.upgrades);
+        if (null != updateMsg.upgrades) {
+            Tools.decodeUpgrades(this, updateMsg.upgrades);
             this.updatePowerups();
         }
-        if (null != data.energy) {
-            this.energy = data.energy;
-            this.energyRegen = data.energyRegen;
+        if (null != updateMsg.energy) {
+            this.energy = updateMsg.energy;
+            this.energyRegen = updateMsg.energyRegen;
         }
-        if (null != data.boost) {
-            this.boost = data.boost;
+        if (null != updateMsg.boost) {
+            this.boost = updateMsg.boost;
         }
         if (this.team != game.myTeam && (this.stealthed || n && !this.stealthed)) {
             this.unstealth();
@@ -435,7 +435,7 @@ class Player {
         if (!(this.me() || !n || this.stealthed)) {
             this.unstealth();
         }
-        if (data.c == Network.SERVERPACKET.EVENT_BOUNCE && game.time - this.state.lastBounceSound > 300) {
+        if (updateMsg.c == Network.SERVERPACKET.EVENT_BOUNCE && game.time - this.state.lastBounceSound > 300) {
             this.state.lastBounceSound = game.time;
             Sound.playerImpact(this.pos, this.type, this.speed.length() / config.ships[this.type].maxSpeed);
         }
