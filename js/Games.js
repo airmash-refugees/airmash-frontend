@@ -1,29 +1,29 @@
 (function() {
     var e = false
       , t = false
-      , n = false
-      , r = ["", "Free For All", "Capture The Flag", "Battle Royale"]
-      , i = ["", "ffa", "ctf", "br"]
-      , o = 0
-      , s = {}
+      , gamesSelectorVisible = false
+      , GameDescById = ["", "Free For All", "Capture The Flag", "Battle Royale"]
+      , GameTypeById = ["", "ffa", "ctf", "br"]
+      , totalPlayersOnlineCount = 0
+      , gameHostState = {}
       , a = 0
-      , l = null
-      , u = null
+      , performPingTimerId = null
+      , closestGameRegion = null
       , c = false
-      , h = false
-      , d = null
-      , p = []
-      , f = false
-      , g = {}
-      , m = {}
-      , v = null
-      , y = false
-      , b = {
+      , gamesJsonDataIsLoaded = false
+      , inviteCopiedTimer = null
+      , gamesJsonData = []
+      , isServerMaintenance = false
+      , ctfGameState = {}
+      , firewallHotSmokeSprites = {}
+      , pixiJsGfx = null
+      , minimapIsInitialized = false
+      , firewallStatus = {
         radius: 0,
         pos: Vector.zero(),
         speed: 0
     }
-      , _ = {
+      , unlockedFeature = {
         2: "Custom country flags",
         3: "Emotes",
         4: "Flag Pack #1"
@@ -32,8 +32,8 @@
         $("#playregion").on("click", function(e) {
             Games.updateRegion(true, e)
         }),
-        $("#playtype").on("click", function(e) {
-            Games.updateType(true, e)
+        $("#playtype").on("click", function(event) {
+            Games.updateType(true, event)
         }),
         $("#open-menu").on("click", function(e) {
             Games.popGames(),
@@ -68,16 +68,16 @@
         $("#gotomainpage").on("click", Games.redirRoot),
         $("#lifetime-signin").on("click", Games.redirRoot),
         null != config.settings.session ? Games.playerAuth() : Games.playerGuest(),
-        w(function() {
-            if (h = true,
-            T(),
+        refreshGamesJsonData(function() {
+            if (gamesJsonDataIsLoaded = true,
+            updatePlayersOnlineCount(),
             DEVELOPMENT && "#tony" == window.location.hash)
                 return game.playRegion = "eu",
                 game.playRoom = "ffa1",
                 game.playInvited = true,
                 game.myOriginalName = window.location.hash.substr(1),
                 void Games.start(game.myOriginalName, true);
-            f || (I(),
+            isServerMaintenance || (I(),
             Games.updateRegion(false),
             Games.updateType(false),
             C())
@@ -141,21 +141,21 @@
         window.location = "/"
     }
     ;
-    var w = function(e, t) {
-        var n = "games"; // DERPS
-        t && (n += "?main=1"),
+    var refreshGamesJsonData = function(successCallback, t) {
+        var url = "games"; // DERPS
+        t && (url += "?main=1"),
         $.ajax({
-            url: n,
+            url: url,
             dataType: "json",
             cache: false,
-            success: function(n) {
+            success: function(response) {
                 try {
-                    p = JSON.parse(n.data)
+                    gamesJsonData = JSON.parse(response.data)
                 } catch (e) {
                     return
                 }
-                if ("xx" == game.myFlag && (game.myFlag = n.country),
-                t && game.protocol != n.protocol) {
+                if ("xx" == game.myFlag && (game.myFlag = response.country),
+                t && game.protocol != response.protocol) {
                     if ("#reload" !== window.location.hash)
                         return void Tools.ajaxPost("/clienterror", {
                             type: "protocol"
@@ -169,22 +169,22 @@
                         type: "protocolretry"
                     })
                 }
-                e()
+                successCallback()
             },
             error: function() {}
         })
     }
-      , T = function() {
-        o = 0;
-        for (var e = 0, t = 0; t < p.length; t++)
-            for (var n = 0; n < p[t].games.length; n++)
-                o += p[t].games[n].players,
+      , updatePlayersOnlineCount = function() {
+        totalPlayersOnlineCount = 0;
+        for (var e = 0, t = 0; t < gamesJsonData.length; t++)
+            for (var n = 0; n < gamesJsonData[t].games.length; n++)
+                totalPlayersOnlineCount += gamesJsonData[t].games[n].players,
                 e++;
         if (0 == e)
-            f = true,
+            isServerMaintenance = true,
             UI.showMessage("alert", '<span class="mainerror">We are currently performing server maintenance<br>Please try again in a few minutes</span>', 3e4);
         else {
-            var r = '<div class="item smallerpad">' + o + "</div>player" + (o > 1 ? "s" : "") + " online";
+            var r = '<div class="item smallerpad">' + totalPlayersOnlineCount + "</div>player" + (totalPlayersOnlineCount > 1 ? "s" : "") + " online";
             $("#gameinfo").html(r)
         }
     }
@@ -193,29 +193,29 @@
             return {
                 name: "Closest"
             };
-        for (var t = 0; t < p.length; t++)
-            if (p[t].id === e)
-                return p[t];
+        for (var t = 0; t < gamesJsonData.length; t++)
+            if (gamesJsonData[t].id === e)
+                return gamesJsonData[t];
         return game.playRegion = "closest",
         {
             name: "Closest"
         }
     }
-      , S = function(e, t) {
+      , S = function(e, gameTypeId) {
         var n = E(e);
         if (null == n)
             return null;
         if (null == n.games)
             return null;
         for (var o = 0; o < n.games.length; o++)
-            if (n.games[o].id === t)
+            if (n.games[o].id === gameTypeId)
                 return n.games[o];
-        var s = i.indexOf(t);
+        var s = GameTypeById.indexOf(gameTypeId);
         if (-1 != s)
             for (o = 0; o < n.games.length; o++)
                 if (n.games[o].type == s)
                     return {
-                        name: r[s]
+                        name: GameDescById[s]
                     };
         return null
     }
@@ -256,7 +256,7 @@
     Games.updateRegion = function(n, r) {
         var i = ""
           , o = null;
-        if (h && !f) {
+        if (gamesJsonDataIsLoaded && !isServerMaintenance) {
             if (null != r && (r.stopPropagation(),
             e || Sound.UIClick()),
             n && UI.closeLogin(),
@@ -265,14 +265,14 @@
                 t && Games.updateType(false),
                 i += '<div class="item"><div class="region header">REGION</div><div class="players header">PLAYERS</div><div class="ping header">PING</div><div class="clear"></div></div>';
                 var s = "";
-                null != u && (s = '<span class="autoregion">(' + p[u].name + ")</span>"),
+                null != closestGameRegion && (s = '<span class="autoregion">(' + gamesJsonData[closestGameRegion].name + ")</span>"),
                 i += '<div class="item selectable' + ("closest" === game.playRegion ? " sel" : "") + '" onclick="Games.selectRegion(event, &quot;closest&quot;)"><div class="region chooser">Closest' + s + '</div><div class="clear"></div></div>';
-                for (var a = 0; a < p.length; a++) {
-                    for (var l = 0, c = 0; c < p[a].games.length; c++)
-                        l += p[a].games[c].players;
+                for (var a = 0; a < gamesJsonData.length; a++) {
+                    for (var l = 0, c = 0; c < gamesJsonData[a].games.length; c++)
+                        l += gamesJsonData[a].games[c].players;
                     var d;
-                    d = null == p[a].ping ? "&nbsp;" : Math.round(p[a].ping) + '<span class="ms">ms</span>',
-                    i += '<div class="item selectable' + (game.playRegion === p[a].id ? " sel" : "") + '" onclick="Games.selectRegion(event, &quot;' + p[a].id + '&quot;)"><div class="region chooser">' + p[a].name + '</div><div class="players number">' + l + '</div><div class="ping chooser nopadding">' + d + '</div><div class="clear"></div></div>'
+                    d = null == gamesJsonData[a].ping ? "&nbsp;" : Math.round(gamesJsonData[a].ping) + '<span class="ms">ms</span>',
+                    i += '<div class="item selectable' + (game.playRegion === gamesJsonData[a].id ? " sel" : "") + '" onclick="Games.selectRegion(event, &quot;' + gamesJsonData[a].id + '&quot;)"><div class="region chooser">' + gamesJsonData[a].name + '</div><div class="players number">' + l + '</div><div class="ping chooser nopadding">' + d + '</div><div class="clear"></div></div>'
                 }
                 i += '<div class="item"></div>',
                 o = {
@@ -298,40 +298,40 @@
         }
     }
     ;
-    var P = function() {
-        var e = game.playRegion;
-        if ("closest" === e) {
-            if (null == u)
+    var getSelectedGameId = function() {
+        var gameId = game.playRegion;
+        if ("closest" === gameId) {
+            if (null == closestGameRegion)
                 return null;
-            e = p[u].id
+            gameId = gamesJsonData[closestGameRegion].id
         }
-        return e
+        return gameId
     }
       , M = function(e) {
         var t = '<div class="infott">';
         return 1 == e ? t += "Everyone versus everyone deathmatch. No teams." : 2 == e ? t += "Players split into 2 teams. 2 flags are placed inside each base. The objective is to move the enemy flag from their base to your base." : 3 == e && (t += "Players spawn at random locations all across the map. Destroyed players will not respawn. Last player standing wins."),
         t += '<div class="arrow"></div></div>'
     };
-    Games.updateType = function(n, o) {
+    Games.updateType = function(trueOrFalseOrUndefined, clickEvent) {
         var s = ""
           , a = null;
-        if (h && !f) {
-            if (null != o && (o.stopPropagation(),
+        if (gamesJsonDataIsLoaded && !isServerMaintenance) {
+            if (null != clickEvent && (clickEvent.stopPropagation(),
             t || Sound.UIClick()),
-            n && UI.closeLogin(),
-            null == n && (n = t),
-            n) {
+            trueOrFalseOrUndefined && UI.closeLogin(),
+            null == trueOrFalseOrUndefined && (trueOrFalseOrUndefined = t),
+            trueOrFalseOrUndefined) {
                 e && Games.updateRegion(false),
                 s += '<div class="item"><div class="gametype header">GAME</div><div class="players header">PLAYERS</div><div class="clear"></div></div>';
-                if (null == (p = P()))
+                if (null == (p = getSelectedGameId()))
                     return;
-                null == S(p, game.playRoom) && (game.playRoom = i[1]);
+                null == S(p, game.playRoom) && (game.playRoom = GameTypeById[1]);
                 var l, u, c = E(p).games, d = [[], [], [], [], [], [], [], [], []];
                 for (l = 0; l < c.length; l++)
                     d[c[l].type].push(c[l]);
                 for (l = 1; l < d.length; l++)
                     if (0 != d[l].length)
-                        for (s += '<div class="item selectable' + (i[l] === game.playRoom ? " sel" : "") + '" onclick="Games.selectGame(event, &quot;' + i[l] + '&quot;)"><div class="gametype chooser">' + r[l] + '<span class="infocontainer">&nbsp;<div class="infoicon">' + M(l) + '</div></span></div><div class="clear"></div></div>',
+                        for (s += '<div class="item selectable' + (GameTypeById[l] === game.playRoom ? " sel" : "") + '" onclick="Games.selectGame(event, &quot;' + GameTypeById[l] + '&quot;)"><div class="gametype chooser">' + GameDescById[l] + '<span class="infocontainer">&nbsp;<div class="infoicon">' + M(l) + '</div></span></div><div class="clear"></div></div>',
                         u = 0; u < d[l].length; u++)
                             s += '<div class="item selectable' + (d[l][u].id === game.playRoom ? " sel" : "") + '" onclick="Games.selectGame(event, &quot;' + d[l][u].id + '&quot;)"><div class="gametype chooser">' + d[l][u].nameShort + '</div><div class="players number">' + d[l][u].players + '</div><div class="clear"></div></div>';
                 s += '<div class="item"></div>',
@@ -345,11 +345,11 @@
                 s += '<div class="arrowdown"></div>',
                 s += '<div class="playtop">GAME</div>';
                 var p;
-                if (null == (p = P()))
+                if (null == (p = getSelectedGameId()))
                     return;
                 var g = S(p, game.playRoom);
-                null == g ? (name = r[1],
-                game.playRoom = i[1]) : name = g.name,
+                null == g ? (name = GameDescById[1],
+                game.playRoom = GameTypeById[1]) : name = g.name,
                 s += '<div class="playbottom">' + name + "</div>",
                 a = {
                     width: "190px",
@@ -360,18 +360,18 @@
             }
             $("#playtype").html(s),
             $("#playtype").css(a),
-            t = n
+            t = trueOrFalseOrUndefined
         }
     }
     ,
     Games.popGames = function() {
-        if (!n) {
+        if (!gamesSelectorVisible) {
             UI.closeAllPanels("games");
             var e = A();
             UI.hide("#menu"),
             $("#gameselector").html(e),
             UI.show("#gameselector"),
-            n = true,
+            gamesSelectorVisible = true,
             O(),
             Sound.UIClick()
         }
@@ -386,7 +386,7 @@
         var s, a;
         for (t = 1; t < o.length; t++)
             if (0 != o[t].length)
-                for (e += '<div class="item head"><div class="gametype chooser section">' + r[t] + '<span class="infocontainer">&nbsp;<div class="infoicon">' + M(t) + '</div></span></div><div class="clear"></div></div>',
+                for (e += '<div class="item head"><div class="gametype chooser section">' + GameDescById[t] + '<span class="infocontainer">&nbsp;<div class="infoicon">' + M(t) + '</div></span></div><div class="clear"></div></div>',
                 n = 0; n < o[t].length; n++)
                     o[t][n].id === game.playRoom ? (s = " sel",
                     a = "") : (s = " selectable",
@@ -400,20 +400,20 @@
     }
     ;
     var O = function() {
-        w(function() {
+        refreshGamesJsonData(function() {
             var e = A();
             $("#gameselector").html(e)
         })
     };
     Games.closeGames = function() {
-        n && (UI.hide("#gameselector"),
+        gamesSelectorVisible && (UI.hide("#gameselector"),
         UI.show("#menu"),
-        n = false,
+        gamesSelectorVisible = false,
         Sound.UIClick())
     }
     ,
     Games.toggleGames = function() {
-        n ? Games.closeGames() : Games.popGames()
+        gamesSelectorVisible ? Games.closeGames() : Games.popGames()
     }
     ,
     Games.switchGame = function(e) {
@@ -430,33 +430,36 @@
     }
     ;
     var C = function() {
-        s = {},
+        gameHostState = {},
         a = 0;
-        for (var e, t = 0; t < p.length; t++)
-            e = p[t].games[Tools.randInt(0, p[t].games.length - 1)].host,
-            null == s[e] && (s[e] = {
-                ping: 9999,
-                num: 0,
-                threshold: 0,
-                server: t
-            });
-        Games.performPing(),
-        Games.performPing(),
-        Games.performPing(),
-        l = setInterval(Games.performPing, 300)
+        for (var t = 0; t < gamesJsonData.length; t++) {
+            var host = gamesJsonData[t].games[Tools.randInt(0, gamesJsonData[t].games.length - 1)].host;
+            if(null == gameHostState[host]) {
+                gameHostState[host] = {
+                    ping: 9999,
+                    num: 0,
+                    threshold: 0,
+                    server: t
+                };
+            }
+        }
+        Games.performPing();
+        Games.performPing();
+        Games.performPing();
+        performPingTimerId = setInterval(Games.performPing, 300);
     };
     Games.performPing = function() {
         return; // DERPS
         if (!(a > 3 || c)) {
             var e = 9999
               , t = null;
-            for (var n in s)
-                s[n].num < e && (e = s[n].num,
+            for (var n in gameHostState)
+                gameHostState[n].num < e && (e = gameHostState[n].num,
                 t = n);
             if (e > 6)
-                null != l && clearInterval(l);
+                null != performPingTimerId && clearInterval(performPingTimerId);
             else {
-                s[t].num++;
+                gameHostState[t].num++;
                 var r;
                 r = DEVELOPMENT ? "/ping" : "https://game-" + t + ".airma.sh/ping",
                 R(t, r, function() {
@@ -466,10 +469,10 @@
         }
     }
     ;
-    var R = function(e, t, n) {
-        if (null != s[e] && !c) {
+    var R = function(host, t, n) {
+        if (null != gameHostState[host] && !c) {
             a++;
-            var r = performance.now();
+            var now = performance.now();
             $.ajax({
                 url: t,
                 dataType: "json",
@@ -477,16 +480,16 @@
                 timeout: 2e3,
                 success: function(t) {
                     if (!c && (a--,
-                    1 == t.pong && null != s[e])) {
-                        var i = performance.now() - r;
-                        if (Math.abs(s[e].ping - i) < .1 * i && s[e].threshold++,
-                        s[e].threshold >= 2)
-                            return i < s[e].ping && (p[s[e].server].ping = i,
+                    1 == t.pong && null != gameHostState[host])) {
+                        var i = performance.now() - now;
+                        if (Math.abs(gameHostState[host].ping - i) < .1 * i && gameHostState[host].threshold++,
+                        gameHostState[host].threshold >= 2)
+                            return i < gameHostState[host].ping && (gamesJsonData[gameHostState[host].server].ping = i,
                             Games.findClosest(),
                             Games.updateRegion()),
-                            void delete s[e];
-                        i < s[e].ping && (s[e].ping = i,
-                        p[s[e].server].ping = i,
+                            void delete gameHostState[host];
+                        i < gameHostState[host].ping && (gameHostState[host].ping = i,
+                        gamesJsonData[gameHostState[host].server].ping = i,
                         Games.findClosest(),
                         Games.updateRegion(),
                         null != n && n())
@@ -499,11 +502,11 @@
         }
     };
     Games.findClosest = function() {
-        for (var e = 9999, t = false, n = 0; n < p.length; n++)
-            null != p[n].ping && p[n].ping < e && (e = p[n].ping,
-            u = n,
-            t = true);
-        t && "closest" === game.playRegion && Games.updateType()
+        for (var bestPing = 9999, foundSaneGameRegion = false, n = 0; n < gamesJsonData.length; n++)
+            null != gamesJsonData[n].ping && gamesJsonData[n].ping < bestPing && (bestPing = gamesJsonData[n].ping,
+            closestGameRegion = n,
+            foundSaneGameRegion = true);
+        foundSaneGameRegion && "closest" === game.playRegion && Games.updateType()
     }
     ,
     Games.highlightInput = function(e) {
@@ -525,8 +528,8 @@
     ,
     Games.copyInviteLink = function() {
         D(game.inviteLink) && (UI.show("#invite-copied"),
-        null != d && clearTimeout(d),
-        d = setTimeout(function() {
+        null != inviteCopiedTimer && clearTimeout(inviteCopiedTimer),
+        inviteCopiedTimer = setTimeout(function() {
             UI.hide("#invite-copied")
         }, 2e3))
     }
@@ -557,15 +560,15 @@
         s
     };
     Games.start = function(e, t) {
-        if (!(f || t && game.state == Network.STATE.CONNECTING)) {
+        if (!(isServerMaintenance || t && game.state == Network.STATE.CONNECTING)) {
             var n = game.playRegion
-              , r = P();
+              , r = getSelectedGameId();
             if (null != r) {
                 game.playRegion = r,
-                null != l && clearInterval(l),
+                null != performPingTimerId && clearInterval(performPingTimerId),
                 c = true;
                 var o = game.playRoom
-                  , s = i.indexOf(o);
+                  , s = GameTypeById.indexOf(o);
                 if (-1 != s) {
                     for (var a = E(game.playRegion).games, u = [], h = 0; h < a.length; h++)
                         a[h].type == s && u.push(a[h].id);
@@ -601,7 +604,7 @@
         2 == game.gameType) {
             $("#gamespecific").html('<div class="blueflag"></div><div id="blueflag-name" class="blueflag-player">&nbsp;</div><div class="redflag"></div><div id="redflag-name" class="redflag-player">&nbsp;</div>'),
             UI.show("#gamespecific"),
-            g = {
+            ctfGameState = {
                 flagBlue: {
                     visible: false,
                     playerId: null,
@@ -641,64 +644,64 @@
                     minimapBase: Textures.init("minimapBaseRed")
                 }
             },
-            Graphics.minimapMob(g.flagBlue.minimapBase, g.flagBlue.basePos.x, g.flagBlue.basePos.y),
-            Graphics.minimapMob(g.flagRed.minimapBase, g.flagRed.basePos.x, g.flagRed.basePos.y)
+            Graphics.minimapMob(ctfGameState.flagBlue.minimapBase, ctfGameState.flagBlue.basePos.x, ctfGameState.flagBlue.basePos.y),
+            Graphics.minimapMob(ctfGameState.flagRed.minimapBase, ctfGameState.flagRed.basePos.x, ctfGameState.flagRed.basePos.y)
         } else
             3 == game.gameType && ($("#gamespecific").html(""),
             UI.show("#gamespecific"))
     }
     ,
     Games.wipe = function() {
-        L(),
-        g.flagBlue && g.flagRed && (game.graphics.layers.flags.removeChild(g.flagBlue.sprite),
-        game.graphics.layers.flags.removeChild(g.flagRed.sprite),
-        game.graphics.layers.shadows.removeChild(g.flagBlue.spriteShadow),
-        game.graphics.layers.shadows.removeChild(g.flagRed.spriteShadow),
-        game.graphics.layers.ui3.removeChild(g.flagBlue.minimapSprite),
-        game.graphics.layers.ui3.removeChild(g.flagRed.minimapSprite),
-        game.graphics.layers.ui2.removeChild(g.flagBlue.minimapBase),
-        game.graphics.layers.ui2.removeChild(g.flagRed.minimapBase),
-        g.flagBlue.sprite.destroy(),
-        g.flagRed.sprite.destroy(),
-        g.flagBlue.spriteShadow.destroy(),
-        g.flagRed.spriteShadow.destroy(),
-        g.flagBlue.minimapSprite.destroy(),
-        g.flagRed.minimapSprite.destroy(),
-        g.flagBlue.minimapBase.destroy(),
-        g.flagRed.minimapBase.destroy())
+        deinitMinimapAndFirewall(),
+        ctfGameState.flagBlue && ctfGameState.flagRed && (game.graphics.layers.flags.removeChild(ctfGameState.flagBlue.sprite),
+        game.graphics.layers.flags.removeChild(ctfGameState.flagRed.sprite),
+        game.graphics.layers.shadows.removeChild(ctfGameState.flagBlue.spriteShadow),
+        game.graphics.layers.shadows.removeChild(ctfGameState.flagRed.spriteShadow),
+        game.graphics.layers.ui3.removeChild(ctfGameState.flagBlue.minimapSprite),
+        game.graphics.layers.ui3.removeChild(ctfGameState.flagRed.minimapSprite),
+        game.graphics.layers.ui2.removeChild(ctfGameState.flagBlue.minimapBase),
+        game.graphics.layers.ui2.removeChild(ctfGameState.flagRed.minimapBase),
+        ctfGameState.flagBlue.sprite.destroy(),
+        ctfGameState.flagRed.sprite.destroy(),
+        ctfGameState.flagBlue.spriteShadow.destroy(),
+        ctfGameState.flagRed.spriteShadow.destroy(),
+        ctfGameState.flagBlue.minimapSprite.destroy(),
+        ctfGameState.flagRed.minimapSprite.destroy(),
+        ctfGameState.flagBlue.minimapBase.destroy(),
+        ctfGameState.flagRed.minimapBase.destroy())
     }
     ,
-    Games.networkFlag = function(e) {
-        var t = 1 == e.flag ? g.flagBlue : g.flagRed
-          , n = 1 == e.flag ? "#blueflag-name" : "#redflag-name"
-          , r = 1 == e.flag ? e.blueteam : e.redteam;
-        t.momentum = 0,
-        t.direction = 1,
-        t.sprite.scale.x = .4,
-        t.sprite.rotation = 0,
-        t.spriteShadow.scale.x = .4 * 1.1,
-        t.spriteShadow.rotation = 0;
+    Games.networkFlag = function(flagMsg) {
+        var flagState = 1 == flagMsg.flag ? ctfGameState.flagBlue : ctfGameState.flagRed
+          , flagElemSelector = 1 == flagMsg.flag ? "#blueflag-name" : "#redflag-name"
+          , r = 1 == flagMsg.flag ? flagMsg.blueteam : flagMsg.redteam;
+        flagState.momentum = 0,
+        flagState.direction = 1,
+        flagState.sprite.scale.x = .4,
+        flagState.sprite.rotation = 0,
+        flagState.spriteShadow.scale.x = .4 * 1.1,
+        flagState.spriteShadow.rotation = 0;
         var i = '<span class="rounds">' + r + '<span class="divider">/</span>3</span>';
-        if (1 == e.type) {
-            t.playerId = null,
-            t.position.x = e.posX,
-            t.position.y = e.posY,
-            t.sprite.position.set(e.posX, e.posY);
-            var o = Graphics.shadowCoords(new Vector(e.posX,e.posY));
-            t.spriteShadow.position.set(o.x, o.y),
-            Graphics.minimapMob(t.minimapSprite, e.posX, e.posY),
-            $(n).html(i)
+        if (1 == flagMsg.type) {
+            flagState.playerId = null,
+            flagState.position.x = flagMsg.posX,
+            flagState.position.y = flagMsg.posY,
+            flagState.sprite.position.set(flagMsg.posX, flagMsg.posY);
+            var o = Graphics.shadowCoords(new Vector(flagMsg.posX,flagMsg.posY));
+            flagState.spriteShadow.position.set(o.x, o.y),
+            Graphics.minimapMob(flagState.minimapSprite, flagMsg.posX, flagMsg.posY),
+            $(flagElemSelector).html(i)
         } else {
-            t.playerId = e.id;
-            var s = Players.get(e.id);
-            null != s && (1 == e.flag ? i = UI.escapeHTML(s.name) + i : i += UI.escapeHTML(s.name)),
-            t.diffX = s.pos.x,
-            $(n).html(i)
+            flagState.playerId = flagMsg.id;
+            var s = Players.get(flagMsg.id);
+            null != s && (1 == flagMsg.flag ? i = UI.escapeHTML(s.name) + i : i += UI.escapeHTML(s.name)),
+            flagState.diffX = s.pos.x,
+            $(flagElemSelector).html(i)
         }
-        k(t, false)
+        updateCtfFlagState(flagState, false)
     }
     ;
-    var k = function(e, t) {
+    var updateCtfFlagState = function(e, t) {
         if (t && (Graphics.minimapMob(e.minimapSprite, e.position.x, e.position.y),
         Graphics.minimapMob(e.minimapBase, e.basePos.x, e.basePos.y)),
         null != e.playerId) {
@@ -733,11 +736,11 @@
             e.spriteShadow.visible = s)
         }
     };
-    Games.spectate = function(e) {
+    Games.spectate = function(playerID) {
         null == game.spectatingID && 3 != game.gameType && UI.showMessage("alert", '<span class="info">SPECTATOR MODE</span>Click on Respawn to resume playing', 4e3),
-        game.spectatingID = e;
-        var t = Players.get(e)
-          , n = '<div id="spectator-tag" class="spectating">Spectating ' + (null == t ? "" : UI.escapeHTML(t.name)) + '</div><div class="buttons"><div onclick="Network.spectateNext()" class="changeplayer left"><div class="arrow"></div></div><div onclick="Network.spectatePrev()" class="changeplayer right"><div class="arrow"></div></div></div>';
+        game.spectatingID = playerID;
+        var player = Players.get(playerID)
+          , n = '<div id="spectator-tag" class="spectating">Spectating ' + (null == player ? "" : UI.escapeHTML(player.name)) + '</div><div class="buttons"><div onclick="Network.spectateNext()" class="changeplayer left"><div class="arrow"></div></div><div onclick="Network.spectatePrev()" class="changeplayer right"><div class="arrow"></div></div></div>';
         UI.showSpectator(n)
     }
     ,
@@ -781,8 +784,8 @@
         $("#custom-msg").length && $("#custom-msg").remove();
         var t = ""
           , n = " lvlsmaller";
-        null != _[e + ""] && (n = "",
-        t = '<div class="unlocked">FEATURE UNLOCKED<br><div class="unlockedtext">' + _[e + ""] + "</div></div>");
+        null != unlockedFeature[e + ""] && (n = "",
+        t = '<div class="unlocked">FEATURE UNLOCKED<br><div class="unlockedtext">' + unlockedFeature[e + ""] + "</div></div>");
         var r = '<div id="custom-msg" class="levelup' + n + '"><div class="leveltext">NEW LEVEL REACHED</div><div class="levelbadge"></div><div class="levelnum">' + e + "</div>" + t + "</div>";
         $("body").append(r),
         UI.showPanel("#custom-msg"),
@@ -792,13 +795,13 @@
     ,
     Games.popFirewall = function(e, t) {
         t <= 0 && (t = 0),
-        y || (y = true,
-        v = new PIXI.Graphics,
-        game.graphics.gui.minimap.mask = v),
-        v.clear(),
-        v.beginFill(16777215),
-        v.drawCircle(game.screenX - config.minimapPaddingX - config.minimapSize * (16384 - e.x) / 32768, game.screenY - config.minimapPaddingY - config.minimapSize / 2 * (8192 - e.y) / 16384, 2 * t / (256 / config.minimapSize * 256)),
-        v.endFill();
+        minimapIsInitialized || (minimapIsInitialized = true,
+        pixiJsGfx = new PIXI.Graphics,
+        game.graphics.gui.minimap.mask = pixiJsGfx),
+        pixiJsGfx.clear(),
+        pixiJsGfx.beginFill(16777215),
+        pixiJsGfx.drawCircle(game.screenX - config.minimapPaddingX - config.minimapSize * (16384 - e.x) / 32768, game.screenY - config.minimapPaddingY - config.minimapSize / 2 * (8192 - e.y) / 16384, 2 * t / (256 / config.minimapSize * 256)),
+        pixiJsGfx.endFill();
         var n = Graphics.getCamera()
           , r = Math.ceil((game.halfScreenX + 64) / game.scale / 64)
           , i = Math.ceil((game.halfScreenY + 64) / game.scale / 64)
@@ -819,17 +822,17 @@
                     s = 64 * (Math.floor(n.y / 64) + .5) + 64 * b,
                     !((u = Tools.distance(o, s, e.x, e.y)) < t) && (a = o + "_" + s,
                     l[a] = true,
-                    null == m[a])) {
-                        var _ = Textures.sprite("hotsmoke_" + Tools.randInt(1, 4));
-                        _.scale.set(Tools.rand(1.5, 2.5)),
-                        _.anchor.set(.5, .5),
-                        _.position.set(o, s),
+                    null == firewallHotSmokeSprites[a])) {
+                        var sprite = Textures.sprite("hotsmoke_" + Tools.randInt(1, 4));
+                        sprite.scale.set(Tools.rand(1.5, 2.5)),
+                        sprite.anchor.set(.5, .5),
+                        sprite.position.set(o, s),
                         c = 1,
-                        Tools.rand(0, 1) > .5 && (_.blendMode = PIXI.BLEND_MODES.ADD,
+                        Tools.rand(0, 1) > .5 && (sprite.blendMode = PIXI.BLEND_MODES.ADD,
                         c = .5),
-                        game.graphics.layers.powerups.addChild(_),
-                        m[a] = {
-                            sprite: _,
+                        game.graphics.layers.powerups.addChild(sprite),
+                        firewallHotSmokeSprites[a] = {
+                            sprite: sprite,
                             rotation: Tools.rand(0, 100),
                             rotationSpeed: Tools.rand(-.0025, .0025),
                             opacity: 0,
@@ -839,44 +842,44 @@
                             colorDir: Tools.rand(0, 1) < .5 ? -1 : 1
                         }
                     }
-        for (var x in m)
-            null != l[x] ? (m[x].rotation += m[x].rotationSpeed * game.timeFactor,
-            m[x].opacity += m[x].opacitySpeed * game.timeFactor,
-            m[x].opacity > m[x].maxOpacity && (m[x].opacity = m[x].maxOpacity),
-            m[x].color += .005 * m[x].colorDir * game.timeFactor,
-            m[x].color < 0 && (m[x].colorDir = 1),
-            m[x].color > 1 && (m[x].colorDir = -1),
-            m[x].sprite.rotation = m[x].rotation,
-            m[x].sprite.alpha = m[x].opacity,
-            m[x].sprite.tint = Tools.colorLerp(16427014, 16404230, m[x].color)) : (game.graphics.layers.powerups.removeChild(m[x].sprite),
-            m[x].sprite.destroy(),
-            delete m[x])
+        for (var x in firewallHotSmokeSprites)
+            null != l[x] ? (firewallHotSmokeSprites[x].rotation += firewallHotSmokeSprites[x].rotationSpeed * game.timeFactor,
+            firewallHotSmokeSprites[x].opacity += firewallHotSmokeSprites[x].opacitySpeed * game.timeFactor,
+            firewallHotSmokeSprites[x].opacity > firewallHotSmokeSprites[x].maxOpacity && (firewallHotSmokeSprites[x].opacity = firewallHotSmokeSprites[x].maxOpacity),
+            firewallHotSmokeSprites[x].color += .005 * firewallHotSmokeSprites[x].colorDir * game.timeFactor,
+            firewallHotSmokeSprites[x].color < 0 && (firewallHotSmokeSprites[x].colorDir = 1),
+            firewallHotSmokeSprites[x].color > 1 && (firewallHotSmokeSprites[x].colorDir = -1),
+            firewallHotSmokeSprites[x].sprite.rotation = firewallHotSmokeSprites[x].rotation,
+            firewallHotSmokeSprites[x].sprite.alpha = firewallHotSmokeSprites[x].opacity,
+            firewallHotSmokeSprites[x].sprite.tint = Tools.colorLerp(16427014, 16404230, firewallHotSmokeSprites[x].color)) : (game.graphics.layers.powerups.removeChild(firewallHotSmokeSprites[x].sprite),
+            firewallHotSmokeSprites[x].sprite.destroy(),
+            delete firewallHotSmokeSprites[x])
     }
     ;
-    var L = function() {
-        if (y) {
-            for (var e in m)
-                game.graphics.layers.powerups.removeChild(m[e].sprite),
-                m[e].sprite.destroy();
-            m = {},
+    var deinitMinimapAndFirewall = function() {
+        if (minimapIsInitialized) {
+            for (var e in firewallHotSmokeSprites)
+                game.graphics.layers.powerups.removeChild(firewallHotSmokeSprites[e].sprite),
+                firewallHotSmokeSprites[e].sprite.destroy();
+            firewallHotSmokeSprites = {},
             game.graphics.gui.minimap.mask = null,
-            null != v && (v.destroy(),
-            v = null),
-            y = false
+            null != pixiJsGfx && (pixiJsGfx.destroy(),
+            pixiJsGfx = null),
+            minimapIsInitialized = false
         }
     };
-    Games.handleFirewall = function(e) {
-        0 == e.status ? L() : (b.radius = e.radius,
-        b.pos.x = e.posX,
-        b.pos.y = e.posY,
-        b.speed = e.speed,
-        Games.popFirewall(b.pos, b.radius))
+    Games.handleFirewall = function(firewallMsg) {
+        0 == firewallMsg.status ? deinitMinimapAndFirewall() : (firewallStatus.radius = firewallMsg.radius,
+        firewallStatus.pos.x = firewallMsg.posX,
+        firewallStatus.pos.y = firewallMsg.posY,
+        firewallStatus.speed = firewallMsg.speed,
+        Games.popFirewall(firewallStatus.pos, firewallStatus.radius))
     }
     ,
     Games.update = function(e) {
-        2 == game.gameType && g.flagBlue && (k(g.flagBlue, e),
-        k(g.flagRed, e)),
-        3 == game.gameType && y && (b.radius += b.speed / 60 * game.timeFactor,
-        Games.popFirewall(b.pos, b.radius))
+        2 == game.gameType && ctfGameState.flagBlue && (updateCtfFlagState(ctfGameState.flagBlue, e),
+        updateCtfFlagState(ctfGameState.flagRed, e)),
+        3 == game.gameType && minimapIsInitialized && (firewallStatus.radius += firewallStatus.speed / 60 * game.timeFactor,
+        Games.popFirewall(firewallStatus.pos, firewallStatus.radius))
     }
 })();
