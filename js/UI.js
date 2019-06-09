@@ -1,5 +1,5 @@
 (function() {
-    var e = {}
+    var minimapMobs = {}
       , t = {}
       , n = null
       , r = false
@@ -41,7 +41,7 @@
         default: false,
         destroyed: false
     }
-      , P = {
+      , thisPlayerState = {
         score: -1,
         upgrades: -1,
         earnings: -1,
@@ -49,7 +49,7 @@
         deaths: -1
     }
       , M = false
-      , A = {}
+      , currentUpgradeValueByName = {}
       , O = []
       , C = 0
       , R = {
@@ -126,20 +126,20 @@
         $("#lifetime-rank").html(e)
     }
     ,
-    UI.newScore = function(e) {
-        if (e.id != game.myID)
+    UI.newScore = function(scoreUpdateMsg) {
+        if (scoreUpdateMsg.id != game.myID)
             return false;
-        var t = e.score - game.myScore
+        var t = scoreUpdateMsg.score - game.myScore
           , n = "";
         if (Math.abs(t) < 1 && (t = false),
-        game.myScore = e.score,
-        e.score != P.score && (P.score = e.score,
-        $("#score-score").html(e.score)),
-        e.upgrades != P.upgrades) {
-            var r = e.upgrades - P.upgrades
-              , i = -1 != P.upgrades;
-            if (P.upgrades = e.upgrades,
-            $("#score-upgrades").html(e.upgrades),
+        game.myScore = scoreUpdateMsg.score,
+        scoreUpdateMsg.score != thisPlayerState.score && (thisPlayerState.score = scoreUpdateMsg.score,
+        $("#score-score").html(scoreUpdateMsg.score)),
+        scoreUpdateMsg.upgrades != thisPlayerState.upgrades) {
+            var r = scoreUpdateMsg.upgrades - thisPlayerState.upgrades
+              , i = -1 != thisPlayerState.upgrades;
+            if (thisPlayerState.upgrades = scoreUpdateMsg.upgrades,
+            $("#score-upgrades").html(scoreUpdateMsg.upgrades),
             X(),
             i && r > 0) {
                 if (Sound.powerup(4, null),
@@ -150,20 +150,20 @@
                 n += '<span id="alert-update"><span class="upgrade">+' + r + '<span class="bold"> upgrade</span></span></span>'
             }
         }
-        if (e.earnings != P.earnings && 0 != game.myLevel) {
-            P.earnings = e.earnings,
-            $("#lifetime-totalbounty").html(e.earnings);
-            var o = Math.ceil(Tools.rankToEarnings(game.myLevel + 1) - e.earnings);
+        if (scoreUpdateMsg.earnings != thisPlayerState.earnings && 0 != game.myLevel) {
+            thisPlayerState.earnings = scoreUpdateMsg.earnings,
+            $("#lifetime-totalbounty").html(scoreUpdateMsg.earnings);
+            var o = Math.ceil(Tools.rankToEarnings(game.myLevel + 1) - scoreUpdateMsg.earnings);
             $("#lifetime-nextbounty").html("+" + o)
         }
-        if (e.totalkills != P.kills || e.totaldeaths != P.deaths) {
-            var s = 0 == e.totalkills || 0 == e.totaldeaths ? "-" : (e.totalkills / e.totaldeaths).toFixed(2);
+        if (scoreUpdateMsg.totalkills != thisPlayerState.kills || scoreUpdateMsg.totaldeaths != thisPlayerState.deaths) {
+            var s = 0 == scoreUpdateMsg.totalkills || 0 == scoreUpdateMsg.totaldeaths ? "-" : (scoreUpdateMsg.totalkills / scoreUpdateMsg.totaldeaths).toFixed(2);
             $("#lifetime-kdratio").html(s)
         }
-        e.totalkills != P.kills && (P.kills = e.totalkills,
-        $("#lifetime-kills").html(e.totalkills)),
-        e.totaldeaths != P.deaths && (P.deaths = e.totaldeaths,
-        $("#lifetime-deaths").html(e.totaldeaths)),
+        scoreUpdateMsg.totalkills != thisPlayerState.kills && (thisPlayerState.kills = scoreUpdateMsg.totalkills,
+        $("#lifetime-kills").html(scoreUpdateMsg.totalkills)),
+        scoreUpdateMsg.totaldeaths != thisPlayerState.deaths && (thisPlayerState.deaths = scoreUpdateMsg.totaldeaths,
+        $("#lifetime-deaths").html(scoreUpdateMsg.totaldeaths)),
         t && (M && (M.msg += "<br>"),
         n += UI.getScoreString(t)),
         M ? (UI.showMessage(M.type, M.msg + n, M.duration),
@@ -179,14 +179,14 @@
         '<span id="alert-update" class="' + r + '">' + i + Math.abs(e) + "</span>"
     }
     ;
-    var L = function(e) {
-        e.sprite.position.set(game.screenX - config.minimapPaddingX - config.minimapSize * ((16384 - e.x) / 32768), game.screenY - config.minimapPaddingY - config.minimapSize / 2 * ((8192 - e.y) / 16384))
+    var updateMinimapMob = function(minimapMob) {
+        minimapMob.sprite.position.set(game.screenX - config.minimapPaddingX - config.minimapSize * ((16384 - minimapMob.x) / 32768), game.screenY - config.minimapPaddingY - config.minimapSize / 2 * ((8192 - minimapMob.y) / 16384))
     };
     UI.wipeAllMinimapMobs = function() {
-        for (var t in e)
-            game.graphics.layers.ui1.removeChild(e[t].sprite),
-            e[t].sprite.destroy(),
-            delete e[t]
+        for (var playerId in minimapMobs)
+            game.graphics.layers.ui1.removeChild(minimapMobs[playerId].sprite),
+            minimapMobs[playerId].sprite.destroy(),
+            delete minimapMobs[playerId]
     }
     ,
     UI.showSpectator = function(e) {
@@ -221,40 +221,40 @@
         $("#powerups").html("")
     }
     ,
-    UI.changeMinimapTeam = function(t, n) {
-        if (null != e[t] && null != e[t].sprite) {
-            var r = 1 == n ? "minimapBlue" : "minimapMob";
-            e[t].sprite.texture = Textures.getNamed(r)
+    UI.changeMinimapTeam = function(playerId, team) {
+        if (null != minimapMobs[playerId] && null != minimapMobs[playerId].sprite) {
+            var r = 1 == team ? "minimapBlue" : "minimapMob";
+            minimapMobs[playerId].sprite.texture = Textures.getNamed(r)
         }
     }
     ,
-    UI.scoreboardUpdate = function(t, n, r) {
-        for (var i, o, s, a, l, u = 0, c = "", h = {}, d = false, p = 0, f = {}, g = "", m = "", v = "", y = 0; y < n.length; y++)
-            null != (i = Players.get(n[y].id)) && (f = Tools.decodeMinimapCoords(n[y].x, n[y].y),
+    UI.scoreboardUpdate = function(msgData, msgRankings, maxScoreboard) {
+        for (var i, o, s, a, l, u = 0, c = "", h = {}, d = false, p = 0, f = {}, g = "", m = "", v = "", y = 0; y < msgRankings.length; y++)
+            null != (i = Players.get(msgRankings[y].id)) && (f = Tools.decodeMinimapCoords(msgRankings[y].x, msgRankings[y].y),
             i.lowResPos.x = f.x,
             i.lowResPos.y = f.y,
-            n[y].id != game.myID ? 0 == n[y].x && 0 == n[y].y || (h[i.id] = true,
-            null == e[n[y].id] ? (v = "minimapMob",
+            msgRankings[y].id != game.myID ? 0 == msgRankings[y].x && 0 == msgRankings[y].y || (h[i.id] = true,
+            null == minimapMobs[msgRankings[y].id] ? (v = "minimapMob",
             2 == game.gameType && 1 == i.team && (v = "minimapBlue"),
-            e[n[y].id] = {
+            minimapMobs[msgRankings[y].id] = {
                 sprite: Textures.init(v),
                 x: f.x,
                 y: f.y
-            }) : (e[n[y].id].x = f.x,
-            e[n[y].id].y = f.y),
-            L(e[n[y].id])) : p = y + 1);
-        for (var b in e)
-            null == h[b] && (game.graphics.layers.ui1.removeChild(e[b].sprite),
-            e[b].sprite.destroy(),
-            delete e[b]);
+            }) : (minimapMobs[msgRankings[y].id].x = f.x,
+            minimapMobs[msgRankings[y].id].y = f.y),
+            updateMinimapMob(minimapMobs[msgRankings[y].id])) : p = y + 1);
+        for (var b in minimapMobs)
+            null == h[b] && (game.graphics.layers.ui1.removeChild(minimapMobs[b].sprite),
+            minimapMobs[b].sprite.destroy(),
+            delete minimapMobs[b]);
         if (0 != p) {
-            r = r ? Tools.clamp(r, 1, t.length) : t.length;
-            for (y = 0; y < r && (null == (i = Players.get(t[y].id)) || (u++,
+            maxScoreboard = maxScoreboard ? Tools.clamp(maxScoreboard, 1, msgData.length) : msgData.length;
+            for (y = 0; y < maxScoreboard && (null == (i = Players.get(msgData[y].id)) || (u++,
             o = 1 == u ? '<span class="badge scoreboard gold"></span>' : 2 == u ? '<span class="badge scoreboard silver"></span>' : 3 == u ? '<span class="badge scoreboard bronze"></span>' : u + ".",
             s = i.me() ? " sel" : "",
-            a = t[y].score,
-            l = t[y].level,
-            p > r && u == r - 1 && (c += '<div class="line dottedline">&middot; &middot; &middot;</div>',
+            a = msgData[y].score,
+            l = msgData[y].level,
+            p > maxScoreboard && u == maxScoreboard - 1 && (c += '<div class="line dottedline">&middot; &middot; &middot;</div>',
             true,
             i = Players.get(game.myID),
             o = p + ".",
@@ -496,17 +496,17 @@
         UI.visibilityMinimap(false)
     }
     ,
-    UI.visibilityMinimap = function(e) {
-        game.graphics.gui.minimap.visible = e,
-        game.graphics.gui.minimap_box.visible = e
+    UI.visibilityMinimap = function(isVisible) {
+        game.graphics.gui.minimap.visible = isVisible,
+        game.graphics.gui.minimap_box.visible = isVisible
     }
     ,
     UI.resizeMinimap = function() {
         game.graphics.gui.minimap.scale.set(config.minimapSize / 512),
         game.graphics.gui.minimap.position.set(game.screenX - config.minimapPaddingX, game.screenY - config.minimapPaddingY),
         game.graphics.gui.minimap_box.scale.set(.03 + 2 * config.minimapSize * (game.screenX / game.scale / 32768) / 64, .03 + config.minimapSize * (game.screenY / game.scale / 16384) / 64);
-        for (var t in e)
-            L(e[t]);
+        for (var playerId in minimapMobs)
+            updateMinimapMob(minimapMobs[playerId]);
         Games.update(true)
     }
     ,
@@ -979,24 +979,24 @@
     var X = function() {
         for (var e = ["", "speed", "defense", "energy", "missile"], t = 1; t < 5; t++)
             t - 1,
-            A[e[t]] < 5 && P.upgrades > 0 ? $("#selectupgrade-" + t).addClass("lighted") : $("#selectupgrade-" + t).removeClass("lighted")
+            currentUpgradeValueByName[e[t]] < 5 && thisPlayerState.upgrades > 0 ? $("#selectupgrade-" + t).addClass("lighted") : $("#selectupgrade-" + t).removeClass("lighted")
     };
-    UI.updateUpgrades = function(e, t, n) {
-        for (var r, i = ["", "speed", "defense", "energy", "missile"], o = 1; o < 5; o++)
+    UI.updateUpgrades = function(speedDefenseEnergyMissileArray, msgUpgrades, msgTypeId) {
+        for (var r, upgradeKind = ["", "speed", "defense", "energy", "missile"], o = 1; o < 5; o++)
             r = o - 1,
             "",
-            null != A[i[o]] && A[i[o]] == e[r] || (A[i[o]] = e[r],
-            $("#selectupgrade-" + o + "-level").html(e[r]),
+            null != currentUpgradeValueByName[upgradeKind[o]] && currentUpgradeValueByName[upgradeKind[o]] == speedDefenseEnergyMissileArray[r] || (currentUpgradeValueByName[upgradeKind[o]] = speedDefenseEnergyMissileArray[r],
+            $("#selectupgrade-" + o + "-level").html(speedDefenseEnergyMissileArray[r]),
             m && y - 100 == o && UI.popTooltip(null, 100 + o));
-        if (null != n) {
-            if (0 != n) {
+        if (null != msgTypeId) {
+            if (0 != msgTypeId) {
                 var s = ["", "Speed", "Defense", "Energy Regen", "Missile Speed"]
-                  , a = "+" + Math.round(100 * (config.upgrades[i[n]].factor[A[i[n]]] - 1)) + "% " + s[n];
+                  , a = "+" + Math.round(100 * (config.upgrades[upgradeKind[msgTypeId]].factor[currentUpgradeValueByName[upgradeKind[msgTypeId]]] - 1)) + "% " + s[msgTypeId];
                 UI.showMessage("information", '<span class="info">UPGRADE</span>' + a, 3e3),
                 Sound.playerUpgrade()
             }
-            P.upgrades = t,
-            $("#score-upgrades").html(t)
+            thisPlayerState.upgrades = msgUpgrades,
+            $("#score-upgrades").html(msgUpgrades)
         }
         X()
     }
@@ -1065,7 +1065,7 @@
         UI.hide("#gamespecific"),
         $("#gameinfo").html("&nbsp;"),
         $("#gameinfo").addClass("ingame"),
-        A = {},
+        currentUpgradeValueByName = {},
         UI.resetUpgrades(),
         UI.hideSpectator(),
         UI.resetPowerups(),
@@ -1086,7 +1086,7 @@
     UI.reconnection = function() {
         i = 0,
         s = -1,
-        P = {
+        thisPlayerState = {
             score: -1,
             upgrades: -1,
             earnings: -1,
@@ -1094,7 +1094,7 @@
             deaths: -1
         },
         M = false,
-        A = {},
+        currentUpgradeValueByName = {},
         t = {},
         UI.resetUpgrades(),
         UI.resetPowerups(),
@@ -1139,14 +1139,14 @@
         } else {
             var l = ["", "speed", "defense", "energy", "missile"]
               , u = n - 100
-              , c = A[l[u]]
-              , h = "+" + Math.round(100 * (config.upgrades[l[u]].factor[A[l[u]]] - 1)) + "%";
+              , c = currentUpgradeValueByName[l[u]]
+              , h = "+" + Math.round(100 * (config.upgrades[l[u]].factor[currentUpgradeValueByName[l[u]]] - 1)) + "%";
             if (i += '<div class="header">' + R[n][0] + "</div>",
             i += '<div class="item"><div class="level">' + c + " / " + (config.upgrades[l[u]].factor.length - 1) + "</div>",
             c > 0 && (i += '<div class="percent">' + h + "</div></div>"),
             c < config.upgrades[l[u]].factor.length - 1) {
                 i += '<div class="item smaller"><div class="requires">Requires 1 upgrade point</div></div>';
-                i += '<div class="item smaller"><div class="clickto">Click to upgrade to ' + (h = "+" + Math.round(100 * (config.upgrades[l[u]].factor[A[l[u]] + 1] - 1)) + "%") + "</div></div>"
+                i += '<div class="item smaller"><div class="clickto">Click to upgrade to ' + (h = "+" + Math.round(100 * (config.upgrades[l[u]].factor[currentUpgradeValueByName[l[u]] + 1] - 1)) + "%") + "</div></div>"
             } else
                 i += '<div class="item smaller"><div class="clickto">Max upgrade reached</div></div>'
         }
