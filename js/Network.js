@@ -5,8 +5,8 @@
       , currentSockUrl = ""
       , shouldSendNextAckOnBackupSock = false
       , ackIntervalId = null
-      , lastPacketDivClk = -1
-      , lastPacketTime = -1
+      , baseDivClk = -1
+      , baseDivClkLastResetTime = -1
       , jitterMemory = 0
       , messageTombstoneMap = {}
       , lastTombstoneGcTime = 0
@@ -111,8 +111,8 @@
         null != backupSock && backupSock.close(),
         backupSockIsConnected = false,
         shouldSendNextAckOnBackupSock = false,
-        lastPacketDivClk = -1,
-        lastPacketTime = -1,
+        baseDivClk = -1,
+        baseDivClkLastResetTime = -1,
         jitterMemory = 0,
         messageTombstoneMap = {},
         lastTombstoneGcTime = 0,
@@ -147,10 +147,10 @@
         }),
         shouldSendNextAckOnBackupSock = !shouldSendNextAckOnBackupSock)
     }
-      , saveLastPacketTimes = function(packetDivClk) {
-        if(Math.abs(packetDivClk - lastPacketDivClk) > 36e5) {
-            lastPacketDivClk = packetDivClk;
-            lastPacketTime = performance.now();
+      , resetJitterMemoryEvery5Mins = function(packetDivClk) {
+        if(Math.abs(packetDivClk - baseDivClk) > 36e5) {
+            baseDivClk = packetDivClk;
+            baseDivClkLastResetTime = performance.now();
             jitterMemory = 0;
         }
     }
@@ -163,10 +163,10 @@
                 oldTimeNetwork = game.timeNetwork,
                 function(curPacketDivClk) {
                     game.jitter = 0;
-                    if (-1 != lastPacketDivClk) {
-                        saveLastPacketTimes(curPacketDivClk);
+                    if (-1 != baseDivClk) {
+                        resetJitterMemoryEvery5Mins(curPacketDivClk);
                         var curTime = game.timeNetwork;
-                        var delta = (curPacketDivClk - lastPacketDivClk) - (curTime - lastPacketTime);
+                        var delta = (curPacketDivClk - baseDivClk) - (curTime - baseDivClkLastResetTime);
                         var newJitter = delta - (jitterMemory = (.8 * jitterMemory) + (delta / 5));
                         if(Math.abs(newJitter) < 100) {
                             game.jitter = newJitter;
@@ -177,8 +177,8 @@
                 game.timeNetwork = performance.now(),
                 oldTimeNetwork = game.timeNetwork,
                 null != msg.clock && function(curPacketDivClk) {
-                    -1 != lastPacketDivClk && (saveLastPacketTimes(curPacketDivClk),
-                    game.jitter = curPacketDivClk - lastPacketDivClk - (game.timeNetwork - lastPacketTime) - jitterMemory)
+                    -1 != baseDivClk && (resetJitterMemoryEvery5Mins(curPacketDivClk),
+                    game.jitter = curPacketDivClk - baseDivClk - (game.timeNetwork - baseDivClkLastResetTime) - jitterMemory)
                 }(msg.clock / 100);
             switch (msg.c) {
             case ServerPacket.PLAYER_UPDATE:
@@ -208,8 +208,8 @@
                     game.spectatingID = null;
                     game.myLevel = 0;
                     Games.prep();
-                    lastPacketDivClk = msg.clock / 100;
-                    lastPacketTime = performance.now();
+                    baseDivClk = msg.clock / 100;
+                    baseDivClkLastResetTime = performance.now();
                     initBackupSock();
                 }(msg),
                 UI.loggedIn(msg);
