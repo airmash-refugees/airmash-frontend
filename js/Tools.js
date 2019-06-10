@@ -1,7 +1,7 @@
 (function() {
-    var e = {}
-      , t = 0
-      , n = {
+    var bucketState = {}
+      , clientErrorCount = 0
+      , reelState = {
         started: false,
         startX: 200,
         startY: -2450,
@@ -11,8 +11,8 @@
         direction: 1
     };
     Tools.updateReel = function() {
-        if (!n.started) {
-            n.pos = Vector.zero();
+        if (!reelState.started) {
+            reelState.pos = Vector.zero();
             for (var e, t = [3, 1, 2, 4, 5], r = [-270, -150, 0, 150, 270], i = 0; i < t.length; i++)
                 Players.add({
                     id: i + 1,
@@ -29,25 +29,25 @@
                 (e = Players.get(i + 1)).keystate.UP = true,
                 e._offset = r[i]
         }
-        n.started = true,
-        n.dist > 2e3 ? n.direction = -1 : n.dist < 100 && (n.direction = 1),
-        n.dist += .5 * n.direction * game.timeFactor,
-        n.pan += 1 / n.dist * game.timeFactor,
-        n.pos.x = n.startX + Math.sin(n.pan) * n.dist,
-        n.pos.y = n.startY - Math.cos(n.pan) * n.dist,
-        Graphics.setCamera(n.pos.x, n.pos.y),
+        reelState.started = true,
+        reelState.dist > 2e3 ? reelState.direction = -1 : reelState.dist < 100 && (reelState.direction = 1),
+        reelState.dist += .5 * reelState.direction * game.timeFactor,
+        reelState.pan += 1 / reelState.dist * game.timeFactor,
+        reelState.pos.x = reelState.startX + Math.sin(reelState.pan) * reelState.dist,
+        reelState.pos.y = reelState.startY - Math.cos(reelState.pan) * reelState.dist,
+        Graphics.setCamera(reelState.pos.x, reelState.pos.y),
         Players.update(),
         Particles.update();
         for (var o, s = 1; s <= 5; s++)
-            (o = Players.get(s)).pos.x = n.pos.x + o._offset,
-            o.pos.y = n.pos.y + game.screenY / game.scale * .24,
+            (o = Players.get(s)).pos.x = reelState.pos.x + o._offset,
+            o.pos.y = reelState.pos.y + game.screenY / game.scale * .24,
             null != o._prevPos ? o.rot = new Vector(o.pos.x - o._prevPos.x,o.pos.y - o._prevPos.y).angle() + Math.PI : o._prevPos = o.pos.clone(),
             o._prevPos = new Vector((19 * o._prevPos.x + o.pos.x) / 20,(19 * o._prevPos.y + o.pos.y) / 20);
-        if (game.time > n.explosion) {
-            var a = new Vector(Tools.rand(n.pos.x - game.halfScreenX / game.scale, n.pos.x + game.halfScreenX / game.scale),Tools.rand(n.pos.y - game.halfScreenY / game.scale, n.pos.y + game.halfScreenY / game.scale));
+        if (game.time > reelState.explosion) {
+            var a = new Vector(Tools.rand(reelState.pos.x - game.halfScreenX / game.scale, reelState.pos.x + game.halfScreenX / game.scale),Tools.rand(reelState.pos.y - game.halfScreenY / game.scale, reelState.pos.y + game.halfScreenY / game.scale));
             Particles.explosion(a, Tools.rand(2, 2.5), Tools.randInt(4, 7)),
             Particles.explosion(new Vector(a.x + Tools.rand(-100, 100),a.y + Tools.rand(-100, 100)), Tools.rand(1, 1.2)),
-            n.explosion = game.time + Tools.rand(1e3, 3e3)
+            reelState.explosion = game.time + Tools.rand(1e3, 3e3)
         }
     }
     ,
@@ -65,7 +65,7 @@
     }
     ,
     Tools.detectCapabilities = function() {
-        r(),
+        initMobileConstants(),
         config.mobile && !config.settings.mobileshown && (UI.popBigMsg(1),
         config.settings.mobileshown = true,
         Tools.setSettings({
@@ -74,27 +74,27 @@
         config.mobile && Input.setupLogin()
     }
     ;
-    var r = function() {
+    var initMobileConstants = function() {
         config.mobile = "ontouchstart"in document.documentElement && void 0 !== window.orientation || -1 !== navigator.userAgent.indexOf("IEMobile"),
         config.ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream,
         "#forcemobile" == window.location.hash && (config.mobile = true),
         "#nomobile" == window.location.hash && (config.mobile = false)
     };
     Tools.loadSettings = function() {
-        var e = s();
-        config.storage = e,
-        DEVELOPMENT && console.log(e),
-        null != e.id && (config.settings.id = e.id),
-        null != e.session && (config.settings.session = e.session),
-        null != e.name && (config.settings.name = e.name),
-        null != e.region && (config.settings.region = e.region),
-        null != e.helpshown && (config.settings.helpshown = e.helpshown),
-        null != e.mobileshown && (config.settings.mobileshown = e.mobileshown),
-        null != e.flag && (config.settings.flag = e.flag),
-        null != e.hidpi && (config.settings.hidpi = e.hidpi),
-        null != e.sound && (config.settings.sound = e.sound),
-        null != e.keybinds && (config.settings.keybinds = e.keybinds),
-        null != e.mousemode && (config.settings.mousemode = e.mousemode),
+        var storage = getSettingsFromLocalStorage();
+        config.storage = storage,
+        DEVELOPMENT && console.log(storage),
+        null != storage.id && (config.settings.id = storage.id),
+        null != storage.session && (config.settings.session = storage.session),
+        null != storage.name && (config.settings.name = storage.name),
+        null != storage.region && (config.settings.region = storage.region),
+        null != storage.helpshown && (config.settings.helpshown = storage.helpshown),
+        null != storage.mobileshown && (config.settings.mobileshown = storage.mobileshown),
+        null != storage.flag && (config.settings.flag = storage.flag),
+        null != storage.hidpi && (config.settings.hidpi = storage.hidpi),
+        null != storage.sound && (config.settings.sound = storage.sound),
+        null != storage.keybinds && (config.settings.keybinds = storage.keybinds),
+        null != storage.mousemode && (config.settings.mousemode = storage.mousemode),
         i()
     }
     ;
@@ -120,9 +120,9 @@
         o(t).substr(0, e)
     }
     ;
-    var o = function(e) {
-        for (var t, n = "", r = 0; r < e.length; r++)
-            n += t = 1 === (t = (255 & e[r]).toString(16)).length ? "0" + t : t;
+    var o = function(str) {
+        for (var t, n = "", r = 0; r < str.length; r++)
+            n += t = 1 === (t = (255 & str[r]).toString(16)).length ? "0" + t : t;
         return n
     };
     Tools.setSettings = function(e) {
@@ -154,7 +154,7 @@
         }
     }
     ;
-    var s = function() {
+    var getSettingsFromLocalStorage = function() {
         if (null == window.localStorage)
             return {};
         var e = null
@@ -168,18 +168,18 @@
             } catch (e) {}
         return t
     };
-    Tools.ajaxPost = function(e, t, n) {
+    Tools.ajaxPost = function(url, data, callback) {
         $.ajax({
-            url: e,
+            url: url,
             method: "POST",
-            data: t,
+            data: data,
             dataType: "json",
             timeout: 1e4,
             success: function(e) {
-                null != n && n(null != e && 1 == e.result ? e : null)
+                null != callback && callback(null != e && 1 == e.result ? e : null)
             },
             error: function() {
-                null != n && n(null)
+                null != callback && callback(null)
             }
         })
     }
@@ -241,8 +241,8 @@
         return Math.abs(e - n) <= i && Math.abs(t - r) <= i
     }
     ,
-    Tools.updateTime = function(e) {
-        game.timeFactor = e < 60 ? e : 60,
+    Tools.updateTime = function(fractionalFrames) {
+        game.timeFactor = fractionalFrames < 60 ? fractionalFrames : 60,
         game.timeFactorUncapped = game.timeFactor,
         game.timeFactor > 10 && (game.timeFactor = 10),
         game.time = performance.now(),
@@ -380,13 +380,13 @@
     }
     ;
     var l = function(t) {
-        return Tools.clamp(Math.floor(t / e.size) + e.bucketsHalfX, 0, e.bucketsMaxX)
+        return Tools.clamp(Math.floor(t / bucketState.size) + bucketState.bucketsHalfX, 0, bucketState.bucketsMaxX)
     }
       , u = function(t) {
-        return Tools.clamp(Math.floor(t / e.size) + e.bucketsHalfY, 0, e.bucketsMaxY)
+        return Tools.clamp(Math.floor(t / bucketState.size) + bucketState.bucketsHalfY, 0, bucketState.bucketsMaxY)
     };
     Tools.initBuckets = function() {
-        e = {
+        bucketState = {
             size: config.bucketSize,
             halfSize: parseInt(config.bucketSize / 2),
             bucketsMaxX: parseInt(config.mapWidth / config.bucketSize) - 1,
@@ -394,9 +394,9 @@
             bucketsHalfX: parseInt(config.mapWidth / config.bucketSize / 2),
             bucketsHalfY: parseInt(config.mapHeight / config.bucketSize / 2)
         };
-        for (var t = 0; t <= e.bucketsMaxX; t++) {
+        for (var t = 0; t <= bucketState.bucketsMaxX; t++) {
             game.buckets.push([]);
-            for (var n = 0; n <= e.bucketsMaxY; n++)
+            for (var n = 0; n <= bucketState.bucketsMaxY; n++)
                 game.buckets[t].push([[]])
         }
         for (var r = 0; r < config.doodads.length; r++)
@@ -406,25 +406,25 @@
     }
     ,
     Tools.getBucketBounds = function(t, n, r) {
-        return [Tools.clamp(Math.floor((t.x - n) / e.size) + e.bucketsHalfX, 0, e.bucketsMaxX), Tools.clamp(Math.floor((t.x + n) / e.size) + e.bucketsHalfX, 0, e.bucketsMaxX), Tools.clamp(Math.floor((t.y - r) / e.size) + e.bucketsHalfY, 0, e.bucketsMaxY), Tools.clamp(Math.floor((t.y + r) / e.size) + e.bucketsHalfY, 0, e.bucketsMaxY)]
+        return [Tools.clamp(Math.floor((t.x - n) / bucketState.size) + bucketState.bucketsHalfX, 0, bucketState.bucketsMaxX), Tools.clamp(Math.floor((t.x + n) / bucketState.size) + bucketState.bucketsHalfX, 0, bucketState.bucketsMaxX), Tools.clamp(Math.floor((t.y - r) / bucketState.size) + bucketState.bucketsHalfY, 0, bucketState.bucketsMaxY), Tools.clamp(Math.floor((t.y + r) / bucketState.size) + bucketState.bucketsHalfY, 0, bucketState.bucketsMaxY)]
     }
     ,
     Tools.deferUpdate = function(e) {
         setTimeout(e, 1)
     }
     ;
-    var c = function(e, t) {
-        if (t instanceof Error) {
+    var jsonErrorReplacer = function(key, obj) {
+        if (obj instanceof Error) {
             var n = {};
-            return Object.getOwnPropertyNames(t).forEach(function(e) {
-                n[e] = t[e]
+            return Object.getOwnPropertyNames(obj).forEach(function(e) {
+                n[e] = obj[e]
             }),
             n
         }
-        return t
+        return obj
     };
     Tools.handleError = function(e) {
-        ++t > 5 || (null != e.error && (e.error = JSON.stringify(e.error, c)),
+        ++clientErrorCount > 5 || (null != e.error && (e.error = JSON.stringify(e.error, jsonErrorReplacer)),
         Tools.ajaxPost("/clienterror", {
             type: "runtime",
             error: JSON.stringify(e, null, "\t\t")
