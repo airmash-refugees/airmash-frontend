@@ -175,8 +175,8 @@
     window.UI = {},
     window.Games = {},
     window.Sound = {};
-    var e = function(e, t) {
-        Tools.updateTime(e),
+    var scheduleFrame = function(fractionalFramesSinceLastFrame, skipGraphicsRendering) {
+        Tools.updateTime(fractionalFramesSinceLastFrame),
         Tools.debugStartFrame(),
         game.state == Network.STATE.PLAYING ? (Input.update(),
         Network.detectConnectivity(),
@@ -186,12 +186,12 @@
         Games.update(),
         Sound.update()) : game.state == Network.STATE.LOGIN ? Tools.updateReel() : Sound.update(),
         Graphics.update(),
-        t || Graphics.render(),
+        skipGraphicsRendering || Graphics.render(),
         Tools.debugEndFrame()
     }
-      , t = function() {
-        var t = performance.now() - game.time;
-        t > 450 && !game.focus && e(t / 16.666, true)
+      , scheduleOccasionalFrameWhileBlurred = function() {
+        var msSinceLastFrame = performance.now() - game.time;
+        msSinceLastFrame > 450 && !game.focus && scheduleFrame(msSinceLastFrame / 16.666, true)
     };
     $(function() {
         game.state = Network.STATE.LOGIN,
@@ -206,9 +206,9 @@
         Input.setup(),
         Games.setup(),
         Sound.setup();
-        var n = new PIXI.ticker.Ticker;
-        n.add(e),
-        n.start(),
-        setInterval(t, 500)
+        var ticker = new PIXI.ticker.Ticker;
+        ticker.add(scheduleFrame),
+        ticker.start(),
+        setInterval(scheduleOccasionalFrameWhileBlurred, 500)
     })
 })();
