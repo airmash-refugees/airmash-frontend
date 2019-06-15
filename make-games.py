@@ -18,6 +18,15 @@ GAMES = {
                     "type": 1,
                     "id": "GB-ffa",
                 },
+                {
+                    "name": "FRA Server",
+                    "players": 7,
+                    "url": "wss://lags.win/ctf",
+                    "nameShort": "ctf",
+                    "host": "ctf",
+                    "type": 2,
+                    "id": "ctf",
+                }
             ]
         },
         {
