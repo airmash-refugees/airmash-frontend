@@ -6,10 +6,10 @@
       , GameTypeById = ["", "ffa", "ctf", "br"]
       , totalPlayersOnlineCount = 0
       , gameHostState = {}
-      , a = 0
+      , inProgressPingCount = 0
       , performPingTimerId = null
       , closestGameRegion = null
-      , c = false
+      , gameHasStarted = false
       , gamesJsonDataIsLoaded = false
       , inviteCopiedTimer = null
       , gamesJsonData = []
@@ -80,7 +80,7 @@
             isServerMaintenance || (I(),
             Games.updateRegion(false),
             Games.updateType(false),
-            C())
+            initGameHostState())
         }, true)
     }
     ,
@@ -429,9 +429,9 @@
         Games.start(game.myOriginalName)
     }
     ;
-    var C = function() {
+    var initGameHostState = function() {
         gameHostState = {},
-        a = 0;
+        inProgressPingCount = 0;
         for (var t = 0; t < gamesJsonData.length; t++) {
             var host = gamesJsonData[t].games[Tools.randInt(0, gamesJsonData[t].games.length - 1)].host;
             if(null == gameHostState[host]) {
@@ -450,53 +450,53 @@
     };
     Games.performPing = function() {
         return; // DERPS
-        if (!(a > 3 || c)) {
+        if (!(inProgressPingCount > 3 || gameHasStarted)) {
             var e = 9999
-              , t = null;
-            for (var n in gameHostState)
-                gameHostState[n].num < e && (e = gameHostState[n].num,
-                t = n);
+              , gameKey = null;
+            for (var key in gameHostState)
+                gameHostState[key].num < e && (e = gameHostState[key].num,
+                gameKey = key);
             if (e > 6)
                 null != performPingTimerId && clearInterval(performPingTimerId);
             else {
-                gameHostState[t].num++;
-                var r;
-                r = DEVELOPMENT ? "/ping" : "https://game-" + t + ".airma.sh/ping",
-                R(t, r, function() {
-                    R(t, r)
+                gameHostState[gameKey].num++;
+                var pingUrl;
+                pingUrl = DEVELOPMENT ? "/ping" : "https://game-" + gameKey + ".airma.sh/ping",
+                performSinglePing(gameKey, pingUrl, function() {
+                    performSinglePing(gameKey, pingUrl)
                 })
             }
         }
     }
     ;
-    var R = function(host, t, n) {
-        if (null != gameHostState[host] && !c) {
-            a++;
+    var performSinglePing = function(gameKey, pingUrl, onSuccess) {
+        if (null != gameHostState[gameKey] && !gameHasStarted) {
+            inProgressPingCount++;
             var now = performance.now();
             $.ajax({
-                url: t,
+                url: pingUrl,
                 dataType: "json",
                 cache: false,
                 timeout: 2e3,
-                success: function(t) {
-                    if (!c && (a--,
-                    1 == t.pong && null != gameHostState[host])) {
-                        var i = performance.now() - now;
-                        if (Math.abs(gameHostState[host].ping - i) < .1 * i && gameHostState[host].threshold++,
-                        gameHostState[host].threshold >= 2)
-                            return i < gameHostState[host].ping && (gamesJsonData[gameHostState[host].server].ping = i,
+                success: function(response) {
+                    if (!gameHasStarted && (inProgressPingCount--,
+                    1 == response.pong && null != gameHostState[gameKey])) {
+                        var delay = performance.now() - now;
+                        if (Math.abs(gameHostState[gameKey].ping - delay) < .1 * delay && gameHostState[gameKey].threshold++,
+                        gameHostState[gameKey].threshold >= 2)
+                            return delay < gameHostState[gameKey].ping && (gamesJsonData[gameHostState[gameKey].server].ping = delay,
                             Games.findClosest(),
                             Games.updateRegion()),
-                            void delete gameHostState[host];
-                        i < gameHostState[host].ping && (gameHostState[host].ping = i,
-                        gamesJsonData[gameHostState[host].server].ping = i,
+                            void delete gameHostState[gameKey];
+                        delay < gameHostState[gameKey].ping && (gameHostState[gameKey].ping = delay,
+                        gamesJsonData[gameHostState[gameKey].server].ping = delay,
                         Games.findClosest(),
                         Games.updateRegion(),
-                        null != n && n())
+                        null != onSuccess && onSuccess())
                     }
                 },
                 error: function() {
-                    a--
+                    inProgressPingCount--
                 }
             })
         }
@@ -566,7 +566,7 @@
             if (null != r) {
                 game.playRegion = r,
                 null != performPingTimerId && clearInterval(performPingTimerId),
-                c = true;
+                gameHasStarted = true;
                 var o = game.playRoom
                   , s = GameTypeById.indexOf(o);
                 if (-1 != s) {
