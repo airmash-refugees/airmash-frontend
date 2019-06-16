@@ -1,17 +1,17 @@
 (function() {
-    var e = {}
+    var lastTransmittedKeyState = {}
       , t = {}
-      , n = {}
-      , r = null
+      , isPressedByKeyCode = {}
+      , maybeRotationTimerId = null
       , i = 0
-      , o = 2 * Math.PI
-      , s = null
-      , a = false
-      , l = {}
-      , u = false
+      , TWO_PI = 2 * Math.PI
+      , joystick = null
+      , isGamepadConnected = false
+      , gamepadState = {}
+      , isKeybindsUiVisible = false
       , c = null
       , h = 0
-      , d = {
+      , keyBindDescription = {
         LEFT: ["LEFT", "A"],
         RIGHT: ["RIGHT", "D"],
         UP: ["UP", "W"],
@@ -40,7 +40,7 @@
         MOUSEMODE: ["M"]
     }
       , p = {}
-      , f = {
+      , movementKeySet = {
         LEFT: true,
         RIGHT: true,
         UP: true,
@@ -51,7 +51,7 @@
         STRAFERIGHT: true
     }
       , g = {}
-      , m = {
+      , controlKeySet = {
         MAINMENU: true,
         FULLSCREEN: true,
         INVITE: true,
@@ -61,8 +61,8 @@
         HELP: true
     }
       , v = [["Forward", "UP"], ["Backward", "DOWN"], ["Turn Left", "LEFT"], ["Turn Right", "RIGHT"], ["Fire", "FIRE"], ["Special", "SPECIAL"], ["Strafe Left", "STRAFELEFT"], ["Strafe Right", "STRAFERIGHT"], [""], ["Spectate", "SPECTATE"], ["Upgrade Speed", "UPGRADE1"], ["Upgrade Defense", "UPGRADE2"], ["Upgrade Energy", "UPGRADE3"], ["Upgrade Missiles", "UPGRADE4"], ["Scoreboard", "SHOWSCORE"], ["Main Menu", "MAINMENU"], ["Show Games", "SHOWGAMES"], ["Fullscreen", "FULLSCREEN"], ["Maximize Chat", "MAXIMIZECHAT"], ["Minimize Chat", "MINIMIZECHAT"], [""], ["In-game Say", "SAY"], ["Team Chat", "TEAM"], ["Reply", "REPLY"], ["Toggle Sound", "SOUND"], ["Help", "HELP"], ["Invite Friends", "INVITE"], ["Mouse Mode", "MOUSEMODE"]]
-      , y = {}
-      , b = {
+      , keyNameByCode = {}
+      , keyCodeByName = {
         BACKSPACE: 8,
         TAB: 9,
         SHIFT: 16,
@@ -160,66 +160,66 @@
         "]": 221,
         QUOTE: 222
     }
-      , _ = ["UP", "DOWN", "LEFT", "RIGHT", "FIRE", "SPECIAL"]
+      , networkKeyNames = ["UP", "DOWN", "LEFT", "RIGHT", "FIRE", "SPECIAL"]
       , x = ["UP", "DOWN", "LEFT", "RIGHT", "FIRE", "SPECIAL"];
     Input.setup = function() {
-        for (var e in b)
-            y[b[e]] = e;
-        p = JSON.parse(JSON.stringify(d)),
-        I(),
+        for (var name in keyCodeByName)
+            keyNameByCode[keyCodeByName[name]] = name;
+        p = JSON.parse(JSON.stringify(keyBindDescription)),
+        initKeyBindsFromSettings(),
         M(true),
-        $(window).on("keydown", w),
-        $(window).on("keyup", T),
+        $(window).on("keydown", onWindowKeyDown),
+        $(window).on("keyup", onWindowKeyUp),
         $(window).on("gamepadconnected", function(e) {
             UI.showMessage("alert", '<span class="info">GAMEPAD CONNECTED</span>' + UI.escapeHTML(e.originalEvent.gamepad.id), 3e3),
-            a = true,
-            S()
+            isGamepadConnected = true,
+            resetNetworkKeyState()
         }),
         $(window).on("gamepaddisconnected", function(e) {
             UI.showMessage("alert", '<span class="info">GAMEPAD DISCONNECTED</span>' + UI.escapeHTML(e.originalEvent.gamepad.id), 3e3),
-            a = false,
-            S()
+            isGamepadConnected = false,
+            resetNetworkKeyState()
         })
     }
     ;
-    var w = function(r) {
+    var onWindowKeyDown = function(event) {
         if (game.state == Network.STATE.PLAYING || game.state == Network.STATE.CONNECTING) {
-            var i = r.which;
-            if (72 != i && UI.hideHelp(),
-            null != c && P(i))
-                r.preventDefault();
+            var keyCode = event.which;
+            if (72 != keyCode && UI.hideHelp(),
+            null != c && P(keyCode))
+                event.preventDefault();
             else {
-                var o = Input.getBind(i);
-                if (!E(i))
-                    return null == f[o] ? (n[i] || (n[i] = true,
-                    UI.controlKey(i, o, true)),
-                    r.preventDefault(),
-                    false) : (e[o] || (e[o] = true,
-                    C(o)),
-                    t[i] || (t[i] = true),
-                    r.preventDefault(),
+                var bind = Input.getBind(keyCode);
+                if (!shouldInterpretAsControlKey(keyCode))
+                    return null == movementKeySet[bind] ? (isPressedByKeyCode[keyCode] || (isPressedByKeyCode[keyCode] = true,
+                    UI.controlKey(keyCode, bind, true)),
+                    event.preventDefault(),
+                    false) : (lastTransmittedKeyState[bind] || (lastTransmittedKeyState[bind] = true,
+                    C(bind)),
+                    t[keyCode] || (t[keyCode] = true),
+                    event.preventDefault(),
                     false)
             }
         }
     }
-      , T = function(r) {
+      , onWindowKeyUp = function(event) {
         if (game.state == Network.STATE.PLAYING || game.state == Network.STATE.CONNECTING) {
-            var i = r.which
-              , o = Input.getBind(i);
-            if (null == f[o] && n[i] && (n[i] = false),
-            !E(i))
-                return e[o] && (e[o] = false,
-                R(o)),
-                t[i] && (t[i] = false),
-                r.preventDefault(),
+            var keyCode = event.which
+              , bind = Input.getBind(keyCode);
+            if (null == movementKeySet[bind] && isPressedByKeyCode[keyCode] && (isPressedByKeyCode[keyCode] = false),
+            !shouldInterpretAsControlKey(keyCode))
+                return lastTransmittedKeyState[bind] && (lastTransmittedKeyState[bind] = false,
+                R(bind)),
+                t[keyCode] && (t[keyCode] = false),
+                event.preventDefault(),
                 false
         }
     }
-      , E = function(e, t) {
-        return !!UI.chatBoxOpen() && (9 != e && 27 != e && 13 != e && 38 != e && 40 != e && 37 != e && 39 != e && 112 != e && 113 != e && 114 != e && 115 != e && 116 != e && 117 != e && 118 != e && 119 != e && 120 != e && 121 != e && 122 != e && 123 != e)
+      , shouldInterpretAsControlKey = function(keyCode, t) {
+        return !!UI.chatBoxOpen() && (9 != keyCode && 27 != keyCode && 13 != keyCode && 38 != keyCode && 40 != keyCode && 37 != keyCode && 39 != keyCode && 112 != keyCode && 113 != keyCode && 114 != keyCode && 115 != keyCode && 116 != keyCode && 117 != keyCode && 118 != keyCode && 119 != keyCode && 120 != keyCode && 121 != keyCode && 122 != keyCode && 123 != keyCode)
     }
-      , S = function() {
-        l = {
+      , resetNetworkKeyState = function() {
+        gamepadState = {
             forward: true,
             left: false,
             right: false,
@@ -232,7 +232,7 @@
         }
     };
     Input.toggleKeybinds = function() {
-        u ? Input.closeKeybinds() : Input.openKeybinds()
+        isKeybindsUiVisible ? Input.closeKeybinds() : Input.openKeybinds()
     }
     ,
     Input.getBind = function(e) {
@@ -252,34 +252,34 @@
     }
     ,
     Input.resetBinds = function() {
-        d = JSON.parse(JSON.stringify(p)),
+        keyBindDescription = JSON.parse(JSON.stringify(p)),
         Tools.removeSetting("keybinds"),
         c = null,
         M()
     }
     ;
-    var I = function() {
+    var initKeyBindsFromSettings = function() {
         if (null != config.settings.keybinds)
             for (var e in config.settings.keybinds)
-                d[e] = JSON.parse(JSON.stringify(config.settings.keybinds[e]))
+                keyBindDescription[e] = JSON.parse(JSON.stringify(config.settings.keybinds[e]))
     }
-      , P = function(e) {
-        var t = y[e];
-        if (27 == e && (t = ""),
-        null != t) {
-            for (var n in d)
-                d[n][0] == t && (d[n][0] = ""),
-                d[n].length > 1 && d[n][1] == t && (d[n][1] = "");
-            d[c][h] = t;
-            for (n in d)
-                d[n].length > 1 && "" == d[n][0] && "" != d[n][1] && (d[n] = [d[n][1]]),
-                2 == d[n].length && "" === d[n][1] && d[n].splice(-1, 1);
+      , P = function(keyCode) {
+        var keyName = keyNameByCode[keyCode];
+        if (27 == keyCode && (keyName = ""),
+        null != keyName) {
+            for (var n in keyBindDescription)
+                keyBindDescription[n][0] == keyName && (keyBindDescription[n][0] = ""),
+                keyBindDescription[n].length > 1 && keyBindDescription[n][1] == keyName && (keyBindDescription[n][1] = "");
+            keyBindDescription[c][h] = keyName;
+            for (n in keyBindDescription)
+                keyBindDescription[n].length > 1 && "" == keyBindDescription[n][0] && "" != keyBindDescription[n][1] && (keyBindDescription[n] = [keyBindDescription[n][1]]),
+                2 == keyBindDescription[n].length && "" === keyBindDescription[n][1] && keyBindDescription[n].splice(-1, 1);
             return M(),
             function() {
                 var e = {}
                   , t = "";
-                for (var n in d)
-                    null != p[n] && (t = JSON.stringify(d[n])) !== JSON.stringify(p[n]) && (e[n] = JSON.parse(t));
+                for (var n in keyBindDescription)
+                    null != p[n] && (t = JSON.stringify(keyBindDescription[n])) !== JSON.stringify(p[n]) && (e[n] = JSON.parse(t));
                 Object.keys(e).length > 0 ? Tools.setSettings({
                     keybinds: e
                 }) : Tools.removeSetting("keybinds")
@@ -296,7 +296,7 @@
           , i = null;
         t += '<div class="left-binds">';
         for (var o = 0; o < v.length; o++)
-            null != v[o][0] && ("" != v[o][0] ? (null == (i = d[v[o][1]]) ? (n = "&nbsp;",
+            null != v[o][0] && ("" != v[o][0] ? (null == (i = keyBindDescription[v[o][1]]) ? (n = "&nbsp;",
             r = "&nbsp;") : ("" == (n = i[0]) && (n = "&nbsp;"),
             "" == (r = 1 == i.length ? "" : i[1]) && (r = "&nbsp;")),
             t += '<div class="item"><div class="name">' + v[o][0] + '</div><div class="bind' + ("&nbsp;" == n ? " blank" : "") + '" onclick="Input.bindKey(event,\'' + v[o][1] + "',0)\">" + n + '</div><div class="bind' + ("&nbsp;" == r ? " blank" : "") + '" onclick="Input.bindKey(event,\'' + v[o][1] + "',1)\">" + r + "</div></div>",
@@ -306,77 +306,77 @@
         g = {};
         o = 0;
         var s = 0;
-        for (var a in d) {
-            for (o = 0; o < d[a].length; o++)
-                null != (s = b[d[a][o]]) && (g[s] = a);
-            null != m[a] && $("#keybind-" + a.toLowerCase()).html("" == d[a] ? "&nbsp;" : "(" + d[a] + ")")
+        for (var a in keyBindDescription) {
+            for (o = 0; o < keyBindDescription[a].length; o++)
+                null != (s = keyCodeByName[keyBindDescription[a][o]]) && (g[s] = a);
+            null != controlKeySet[a] && $("#keybind-" + a.toLowerCase()).html("" == keyBindDescription[a] ? "&nbsp;" : "(" + keyBindDescription[a] + ")")
         }
     };
     Input.openKeybinds = function() {
-        config.mobile || u || (UI.closeAllPanels("keybinds"),
+        config.mobile || isKeybindsUiVisible || (UI.closeAllPanels("keybinds"),
         M(),
         UI.showPanel("#keybinds"),
-        u = true)
+        isKeybindsUiVisible = true)
     }
     ,
     Input.closeKeybinds = function() {
-        u && (UI.hidePanel("#keybinds", u),
-        u = false,
+        isKeybindsUiVisible && (UI.hidePanel("#keybinds", isKeybindsUiVisible),
+        isKeybindsUiVisible = false,
         c = null)
     }
     ,
     Input.update = function() {
-        if (a && null != navigator.getGamepads) {
-            var e = navigator.getGamepads();
-            if (null != e && null != e.length && 0 != e.length && null != e[0]) {
-                var t = e[0];
-                if (!(t.buttons.length < 16)) {
-                    var n = t.buttons[12].pressed
-                      , r = t.buttons[13].pressed
-                      , i = t.buttons[15].pressed
-                      , s = t.buttons[14].pressed
-                      , u = t.buttons[0].pressed || t.buttons[2].pressed
-                      , c = t.buttons[1].pressed || t.buttons[3].pressed;
-                    l.up != n && (A("UP", n),
-                    l.up = n),
-                    l.down != r && (A("DOWN", r),
-                    l.down = r),
-                    l.right != i && (A("RIGHT", i),
-                    l.right = i),
-                    l.left != s && (A("LEFT", s),
-                    l.left = s),
-                    l.fire != u && (A("FIRE", u),
-                    l.fire = u),
-                    l.special != c && (A("SPECIAL", c),
-                    l.special = c);
-                    var h = new Vector(t.axes[1],t.axes[0])
+        if (isGamepadConnected && null != navigator.getGamepads) {
+            var gamepads = navigator.getGamepads();
+            if (null != gamepads && null != gamepads.length && 0 != gamepads.length && null != gamepads[0]) {
+                var gamepad = gamepads[0];
+                if (!(gamepad.buttons.length < 16)) {
+                    var n = gamepad.buttons[12].pressed
+                      , r = gamepad.buttons[13].pressed
+                      , i = gamepad.buttons[15].pressed
+                      , s = gamepad.buttons[14].pressed
+                      , u = gamepad.buttons[0].pressed || gamepad.buttons[2].pressed
+                      , c = gamepad.buttons[1].pressed || gamepad.buttons[3].pressed;
+                    gamepadState.up != n && (A("UP", n),
+                    gamepadState.up = n),
+                    gamepadState.down != r && (A("DOWN", r),
+                    gamepadState.down = r),
+                    gamepadState.right != i && (A("RIGHT", i),
+                    gamepadState.right = i),
+                    gamepadState.left != s && (A("LEFT", s),
+                    gamepadState.left = s),
+                    gamepadState.fire != u && (A("FIRE", u),
+                    gamepadState.fire = u),
+                    gamepadState.special != c && (A("SPECIAL", c),
+                    gamepadState.special = c);
+                    var h = new Vector(gamepad.axes[1],gamepad.axes[0])
                       , d = h.length()
                       , p = -h.angle() + Math.PI / 2
-                      , f = p = (p % o + o) % o;
-                    d > .2 ? (l.forward = true,
-                    O(f, d)) : (l.forward && !n && A("UP", false),
-                    l.forward = false)
+                      , f = p = (p % TWO_PI + TWO_PI) % TWO_PI;
+                    d > .2 ? (gamepadState.forward = true,
+                    handleRotation(f, d)) : (gamepadState.forward && !n && A("UP", false),
+                    gamepadState.forward = false)
                 }
             } else
-                a = false
+                isGamepadConnected = false
         }
     }
     ,
-    Input.unpressKey = function(e) {
-        delete n[e]
+    Input.unpressKey = function(keyCode) {
+        delete isPressedByKeyCode[keyCode]
     }
     ,
     Input.keyState = function(t) {
-        return e[t]
+        return lastTransmittedKeyState[t]
     }
     ,
     Input.clearKeys = function(n) {
         if (game.state === Network.STATE.PLAYING) {
-            for (var r of _)
-                if (e[r]) {
+            for (var r of networkKeyNames)
+                if (lastTransmittedKeyState[r]) {
                     if (n && (t[38] || t[40] || t[37] || t[39]))
                         continue;
-                    e[r] = false,
+                    lastTransmittedKeyState[r] = false,
                     R(r)
                 }
             for (var i in t)
@@ -410,7 +410,7 @@
     ,
     Input.setupTouch = function() {
         $(window).on("touchcancel", function(e) {
-            null != s && s.processOnEnd(e)
+            null != joystick && joystick.processOnEnd(e)
         });
         Input.addTouchRejection("#settings,#sidebar,#roomnamecontainer,#menu,#gameselector,#mainmenu,#scoredetailed,#invitefriends,#msg-alert,#msg-information");
         $("body").append('<div id="touch-joystick"></div><div id="touch-fire"><div class="circle"></div></div><div id="touch-special"><div class="circle"></div></div>'),
@@ -450,8 +450,8 @@
                 left: "50%"
             }
         };
-        (s = nipplejs.create(e)).on("end", Input.touchEnd),
-        s.on("move", Input.touchMove)
+        (joystick = nipplejs.create(e)).on("end", Input.touchEnd),
+        joystick.on("move", Input.touchMove)
     }
     ,
     Input.toggleMouse = function(e) {
@@ -495,34 +495,34 @@
     }
     ;
     var A = function(t, n) {
-        (e[t] == !n || n && null == e[t]) && (Network.sendKey(t, n),
-        e[t] = n)
+        (lastTransmittedKeyState[t] == !n || n && null == lastTransmittedKeyState[t]) && (Network.sendKey(t, n),
+        lastTransmittedKeyState[t] = n)
     }
-      , O = function(e, t) {
-        var n = Players.getMe();
-        if (null != n) {
-            var o = e - n.rot;
+      , handleRotation = function(rotation, touchForce) {
+        var player = Players.getMe();
+        if (null != player) {
+            var o = rotation - player.rot;
             o > Math.PI && (o -= 2 * Math.PI),
             o < -Math.PI && (o += 2 * Math.PI);
-            var s = Math.round(Math.abs(o) / (60 * config.ships[n.type].turnFactor) * 1e3);
+            var s = Math.round(Math.abs(o) / (60 * config.ships[player.type].turnFactor) * 1e3);
             if (!((s -= Math.round(game.ping)) < 10 || game.time - i < 100)) {
-                null != r && clearTimeout(r),
+                null != maybeRotationTimerId && clearTimeout(maybeRotationTimerId),
                 i = game.time;
                 var a = o > 0 ? "RIGHT" : "LEFT"
                   , l = o <= 0 ? "RIGHT" : "LEFT";
-                A("UP", !(null != t && t < .5)),
+                A("UP", !(null != touchForce && touchForce < .5)),
                 A(a, true),
                 A(l, false),
-                r = setTimeout(function() {
+                maybeRotationTimerId = setTimeout(function() {
                     A(a, false)
                 }, s)
             }
         }
     };
-    Input.touchMove = function(e, t) {
-        var n = -t.angle.radian + Math.PI / 2
-          , r = n = (n % o + o) % o;
-        O(r, t.force)
+    Input.touchMove = function(event, touchPoint) {
+        var n = -touchPoint.angle.radian + Math.PI / 2
+          , r = n = (n % TWO_PI + TWO_PI) % TWO_PI;
+        handleRotation(r, touchPoint.force)
     }
     ,
     Input.touchEnd = function(e, t) {
@@ -546,12 +546,12 @@
             void C("STRAFELEFT" === e ? "LEFT" : "RIGHT");
         -1 !== x.indexOf(e) && Network.sendKey(e, true)
     }
-      , R = function(t) {
-        if (3 != game.myType || "STRAFELEFT" !== t && "STRAFERIGHT" !== t)
-            -1 !== _.indexOf(t) && Network.sendKey(t, false);
+      , R = function(bind) {
+        if (3 != game.myType || "STRAFELEFT" !== bind && "STRAFERIGHT" !== bind)
+            -1 !== networkKeyNames.indexOf(bind) && Network.sendKey(bind, false);
         else {
-            R("STRAFELEFT" === t ? "LEFT" : "RIGHT");
-            e["STRAFERIGHT" === t ? "STRAFELEFT" : "STRAFERIGHT"] || R("SPECIAL")
+            R("STRAFELEFT" === bind ? "LEFT" : "RIGHT");
+            lastTransmittedKeyState["STRAFERIGHT" === bind ? "STRAFELEFT" : "STRAFERIGHT"] || R("SPECIAL")
         }
     }
 })();
