@@ -292,29 +292,35 @@ class Player {
         this.sprites.thruster2.alpha = e,
         this.sprites.thruster2Glow.alpha = e)
     }
-    kill(e) {
-        if (this.status = 1,
-        this.keystate = {},
-        this.pos.x = e.posX,
-        this.pos.y = e.posY,
-        this.speed = Vector.zero(),
-        this.me() && UI.resetPowerups(),
-        this.resetPowerups(),
-        this.hidden = true,
-        this.visibilityUpdate(),
-        this.stealthed && this.unstealth(),
-        !this.culled && true !== e.spectate) {
+    kill(ev) {
+        this.status = 1;
+        this.keystate = {};
+        this.pos.x = ev.posX;
+        this.pos.y = ev.posY;
+        this.speed = Vector.zero();
+        if (this.me()) { 
+            UI.resetPowerups();
+        }
+        this.resetPowerups();
+        this.hidden = true;
+        this.visibilityUpdate();
+        if (this.stealthed) {
+            this.unstealth();
+        }
+
+        if (!this.culled && !ev.spectate) {
             switch (this.type) {
-            case 1:
-                Particles.explosion(this.pos.clone(), Tools.rand(1.5, 2), Tools.randInt(2, 3));
-                break;
-            case 2:
-                Particles.explosion(this.pos.clone(), Tools.rand(2, 2.5), Tools.randInt(4, 7));
-                break;
-            case 3:
-            case 4:
-            case 5:
-                Particles.explosion(this.pos.clone(), Tools.rand(1.5, 2), Tools.randInt(2, 3))
+                case 1:
+                    Particles.explosion(this.pos.clone(), Tools.rand(1.5, 2), Tools.randInt(2, 3));
+                    break;
+                case 2:
+                    Particles.explosion(this.pos.clone(), Tools.rand(2, 2.5), Tools.randInt(4, 7));
+                    break;
+                case 3:
+                case 4:
+                case 5:
+                    Particles.explosion(this.pos.clone(), Tools.rand(1.5, 2), Tools.randInt(2, 3));
+                    break;
             }
             Graphics.shakeCamera(this.pos, this.me() ? 20 : 10),
             Sound.clearThruster(this.id),
@@ -530,20 +536,32 @@ class Player {
         this.state.thrustDir = 0,
         this.hidden = false,
         this.timedout = false,
-        this.visibilityUpdate(),
-        this.me() && UI.resetPowerups(),
-        Tools.decodeUpgrades(this, e.upgrades),
-        this.updatePowerups(),
-        (this.render || this.me()) && (this.scale = 0,
-        this.state.scaleLevel = 0),
-        this.stealthed && this.unstealth(),
-        this.me() && (game.myType = this.type,
-        game.spectatingID = null,
-        UI.aircraftSelected(this.type),
-        UI.visibilityHUD(true),
-        UI.hideSpectator()),
-        this.updateGraphics(1),
-        Sound.playerRespawn(this)
+        this.visibilityUpdate();
+        if (this.me()) { 
+            UI.resetPowerups(); 
+        }
+        Tools.decodeUpgrades(this, e.upgrades);
+        this.updatePowerups();
+        if (this.render || this.me()) { 
+            this.scale = 0;
+            this.state.scaleLevel = 0;
+        }
+        
+        if (this.stealthed)  {
+            this.unstealth();
+        }
+        
+        if (this.me()) {
+            game.myType = this.type;
+            game.spectatingID = null;
+            UI.aircraftSelected(this.type);
+            UI.visibilityHUD(true);
+            UI.hideSpectator();
+        }
+        this.updateGraphics(1);
+        Sound.playerRespawn(this);
+
+        triggerAmEvent('spawned', {respawn: true, id: this.id});
     }
     revive() {
         this.status = 0,

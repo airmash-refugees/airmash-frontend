@@ -567,7 +567,7 @@
 
         var playRegion = game.playRegion;
         var gameId = getSelectedGameId();
-        if (gameId) {
+        if (!gameId) {
             return;
         }
 
@@ -577,18 +577,7 @@
         }
         gameHasStarted = true;
 
-        var playRoom = game.playRoom;
-        var playRoomIndex = GameTypeById.indexOf(playRoom);
-        if (-1 != playRoomIndex) {
-            var playRegionGames = getPlayRegion(game.playRegion).games;
-            var roomIds = [];
-            for (var i = 0; i < playRegionGames.length; i++) {
-                if (playRegionGames[i].type == playRoomIndex) {
-                    roomIds.push(playRegionGames[i].id);
-                }
-            }
-            playRoom = roomIds[Tools.randInt(0, roomIds.length - 1)]
-        }
+        var playRoom = getPlayRoom();
 
         var data = getPlayData(game.playRegion, playRoom);
         game.playHost = data.host;
@@ -601,12 +590,17 @@
         }
         game.state = Network.STATE.CONNECTING;
         var player = {
-            name: playerName,
-            region: playRegion
+            name: playerName
         };
-        //         game.playInvited || (player.region = playRegion), <-- what is game.playInvited doing here??
+
+        if (!game.playInvited) {
+            player.region = playRegion;
+        }
+
         Tools.setSettings(player);
         UI.gameStart(playerName, isFirstTime);
+        
+        // this is for stats and not necessary for the game
         if (isFirstTime) {
             Tools.ajaxPost("/enter", {
                 id: config.settings.id,
@@ -617,6 +611,23 @@
             });
         }
     };
+
+    function getPlayRoom() {
+        var result = game.playRoom;
+        var playRoomIndex = GameTypeById.indexOf(result);
+        if (-1 != playRoomIndex) {
+            var playRegionGames = getPlayRegion(game.playRegion).games;
+            var roomIds = [];
+            for (var i = 0; i < playRegionGames.length; i++) {
+                if (playRegionGames[i].type == playRoomIndex) {
+                    roomIds.push(playRegionGames[i].id);
+                }
+            }
+            result = roomIds[Tools.randInt(0, roomIds.length - 1)]
+        }
+        return result;
+    }
+
     Games.prep = function() {
         if (Games.wipe(),
         2 == game.gameType) {

@@ -7,31 +7,40 @@ GAMES = {
     "data": [
         {
             "name": "Europe",
-            "id": "GB",
+            "id": "eu",
             "games": [
                 {
-                    "name": "UK Server",
+                    "name": "FFA wight",
                     "players": 7,
-                    "url": "wss://uk.airmash.online/ffa",
-                    "nameShort": "GB-ffa",
-                    "host": "GB-ffa",
+                    "url": "wss://game-eu-s1.airbattle.xyz/ffa",
+                    "nameShort": "ffa-wight",
+                    "host": "ffa-wight",
                     "type": 1,
-                    "id": "GB-ffa",
+                    "id": "ffa-wight",
                 },
                 {
-                    "name": "FRA Server",
+                    "name": "CTF fr Server",
                     "players": 7,
                     "url": "wss://lags.win/ctf",
-                    "nameShort": "ctf",
+                    "nameShort": "ctf fr",
                     "host": "ctf",
                     "type": 2,
                     "id": "ctf",
+                },
+                {
+                    "name": "CTF wight",
+                    "players": 7,
+                    "url": "wss://game-eu-s1.airbattle.xyz/ctf",
+                    "nameShort": "cft wight",
+                    "host": "ctf-wight",
+                    "type": 2,
+                    "id": "ctf-wight",
                 }
             ]
         },
         {
             "name": "USA",
-            "id": "USA",
+            "id": "us",
             "games": [
                 {
                     "name": "US Server",
@@ -42,10 +51,19 @@ GAMES = {
                     "type": 1,
                     "id": "us-ffa",
                 },
+                {
+                    "name": "US DEV",
+                    "players": 7,
+                    "url": "wss://game.airmash.steamroller.tk/dev",
+                    "nameShort": "us-dev",
+                    "host": "us-dev",
+                    "type": 1,
+                    "id": "us-dev",
+                },
             ]
         },
     ]
 }
 
 GAMES['data'] = json.dumps(GAMES['data'], separators=',:')
-print json.dumps(GAMES, separators=',:')
+print(json.dumps(GAMES, separators=',:'))
