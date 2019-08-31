@@ -967,9 +967,13 @@
     }
     ,
     UI.nameEntered = function() {
-        var e = $("#playername").val().trim();
-        e.length > 0 ? (game.myOriginalName = e,
-        Games.start(e, true)) : Games.highlightInput("#playername")
+        var playerName = $("#playername").val().trim();
+        if (playerName.length > 0) {
+            game.myOriginalName = playerName;
+            Games.start(playerName, true);
+        } else {
+            Games.highlightInput("#playername");
+        }
     }
     ,
     UI.selectUpgrade = function(e) {
