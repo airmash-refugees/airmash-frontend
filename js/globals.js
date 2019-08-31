@@ -1,4 +1,19 @@
 (function() {
+    const subscriptions = {};
+    window.triggerAmEvent = function(evName, data) {
+        var subs = subscriptions[evName];
+        if (!subs) {
+            return;
+        }
+        for (let i = 0; i < subs.length; i++) {
+            subs[i](data);
+        }
+    };
+    window.subscribeToAmEvent = function(evName, subscriber) {
+        var subs = subscriptions[evName] || [];
+        subs.push(subscriber);
+        subscriptions[evName] = subs;
+    };
     window.DEVELOPMENT = false;
     window.game = {
         protocol: 5,
@@ -176,20 +191,29 @@
     window.Games = {},
     window.Sound = {};
     var scheduleFrame = function(fractionalFramesSinceLastFrame, skipGraphicsRendering) {
-        Tools.updateTime(fractionalFramesSinceLastFrame),
-        Tools.debugStartFrame(),
-        game.state == Network.STATE.PLAYING ? (Input.update(),
-        Network.detectConnectivity(),
-        Players.update(),
-        Mobs.update(),
-        Particles.update(),
-        Games.update(),
-        Sound.update()) : game.state == Network.STATE.LOGIN ? Tools.updateReel() : Sound.update(),
-        Graphics.update(),
-        skipGraphicsRendering || Graphics.render(),
-        Tools.debugEndFrame()
-    }
-      , scheduleOccasionalFrameWhileBlurred = function() {
+        Tools.updateTime(fractionalFramesSinceLastFrame);
+        Tools.debugStartFrame();
+        if (game.state == Network.STATE.PLAYING) { 
+            Input.update();
+            Network.detectConnectivity();
+            Players.update();
+            Mobs.update();
+            Particles.update();
+            Games.update();
+            Sound.update();
+        } else if (game.state == Network.STATE.LOGIN) {
+            Tools.updateReel();
+        } else {
+            Sound.update();
+        }
+        Graphics.update();
+        if (!skipGraphicsRendering) {
+            Graphics.render();
+        }
+        Tools.debugEndFrame();
+        triggerAmEvent('tick');
+    };
+    var scheduleOccasionalFrameWhileBlurred = function() {
         var msSinceLastFrame = performance.now() - game.time;
         msSinceLastFrame > 450 && !game.focus && scheduleFrame(msSinceLastFrame / 16.666, true)
     };

@@ -967,9 +967,13 @@
     }
     ,
     UI.nameEntered = function() {
-        var e = $("#playername").val().trim();
-        e.length > 0 ? (game.myOriginalName = e,
-        Games.start(e, true)) : Games.highlightInput("#playername")
+        var playerName = $("#playername").val().trim();
+        if (playerName.length > 0) {
+            game.myOriginalName = playerName;
+            Games.start(playerName, true);
+        } else {
+            Games.highlightInput("#playername");
+        }
     }
     ,
     UI.selectUpgrade = function(e) {
@@ -1046,40 +1050,48 @@
         e && UI.showMessage("alert", '<span class="info">SOUND</span>' + (config.settings.sound ? "Enabled" : "Disabled"), 3e3)
     }
     ,
-    UI.gameStart = function(e, t) {
-        t && ($("#login-ui").remove(),
-        UI.show("#logosmall"),
-        UI.show("#menu", true),
-        config.mobile || UI.show("#chatbox"),
-        UI.show("#roomnamecontainer"),
-        UI.show("#scoreboard"),
-        UI.show("#scorebig"),
-        UI.show("#settings"),
-        UI.show("#sidebar"),
-        config.mobile && H(),
-        config.settings.helpshown || (UI.showHelp(true),
-        config.settings.helpshown = true,
-        Tools.setSettings({
-            helpshown: true
-        }))),
-        UI.hide("#gamespecific"),
-        $("#gameinfo").html("&nbsp;"),
-        $("#gameinfo").addClass("ingame"),
-        currentUpgradeValueByName = {},
-        UI.resetUpgrades(),
-        UI.hideSpectator(),
-        UI.resetPowerups(),
-        $("#open-menu").html("Connecting..."),
-        game.myName = e,
-        Network.setup()
-    }
-    ;
-    var H = function() {
-        Y(),
+    UI.gameStart = function(playerName, isFirstTime) {
+        if (isFirstTime) { 
+            $("#login-ui").remove();
+            UI.show("#logosmall");
+            UI.show("#menu", true);
+            if (!config.mobile) {
+                 UI.show("#chatbox");
+            }
+
+            UI.show("#roomnamecontainer");
+            UI.show("#scoreboard");
+            UI.show("#scorebig");
+            UI.show("#settings");
+            UI.show("#sidebar");
+            if (config.mobile) {
+                setupMobile();
+            }
+            if (!config.settings.helpshown) { 
+                UI.showHelp(true);
+                config.settings.helpshown = true;
+                Tools.setSettings({
+                    helpshown: true
+                });
+            }
+        }
+        UI.hide("#gamespecific");
+        $("#gameinfo").html("&nbsp;");  
+        $("#gameinfo").addClass("ingame");
+        currentUpgradeValueByName = {};
+        UI.resetUpgrades();
+        UI.hideSpectator();
+        UI.resetPowerups();
+        $("#open-menu").html("Connecting...");
+        game.myName = playerName;
+        Network.setup();
+    };
+    var setupMobile = function() {
+        setupMobileUI(),
         Graphics.toggleFullscreen(),
         Input.setupTouch()
-    }
-      , Y = function() {
+    };
+    var setupMobileUI = function() {
         $("#howtoplay").addClass("mobile"),
         $("#howtoplay").html('<div class="header">HOW TO PLAY</div><div class="mobile-graphic"></div><div class="commands">For the best game experience play on a PC</div>')
     };

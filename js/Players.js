@@ -156,28 +156,36 @@
         null != n && n.reteam(t.team)
     }
     ;
-    Players.kill = function(t) {
-        var n = playersById[t.id];
-        if (null != n)
-            if (0 != t.killer || 0 != t.posX || 0 != t.posY) {
-                if (n.kill(t),
-                n.me()) {
-                    UI.visibilityHUD(false);
-                    var r = playersById[t.killer];
-                    null != r && UI.killedBy(r),
-                    UI.showSpectator('<div onclick="Network.spectateNext()" class="spectate">ENTER SPECTATOR MODE</div>')
-                } else
-                    t.killer === game.myID && UI.killed(n);
-                n.me() || n.id != game.spectatingID || 3 != game.gameType || Games.spectatorSwitch(n.id)
+    Players.kill = function(ev) {
+        var player = playersById[ev.id];
+        if (!player) {
+            return;
+        }
+        
+        triggerAmEvent('playerkilled', {
+            killedID: ev.id, 
+            killerID: ev.killer
+        });
+
+        if (0 != ev.killer || 0 != ev.posX || 0 != ev.posY) {
+            if (player.kill(ev),
+            player.me()) {
+                UI.visibilityHUD(false);
+                var r = playersById[ev.killer];
+                null != r && UI.killedBy(r),
+                UI.showSpectator('<div onclick="Network.spectateNext()" class="spectate">ENTER SPECTATOR MODE</div>')
             } else
-                !function(e) {
-                    e.kill({
-                        posX: 0,
-                        posY: 0,
-                        spectate: true
-                    }),
-                    UI.visibilityHUD(false)
-                }(n)
+                ev.killer === game.myID && UI.killed(player);
+            player.me() || player.id != game.spectatingID || 3 != game.gameType || Games.spectatorSwitch(player.id)
+        } else
+            !function(e) {
+                e.kill({
+                    posX: 0,
+                    posY: 0,
+                    spectate: true
+                }),
+                UI.visibilityHUD(false)
+            }(player)
     }
     ,
     Players.destroy = function(t) {
@@ -205,5 +213,8 @@
         for (var t in playersById)
             playersById[t].destroy(true),
             delete playersById[t]
+    },
+    Players.all = function() { // SPATIE
+        return playersById;
     }
 })();

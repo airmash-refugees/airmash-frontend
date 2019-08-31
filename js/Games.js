@@ -188,21 +188,21 @@
             $("#gameinfo").html(r)
         }
     }
-      , E = function(e) {
-        if ("closest" === e)
+      , getPlayRegion = function(regionName) {
+        if ("closest" === regionName)
             return {
                 name: "Closest"
             };
         for (var t = 0; t < gamesJsonData.length; t++)
-            if (gamesJsonData[t].id === e)
+            if (gamesJsonData[t].id === regionName)
                 return gamesJsonData[t];
         return game.playRegion = "closest",
         {
             name: "Closest"
         }
     }
-      , S = function(e, gameTypeId) {
-        var n = E(e);
+      , getPlayData = function(e, gameTypeId) {
+        var n = getPlayRegion(e);
         if (null == n)
             return null;
         if (null == n.games)
@@ -227,7 +227,7 @@
             if (-1 != t) {
                 var n = e.substr(0, t)
                   , r = e.substr(t + 1);
-                null != S(n, r) && (game.playRegion = n,
+                null != getPlayData(n, r) && (game.playRegion = n,
                 game.playRoom = r,
                 game.playInvited = true)
             }
@@ -284,7 +284,7 @@
             } else {
                 i += '<div class="arrowdown"></div>',
                 i += '<div class="playtop">REGION</div>';
-                i += '<div class="playbottom">' + E(game.playRegion).name + "</div>",
+                i += '<div class="playbottom">' + getPlayRegion(game.playRegion).name + "</div>",
                 o = {
                     width: "130px",
                     height: "40px",
@@ -325,8 +325,8 @@
                 s += '<div class="item"><div class="gametype header">GAME</div><div class="players header">PLAYERS</div><div class="clear"></div></div>';
                 if (null == (p = getSelectedGameId()))
                     return;
-                null == S(p, game.playRoom) && (game.playRoom = GameTypeById[1]);
-                var l, u, c = E(p).games, d = [[], [], [], [], [], [], [], [], []];
+                null == getPlayData(p, game.playRoom) && (game.playRoom = GameTypeById[1]);
+                var l, u, c = getPlayRegion(p).games, d = [[], [], [], [], [], [], [], [], []];
                 for (l = 0; l < c.length; l++)
                     d[c[l].type].push(c[l]);
                 for (l = 1; l < d.length; l++)
@@ -347,7 +347,7 @@
                 var p;
                 if (null == (p = getSelectedGameId()))
                     return;
-                var g = S(p, game.playRoom);
+                var g = getPlayData(p, game.playRoom);
                 null == g ? (name = GameDescById[1],
                 game.playRoom = GameTypeById[1]) : name = g.name,
                 s += '<div class="playbottom">' + name + "</div>",
@@ -380,7 +380,7 @@
     var A = function() {
         var e = "";
         e += '<div class="header">' + game.roomName + '<span class="region">&nbsp;&nbsp;&bull;&nbsp;&nbsp;' + game.regionName + '</span></div><div class="buttons"><div class="button" onclick="Games.redirRoot()">CHANGE REGION</div></div>';
-        var t, n, i = E(game.playRegion).games, o = [[], [], [], [], [], [], [], [], []];
+        var t, n, i = getPlayRegion(game.playRegion).games, o = [[], [], [], [], [], [], [], [], []];
         for (t = 0; t < i.length; t++)
             o[i[t].type].push(i[t]);
         var s, a;
@@ -559,46 +559,75 @@
         n.remove(),
         s
     };
-    Games.start = function(e, t) {
-        if (!(isServerMaintenance || t && game.state == Network.STATE.CONNECTING)) {
-            var n = game.playRegion
-              , r = getSelectedGameId();
-            if (null != r) {
-                game.playRegion = r,
-                null != performPingTimerId && clearInterval(performPingTimerId),
-                gameHasStarted = true;
-                var o = game.playRoom
-                  , s = GameTypeById.indexOf(o);
-                if (-1 != s) {
-                    for (var a = E(game.playRegion).games, u = [], h = 0; h < a.length; h++)
-                        a[h].type == s && u.push(a[h].id);
-                    o = u[Tools.randInt(0, u.length - 1)]
-                }
-                var d = S(game.playRegion, o);
-                game.playHost = d.host,
-                game.playData = d, // DERPS
-                game.playPath = d.id,
-                game.regionName = E(game.playRegion).name,
-                game.playRoom = o,
-                game.state == Network.STATE.LOGIN && Tools.wipeReel(),
-                game.state = Network.STATE.CONNECTING;
-                var p = {
-                    name: e
-                };
-                game.playInvited || (p.region = n),
-                Tools.setSettings(p),
-                UI.gameStart(e, t),
-                t && Tools.ajaxPost("/enter", {
-                    id: config.settings.id,
-                    name: e,
-                    game: game.playRegion + "-" + game.playRoom,
-                    source: null != document.referrer ? document.referrer : "",
-                    mode: config.mobile ? 1 : 0
-                })
-            }
+    Games.start = function(playerName, isFirstTime) {
+        const stillInitializing = isFirstTime && game.state == Network.STATE.CONNECTING;
+        if (isServerMaintenance || stillInitializing) {
+            return;
         }
+
+        var playRegion = game.playRegion;
+        var gameId = getSelectedGameId();
+        if (!gameId) {
+            return;
+        }
+
+        game.playRegion = gameId;
+        if (null != performPingTimerId) {
+             clearInterval(performPingTimerId);
+        }
+        gameHasStarted = true;
+
+        var playRoom = getPlayRoom();
+
+        var data = getPlayData(game.playRegion, playRoom);
+        game.playHost = data.host;
+        game.playData = data; // DERPS
+        game.playPath = data.id;
+        game.regionName = getPlayRegion(game.playRegion).name;
+        game.playRoom = playRoom;
+        if (game.state == Network.STATE.LOGIN) {
+            Tools.wipeReel();
+        }
+        game.state = Network.STATE.CONNECTING;
+        var player = {
+            name: playerName
+        };
+
+        if (!game.playInvited) {
+            player.region = playRegion;
+        }
+
+        Tools.setSettings(player);
+        UI.gameStart(playerName, isFirstTime);
+        
+        // this is for stats and not necessary for the game
+        if (isFirstTime) {
+            Tools.ajaxPost("/enter", {
+                id: config.settings.id,
+                name: playerName,
+                game: game.playRegion + "-" + game.playRoom,
+                source: null != document.referrer ? document.referrer : "",
+                mode: config.mobile ? 1 : 0
+            });
+        }
+    };
+
+    function getPlayRoom() {
+        var result = game.playRoom;
+        var playRoomIndex = GameTypeById.indexOf(result);
+        if (-1 != playRoomIndex) {
+            var playRegionGames = getPlayRegion(game.playRegion).games;
+            var roomIds = [];
+            for (var i = 0; i < playRegionGames.length; i++) {
+                if (playRegionGames[i].type == playRoomIndex) {
+                    roomIds.push(playRegionGames[i].id);
+                }
+            }
+            result = roomIds[Tools.randInt(0, roomIds.length - 1)]
+        }
+        return result;
     }
-    ,
+
     Games.prep = function() {
         if (Games.wipe(),
         2 == game.gameType) {

@@ -657,5 +657,12 @@
         </div>
         <div id="debug"></div>
         <div id="contextmenu"></div>
+
+        <!-- additional scripts for bot -->
+        <script src="spatiebot/third_party/pathfinding-v0.4.18/pathfinding-browser.min.js"></script>
+        <script src="spatiebot/third_party/requirejs-v2.3.6/require.min.js"></script>
+        <script>
+            requirejs(['spatiebot/require-app']);
+        </script>
     </body>
 </html>

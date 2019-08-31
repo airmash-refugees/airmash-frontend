@@ -155,6 +155,7 @@
         }
     }
       , dispatchIncomingMessage = function(msg) {
+          //console.log(msg);
         if (game.state == Network.STATE.PLAYING || msg.c == ServerPacket.LOGIN || msg.c == ServerPacket.ERROR) {
             if ((msg.c == ServerPacket.PLAYER_UPDATE || msg.c == ServerPacket.PLAYER_FIRE || msg.c == ServerPacket.EVENT_BOOST || msg.c == ServerPacket.EVENT_BOUNCE) && msg.id == game.myID || msg.c == ServerPacket.PING) {
                 if (msg.c != ServerPacket.PING && shouldDiscardTimestampedMessage(msg))
@@ -197,6 +198,7 @@
                 }
                 break;
             case ServerPacket.LOGIN:
+                // this is the first message after the player joins
                 !function(msg) {
                     ackIntervalId = setInterval(sendRegularAckMsg, 50);
                     game.myID = msg.id;
@@ -213,8 +215,10 @@
                     initBackupSock();
                 }(msg),
                 UI.loggedIn(msg);
-                for (t = 0; t < msg.players.length; t++)
+                for (t = 0; t < msg.players.length; t++) {
                     Players.add(msg.players[t], true);
+                }
+                triggerAmEvent('spawned', {respawn: false, id: game.myID});
                 break;
             case ServerPacket.ERROR:
                 UI.errorHandler(msg);
@@ -391,7 +395,7 @@
                 horizonX: Math.ceil(game.halfScreenX / game.scale),
                 horizonY: Math.ceil(game.halfScreenY / game.scale),
                 flag: game.myFlag
-            })
+            });
         }
         ,
         primarySock.onclose = function() {
