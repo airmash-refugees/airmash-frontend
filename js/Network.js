@@ -382,8 +382,7 @@
         if (DEVELOPMENT) {
             currentSockUrl = -1 != document.domain.indexOf("192.168.") ? "ws://" + document.domain + ":8010/" + game.playPath : "ws://" + game.playHost + ".airmash.devel:8000/" + game.playPath
         } else
-            //r = "wss://game-" + game.playHost + ".airma.sh/" + game.playPath;
-            currentSockUrl = game.playData.url; // DERPS
+            currentSockUrl = "wss://" + game.playHost + "/" + game.playPath;
         backupSock && backupSockIsConnected && backupSock.close(),
         (primarySock = new WebSocket(currentSockUrl)).binaryType = "arraybuffer",
         primarySock.onopen = function() {

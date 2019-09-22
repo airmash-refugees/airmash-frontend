@@ -142,7 +142,7 @@
     }
     ;
     var refreshGamesJsonData = function(successCallback, t) {
-        var url = "games"; // DERPS
+        var url = "https://airmash.online/games";
         t && (url += "?main=1"),
         $.ajax({
             url: url,
@@ -581,8 +581,7 @@
 
         var data = getPlayData(game.playRegion, playRoom);
         game.playHost = data.host;
-        game.playData = data; // DERPS
-        game.playPath = data.id;
+        game.playPath = data.path;
         game.regionName = getPlayRegion(game.playRegion).name;
         game.playRoom = playRoom;
         if (game.state == Network.STATE.LOGIN) {
@@ -623,7 +622,7 @@
                     roomIds.push(playRegionGames[i].id);
                 }
             }
-            result = roomIds[Tools.randInt(0, roomIds.length - 1)]
+            result = roomIds[0];
         }
         return result;
     }
