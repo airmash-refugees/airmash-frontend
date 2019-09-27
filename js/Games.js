@@ -2,8 +2,8 @@
     var e = false
       , t = false
       , gamesSelectorVisible = false
-      , GameDescById = ["", "Free For All", "Capture The Flag", "Battle Royale"]
-      , GameTypeById = ["", "ffa", "ctf", "br"]
+      , GameDescById = ["", "Free For All", "Capture The Flag", "Battle Royale", "Development"]
+      , GameTypeById = ["", "ffa", "ctf", "br", "dev"]
       , totalPlayersOnlineCount = 0
       , gameHostState = {}
       , inProgressPingCount = 0
@@ -309,7 +309,7 @@
     }
       , M = function(e) {
         var t = '<div class="infott">';
-        return 1 == e ? t += "Everyone versus everyone deathmatch. No teams." : 2 == e ? t += "Players split into 2 teams. 2 flags are placed inside each base. The objective is to move the enemy flag from their base to your base." : 3 == e && (t += "Players spawn at random locations all across the map. Destroyed players will not respawn. Last player standing wins."),
+        return 1 == e ? t += "Everyone versus everyone deathmatch. No teams." : 2 == e ? t += "Players split into 2 teams. 2 flags are placed inside each base. The objective is to move the enemy flag from their base to your base." : 3 == e ? t += "Players spawn at random locations all across the map. Destroyed players will not respawn. Last player standing wins." : 4 == e && (t += "Game environment for development and testing."),
         t += '<div class="arrow"></div></div>'
     };
     Games.updateType = function(trueOrFalseOrUndefined, clickEvent) {
