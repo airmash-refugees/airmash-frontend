@@ -767,7 +767,7 @@
     ,
     UI.openInvite = function() {
         isInviteVisible || (UI.closeAllPanels("invite"),
-        game.inviteLink = "https://airma.sh/#" + game.playRegion + "-" + game.playRoom,
+        game.inviteLink = "https://airmash.online/#" + game.playRegion + "-" + game.playRoom,
         $("#invite-link").html(game.inviteLink),
         $("#invite-link").attr("href", game.inviteLink),
         UI.showPanel("#invitefriends"),
