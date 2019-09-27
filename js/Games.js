@@ -449,7 +449,6 @@
         performPingTimerId = setInterval(Games.performPing, 300);
     };
     Games.performPing = function() {
-        return; // DERPS
         if (!(inProgressPingCount > 3 || gameHasStarted)) {
             var e = 9999
               , gameKey = null;
@@ -461,7 +460,7 @@
             else {
                 gameHostState[gameKey].num++;
                 var pingUrl;
-                pingUrl = DEVELOPMENT ? "/ping" : "https://game-" + gameKey + ".airma.sh/ping",
+                pingUrl = DEVELOPMENT ? "/ping" : "https://" + gameKey + "/ping",
                 performSinglePing(gameKey, pingUrl, function() {
                     performSinglePing(gameKey, pingUrl)
                 })
@@ -473,31 +472,28 @@
         if (null != gameHostState[gameKey] && !gameHasStarted) {
             inProgressPingCount++;
             var now = performance.now();
-            $.ajax({
-                url: pingUrl,
-                dataType: "json",
-                cache: false,
-                timeout: 2e3,
-                success: function(response) {
-                    if (!gameHasStarted && (inProgressPingCount--,
-                    1 == response.pong && null != gameHostState[gameKey])) {
-                        var delay = performance.now() - now;
-                        if (Math.abs(gameHostState[gameKey].ping - delay) < .1 * delay && gameHostState[gameKey].threshold++,
-                        gameHostState[gameKey].threshold >= 2)
-                            return delay < gameHostState[gameKey].ping && (gamesJsonData[gameHostState[gameKey].server].ping = delay,
-                            Games.findClosest(),
-                            Games.updateRegion()),
-                            void delete gameHostState[gameKey];
-                        delay < gameHostState[gameKey].ping && (gameHostState[gameKey].ping = delay,
-                        gamesJsonData[gameHostState[gameKey].server].ping = delay,
+            fetch(pingUrl, {
+                method: "HEAD",
+                mode: "no-cors",
+                cache: "no-cache"
+            }).then(response => {
+                if (!gameHasStarted && (inProgressPingCount--,
+                  null != gameHostState[gameKey])) {
+                    var delay = performance.now() - now;
+                    if (Math.abs(gameHostState[gameKey].ping - delay) < .1 * delay && gameHostState[gameKey].threshold++,
+                    gameHostState[gameKey].threshold >= 2)
+                        return delay < gameHostState[gameKey].ping && (gamesJsonData[gameHostState[gameKey].server].ping = delay,
                         Games.findClosest(),
-                        Games.updateRegion(),
-                        null != onSuccess && onSuccess())
-                    }
-                },
-                error: function() {
-                    inProgressPingCount--
+                        Games.updateRegion()),
+                        void delete gameHostState[gameKey];
+                    delay < gameHostState[gameKey].ping && (gameHostState[gameKey].ping = delay,
+                    gamesJsonData[gameHostState[gameKey].server].ping = delay,
+                    Games.findClosest(),
+                    Games.updateRegion(),
+                    null != onSuccess && onSuccess())
                 }
+            }).catch(error => {
+                inProgressPingCount--
             })
         }
     };
