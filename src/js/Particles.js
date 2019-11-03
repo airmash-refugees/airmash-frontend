@@ -1,4 +1,5 @@
-(function() {
+import Vector from './Vector.js';
+
     class e {
         constructor(e, t, n, r) {
             this.maxParticles = t,
@@ -337,4 +338,3 @@
         EMITTER_EXPLOSION_FRAGMENT: 100
     };
     Particles.PTYPE = n
-})();

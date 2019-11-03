@@ -1,4 +1,3 @@
-(function() {
     const subscriptions = {};
     window.triggerAmEvent = function(evName, data) {
         var subs = subscriptions[evName];
@@ -235,4 +234,3 @@
         ticker.start(),
         setInterval(scheduleOccasionalFrameWhileBlurred, 500)
     })
-})();

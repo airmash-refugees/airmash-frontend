@@ -1,4 +1,5 @@
-(function() {
+import 'perfect-scrollbar/jquery';
+
     var minimapMobs = {}
       , ignoredPlayerIdSet = {}
       , delayedGraphicsResizeTimer = null
@@ -1341,4 +1342,3 @@
             })
         }
     }
-})();

@@ -1,3 +1,5 @@
+import Vector from './Vector.js';
+
 class Player {
     constructor(e, t) {
         this.id = e.id,
@@ -871,3 +873,5 @@ class Player {
         this.col.rotation = this.rot)
     }
 }
+
+export default Player;

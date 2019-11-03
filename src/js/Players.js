@@ -1,4 +1,6 @@
-!(function() {
+import Player from './Player.js';
+import Vector from './Vector.js';
+
     var playersById = {}
       , t = [-1, -1, -1]
       , n = ["badge_gold", "badge_silver", "badge_bronze"];
@@ -217,4 +219,3 @@
     Players.all = function() { // SPATIE
         return playersById;
     }
-})();

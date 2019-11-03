@@ -1,4 +1,5 @@
-(function() {
+import Vector from './Vector.js';
+
     var e = false
       , t = false
       , gamesSelectorVisible = false
@@ -906,4 +907,3 @@
         3 == game.gameType && minimapIsInitialized && (firewallStatus.radius += firewallStatus.speed / 60 * game.timeFactor,
         Games.popFirewall(firewallStatus.pos, firewallStatus.radius))
     }
-})();

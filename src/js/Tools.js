@@ -1,4 +1,5 @@
-(function() {
+import Vector from './Vector.js';
+
     var bucketState = {}
       , clientErrorCount = 0
       , reelState = {
@@ -492,4 +493,3 @@
         }
         return t
     }
-})();

@@ -1,3 +1,5 @@
+import Vector from './Vector.js';
+
 class Mob {
     constructor(e) {
         this.id = e.id,
@@ -249,3 +251,5 @@ class Mob {
         }
     }
 }
+
+export default Mob;

@@ -1,4 +1,6 @@
-!(function () {
+import Vector from './Vector.js';
+import Mob from './Mob.js';
+
     var mobs = {};
     var doodads = [];
     var someFlag = {};
@@ -117,4 +119,3 @@
                     doodads.splice(l, 1),
                     delete someFlag[a])
     };
-})();

@@ -1,4 +1,5 @@
-(function() {
+import Vector from './Vector.js';
+
     var lastTransmittedKeyState = {}
       , t = {}
       , isPressedByKeyCode = {}
@@ -554,4 +555,3 @@
             lastTransmittedKeyState["STRAFERIGHT" === bind ? "STRAFELEFT" : "STRAFERIGHT"] || R("SPECIAL")
         }
     }
-})();

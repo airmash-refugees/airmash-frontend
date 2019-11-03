@@ -1,4 +1,5 @@
-(function() {
+import Vector from './Vector.js';
+
     var primarySock = null
       , backupSock = null
       , backupSockIsConnected = false
@@ -898,4 +899,3 @@
         CONNECTING: 2,
         PLAYING: 3
     }
-})();

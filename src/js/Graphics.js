@@ -1,4 +1,5 @@
-(function() {
+import Vector from './Vector.js';
+
     var e, t = {
         position: Vector.zero(),
         center: Vector.zero(),
@@ -316,4 +317,3 @@
         e.render(i.hudHealth, r.hudTextureHealth, true),
         e.render(i.game)
     }
-})();
