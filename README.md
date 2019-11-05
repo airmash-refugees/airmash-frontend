@@ -1,3 +1,4 @@
+[![Build Status](https://dev.azure.com/airmash/airmash/_apis/build/status/airmash-refugees.airmash-frontend?branchName=master)](https://dev.azure.com/airmash/airmash/_build/latest?definitionId=2&branchName=master)
 
 # airmash-frontend
 
@@ -5,26 +6,36 @@ This repository contains the last available copy of the Airmash frontend app,
 as extracted from archive.org, with a bunch of edits intended to make things
 more readable and maintainable:
 
-- Tidied HTML (HTML tidy, introduced a bunch of bugs, was kindof a mistake)
+- Tidied HTML (HTML tidy, introduced a bunch of bugs, was kind of a mistake).
 - Identified all the third party JS library versions in use and replaced them
-  with canonical upstream releases, except for pixi.js which appears to have
-  some kind of patches applied. Using official pixi.js breaks the HUD
-  rendering.
-- Carved up all the original JS into files living under ``js/``. Each file
+  with canonical upstream releases. The official pixi.js breaks the HUD 
+  rendering, so there is a patch to make it match the Airmash release.
+- Carved up all the original JS into files living under ``src/js/``. Each file
   represents what appears to be one of the original source modules.
 - Reindented all the JS, and applied some highly selective use of
   ``jsnice.org`` to improve readability of some functions, particularly in
   graphics. The Git log details each use individually.
 - Modified the connection code to not rely on airma.sh DNS layout. Instead
-  it takes the websocket URL directly from `games` JSON file, which currently
-  points at Steamroller's US dev server. These edits appear individually in the
-  Git log, and have been tagged with ``// DERPS`` in the JS.
-- Hidden the login/logout links since there is no longer any backend to handle
-  them
-- Server ping checks are disabled simply to avoid spamming the dev console when
-  trying to figure out other issues
-- Print a nice error when WebSocket connections fail
+  it reads the game data from `https://airmash.online/games`, and constructs
+  each server's WebSocket (`wss://`) URL from ``host`` and ``path``.
+- Hidden the login/logout links since there is no longer any authentication
+  backend to handle them.
+- Print a nice error when WebSocket connections fail.
 
+### Building and deployment
+
+The code has been repackaged with npm to use [webpack](https://webpack.js.org/) for
+building the final frontend code. To build locally, issue these commands after cloning
+the repo:
+
+```
+npm install
+npm run build
+```
+
+The output will be created in `dist/`, and can be served using a local web server for testing (e.g. something like `cd dist ; python3 -m http.server`).
+
+The latest successful build of this repo is deployed automatically to https://test.airmash.online. 
 
 ### This repository contains proprietary code
 
@@ -33,12 +44,12 @@ The original Airmash game was never published as free software, and so the
 appears disinterested in updating Airmash, but that does not mean their rights
 have disappeared. Don't copy code you find here into projects you care about!
 
-The existence of this repository is not even a grey area -- it's directly
+The existence of this repository is not even a grey area – it's directly
 infringing. But it seems such infringement is the only option we have left to
 keep the game alive.
 
 Pristine copies of the original assets are available under the
-[archive.org-original](https://github.com/derps-airmash/airmash-frontend/tree/archive.org-original)
+[archive.org-original](https://github.com/airmash-refugees/airmash-frontend/tree/archive.org-original)
 tag.
 
 ### Patches welcome
