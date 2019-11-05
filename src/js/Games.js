@@ -1,4 +1,4 @@
-import Vector from './Vector.js';
+import Vector from './Vector';
 
     var e = false
       , t = false

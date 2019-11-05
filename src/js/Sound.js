@@ -1,4 +1,5 @@
-(function() {
+import { Howl } from 'howler';
+
     var e = {}
       , t = {}
       , n = {}
@@ -322,4 +323,3 @@
           , r = game.halfScreenX / game.scale;
         return Tools.clamp(.8 * n / r, -1, 1)
     }
-})();

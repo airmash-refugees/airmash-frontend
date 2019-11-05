@@ -1,4 +1,5 @@
-import Vector from './Vector.js';
+import Vector from './Vector';
+import 'js-cookie'; // $.getJSON
 
     var e, t = {
         position: Vector.zero(),

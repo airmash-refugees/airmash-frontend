@@ -1,5 +1,5 @@
-import Vector from './Vector.js';
-import Mob from './Mob.js';
+import Vector from './Vector';
+import Mob from './Mob';
 
     var mobs = {};
     var doodads = [];

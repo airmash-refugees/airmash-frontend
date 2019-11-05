@@ -1,4 +1,4 @@
-import Vector from './Vector.js';
+import Vector from './Vector';
 
 class Player {
     constructor(e, t) {
