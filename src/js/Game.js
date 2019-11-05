@@ -49,7 +49,6 @@ window.game = {
     playPath: "",
     playInvited: false,
     gameType: null,
-    regionName: "",
     inviteLink: "",
     lastFlagSet: "xx",
     reloading: false,
