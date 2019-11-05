@@ -13,6 +13,7 @@ class e {
         this.shadow = r,
         e.addChild(this.container)
     }
+
     addParticle(e, t, n, r, i, o, s, a, l, u, c, h, d, p) {
         if (!(game.timeFactorUncapped > 20 || this.particles.length >= this.maxParticles)) {
             var f = Textures.sprite(t)
@@ -47,6 +48,7 @@ class e {
             this.particles.push(g)
         }
     }
+
     wipe() {
         this.emitters = {},
         this.emitterId = 0;
@@ -57,6 +59,7 @@ class e {
         this.first = -1,
         this.last = -1
     }
+
     addEmitter(e, t, n, r, i) {
         game.timeFactorUncapped > 20 || (this.emitters[this.emitterId] = {
             type: e,
@@ -67,6 +70,7 @@ class e {
         },
         this.emitterId++)
     }
+
     updateEmitters(e) {
         var t, r;
         for (t in this.emitters) {
@@ -92,6 +96,7 @@ class e {
                 }
         }
     }
+
     destroy(e) {
         var t = this.particles.length;
         if (0 != t && !(e >= t)) {
@@ -109,6 +114,7 @@ class e {
             r == t ? e : r
         }
     }
+
     update(e) {
         var t;
         this.updateEmitters(e);
@@ -205,27 +211,28 @@ class e {
         }
     }
 }
+
 var t = {};
-Math.PI;
+
 Particles.setup = function() {
     t.smoke = new e(game.graphics.layers.smoke,2e3),
     t.shadows = new e(game.graphics.layers.shadows,2e3,null,true),
     t.explosions = new e(game.graphics.layers.explosions,2e3)
-}
-,
+};
+
 Particles.update = function() {
     for (var e = game.timeFactor > .51 ? Math.round(game.timeFactor) : 1, n = game.timeFactor / e, r = 0; r < e; r++)
         t.smoke.update(n),
         t.explosions.update(n),
         t.shadows.update(n)
-}
-,
+};
+
 Particles.wipe = function() {
     t.smoke.wipe(),
     t.explosions.wipe(),
     t.shadows.wipe()
-}
-,
+};
+
 Particles.planeDamage = function(e) {
     var r = 2 == e.type ? 2 : 1
         , i = Tools.randInt(1, 4)
@@ -236,8 +243,8 @@ Particles.planeDamage = function(e) {
         , u = Vector.createOff(e.pos, o, Tools.rand(0, 5 * r))
         , c = Vector.create(o, s);
     t.explosions.addParticle(n.PLANE_DAMAGE, "spark_" + i, new Vector(c.x + e.speed.x,c.y + e.speed.y), u, Vector.diag(a), 0, 0, Tools.randCircle(), 16739073, null, PIXI.BLEND_MODES.ADD, l)
-}
-,
+};
+
 Particles.explosion = function(e, r, i) {
     for (var o = r > 1 ? 1 + (r - 1) / 1.5 : r, s = 0; s < 2; s++)
         t.explosions.addParticle(n.EXPLOSION_FLASH, "flash_" + Tools.randInt(1, 4), Vector.zero(), e.clone(), Vector.diag(1.5 * r), 0, 0, Tools.randCircle(), 15987628, null, PIXI.BLEND_MODES.ADD);
@@ -276,8 +283,8 @@ Particles.explosion = function(e, r, i) {
         d = Tools.rand(-.1, .1),
         p = Tools.rand(.1, .3) * r,
         t.explosions.addParticle(n.EXPLOSION_HOT_SMOKE, "hotsmoke_" + l, Vector.create(u, h), e.clone(), Vector.diag(p), 0, d, Tools.randCircle(), 16739073, null, PIXI.BLEND_MODES.ADD)
-}
-,
+};
+
 Particles.missileSmoke = function(e, r, i) {
     var o = [null, n.MISSILE, n.MISSILE_FAT, n.MISSILE_SMALL, null, n.MISSILE, n.MISSILE, n.MISSILE][e.type]
         , s = e.spriteRot + Math.PI
@@ -290,8 +297,8 @@ Particles.missileSmoke = function(e, r, i) {
     Tools.randCircle();
     t.smoke.addParticle(o, "smoke_" + h, c.clone(), a.clone(), new Vector(1.25 * l,4 * l), 1, d, s, 16775590, null, null, null, i),
     t.shadows.addParticle(o, "smokeshadow_" + h, c.clone(), a.clone(), new Vector(1.25 * l,4 * l), 1, d, s, null, null, null, null, i)
-}
-,
+};
+
 Particles.planeBoost = function(e, r) {
     var i = e.rot + e.state.thrustDir / 2 + Math.PI
         , o = Vector.createOff(e.pos, i, r ? 40 : -20)
@@ -303,8 +310,8 @@ Particles.planeBoost = function(e, r) {
     Tools.randCircle();
     t.smoke.addParticle(n.MISSILE, "smoke_" + u, l.clone(), o.clone(), new Vector(.3,1.2), 1, c, i, 16775590, null, null, null, 1.2),
     t.shadows.addParticle(n.MISSILE, "smokeshadow_" + u, l.clone(), o.clone(), new Vector(.3,1.2), 1, c, i, null, null, null, null, 1.2)
-}
-,
+};
+
 Particles.spiritShockwave = function(e) {
     for (var r, i, o = 0; o < 40; o++)
         i = o / 40 * 2 * Math.PI,
@@ -312,15 +319,15 @@ Particles.spiritShockwave = function(e) {
         t.smoke.addParticle(n.SHOCKWAVE_SMOKE, "smoke_" + r, Vector.create(i, 8), e.clone(), Vector.diag(2), 0, .4, Tools.randCircle());
     t.smoke.addParticle(n.SHOCKWAVE_INNER, "shockwave", Vector.zero(), e.clone(), Vector.zero(), 0, 0, -.35 + Math.PI),
     t.smoke.addParticle(n.SHOCKWAVE_OUTER, "shockwave", Vector.zero(), e.clone(), Vector.zero(), 0, 0, -.35)
-}
-,
+};
+
 Particles.count = function() {
     var e = 0;
     for (var n in t)
         e += t[n].particles.length;
     return e
-}
-;
+};
+
 var n = {
     MISSILE: 0,
     MISSILE_FAT: 1,
@@ -337,4 +344,5 @@ var n = {
     PLANE_DAMAGE: 12,
     EMITTER_EXPLOSION_FRAGMENT: 100
 };
+
 Particles.PTYPE = n

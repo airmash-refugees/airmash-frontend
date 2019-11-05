@@ -33,6 +33,7 @@ class Mob {
         this.lastPacket = game.timeNetwork,
         this.setupSprite()
     }
+
     setupSprite() {
         switch (4 != this.type && 8 != this.type && 9 != this.type && (this.sprites.thrusterGlow = Textures.init("thrusterGlowSmall", {
             layer: "projectiles"
@@ -92,6 +93,7 @@ class Mob {
             })
         }
     }
+
     despawn(e) {
         if (4 == this.type || 8 == this.type || 9 == this.type)
             return this.state.inactive = true,
@@ -107,6 +109,7 @@ class Mob {
         this.accel.y = 0,
         this.missile && Sound.updateThruster(1, this, false)
     }
+
     destroy(e) {
         switch (this.type) {
         case 1:
@@ -135,6 +138,7 @@ class Mob {
         e.c === Network.SERVERPACKET.MOB_DESPAWN_COORDS && (Mobs.explosion(this.pos, e.type),
         this.missile && Sound.updateThruster(1, this, false))
     }
+
     network(e) {
         this.lastPacket = game.timeNetwork,
         e.c === Network.SERVERPACKET.MOB_UPDATE && (this.reducedFactor = Tools.reducedFactor()),
@@ -145,6 +149,7 @@ class Mob {
         null != e.accelX && (this.accel.x = e.accelX,
         this.accel.y = e.accelY)
     }
+
     visible(e) {
         e == this.visibility && e != this.culled || (this.sprites.sprite.visible = e,
         this.sprites.shadow.visible = e,
@@ -152,10 +157,12 @@ class Mob {
         this.sprites.thrusterGlow.visible = e),
         this.visibility = e)
     }
+
     visibilityUpdate() {
         this.culled = !Graphics.inScreen(this.pos, 128),
         this.visible(!this.culled)
     }
+
     update(e) {
         if (this.visibilityUpdate(),
         !(false !== this.reducedFactor && (e -= this.reducedFactor,
@@ -184,6 +191,7 @@ class Mob {
             this.missile && !this.state.inactive && Sound.updateThruster(1, this, this.visibility)
         }
     }
+
     clientCalcs(e) {
         if (!this.forDeletion)
             switch (this.state.luminosity -= .075 * e,
@@ -222,6 +230,7 @@ class Mob {
                     return void (this.forDeletion = true)
             }
     }
+
     updateGraphics(e) {
         switch (this.type) {
         case 1:

@@ -4,6 +4,7 @@ import Mob from './Mob';
 var mobs = {};
 var doodads = [];
 var someFlag = {};
+
 Mobs.add = function (t, n) {
     mobs[t.id] = new Mob(t),
         n && mobs[t.id].network(t)

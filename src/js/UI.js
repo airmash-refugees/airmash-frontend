@@ -25,59 +25,60 @@ var minimapMobs = {}
     , isSpectating = false
     , lastPrivateMessage = null
     , chatBoxDimensions = {
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0
-}
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+    }
     , noticeMessageTimerByType = {
-    alert: null,
-    information: null,
-    default: null,
-    destroyed: null
-}
+        alert: null,
+        information: null,
+        default: null,
+        destroyed: null
+    }
     , noticeMessageVisibleByType = {
-    alert: false,
-    information: false,
-    default: false,
-    destroyed: false
-}
+        alert: false,
+        information: false,
+        default: false,
+        destroyed: false
+    }
     , thisPlayerState = {
-    score: -1,
-    upgrades: -1,
-    earnings: -1,
-    kills: -1,
-    deaths: -1
-}
+        score: -1,
+        upgrades: -1,
+        earnings: -1,
+        kills: -1,
+        deaths: -1
+    }
     , hugeKillDeathNoticeInfo = false
     , currentUpgradeValueByName = {}
     , listOfPlayersKills = []
     , lastTimePlayerWasKilled = 0
     , aircraftInfoByType = {
-    1: ["Predator", 80, 50, 75, 60, "BOOST", "Temporarily increases speed by burning energy"],
-    2: ["Goliath", 30, 100, 30, 100, "REPEL", "Repels enemy aircraft and missiles"],
-    3: ["Mohawk", 100, 40, 100, 40, "STRAFE", "Enables sideways flight"],
-    4: ["Tornado", 60, 70, 50, 80, "MULTIFIRE", "Launches 3 missiles at the same time"],
-    5: ["Prowler", 50, 70, 40, 60, "STEALTH", "Becomes invisible to enemy aircraft"],
-    101: ["Speed"],
-    102: ["Defense"],
-    103: ["Energy Regen"],
-    104: ["Missile Speed"]
-}
+        1: ["Predator", 80, 50, 75, 60, "BOOST", "Temporarily increases speed by burning energy"],
+        2: ["Goliath", 30, 100, 30, 100, "REPEL", "Repels enemy aircraft and missiles"],
+        3: ["Mohawk", 100, 40, 100, 40, "STRAFE", "Enables sideways flight"],
+        4: ["Tornado", 60, 70, 50, 80, "MULTIFIRE", "Launches 3 missiles at the same time"],
+        5: ["Prowler", 50, 70, 40, 60, "STEALTH", "Becomes invisible to enemy aircraft"],
+        101: ["Speed"],
+        102: ["Defense"],
+        103: ["Energy Regen"],
+        104: ["Missile Speed"]
+    }
     , emoteById = ["tf", "pepe", "clap", "lol", "bro", "kappa", "cry", "rage"]
     , powerupNameById = ["", "Shield", "Inferno"];
+
 UI.show = function(e, t) {
     $(e).css({
         display: t ? "inline-block" : "block"
     })
-}
-,
+};
+
 UI.hide = function(e) {
     $(e).css({
         display: "none"
     })
-}
-,
+};
+
 UI.isEmote = function(e, t) {
     for (var n = 0; n < emoteById.length; n++)
         if (t) {
@@ -86,14 +87,14 @@ UI.isEmote = function(e, t) {
         } else if (e === emoteById[n])
             return emoteById[n];
     return false
-}
-,
+};
+
 UI.serverMessage = function(e) {
     var t = "alert";
     2 == e.type && (t = "information"),
     UI.showMessage(t, e.text, e.duration)
-}
-,
+};
+
 UI.showMessage = function(e, t, n) {
     $("#msg-" + e).removeClass("hidemsg").removeClass("popmsg"),
     $("#msg-" + e).html(t);
@@ -105,8 +106,8 @@ UI.showMessage = function(e, t, n) {
     noticeMessageVisibleByType[e] = true,
     clearTimeout(noticeMessageTimerByType[e]),
     noticeMessageTimerByType[e] = setTimeout(UI.hideMessage, n || 2e3, e)
-}
-,
+};
+
 UI.hideMessage = function(e) {
     $("#msg-" + e).addClass("hidemsg"),
     noticeMessageVisibleByType[e] = false,
@@ -114,19 +115,19 @@ UI.hideMessage = function(e) {
         $("#msg-" + e).removeClass("popmsg").removeClass("hidemsg"),
         $("#msg-" + t).html("")
     }, 2500, e)
-}
-,
+};
+
 UI.wipeAllMessages = function() {
     for (var e in noticeMessageVisibleByType)
         noticeMessageVisibleByType[e] && UI.showMessage(e, "", 100)
-}
-,
+};
+
 UI.updateMyLevel = function(e) {
     game.myLevel = e,
     $("#score-rank").html(e),
     $("#lifetime-rank").html(e)
-}
-,
+};
+
 UI.newScore = function(scoreUpdateMsg) {
     if (scoreUpdateMsg.id != game.myID)
         return false;
@@ -169,8 +170,8 @@ UI.newScore = function(scoreUpdateMsg) {
     n += UI.getScoreString(t)),
     hugeKillDeathNoticeInfo ? (UI.showMessage(hugeKillDeathNoticeInfo.type, hugeKillDeathNoticeInfo.msg + n, hugeKillDeathNoticeInfo.duration),
     hugeKillDeathNoticeInfo = false) : "" != n && UI.showMessage("default", n, 3e3)
-}
-,
+};
+
 UI.getScoreString = function(e, t, n) {
     var r = "positive"
         , i = "+";
@@ -178,18 +179,19 @@ UI.getScoreString = function(e, t, n) {
     i = "-"),
     t && (r = t),
     '<span id="alert-update" class="' + r + '">' + i + Math.abs(e) + "</span>"
-}
-;
+};
+
 var updateMinimapMob = function(minimapMob) {
     minimapMob.sprite.position.set(game.screenX - config.minimapPaddingX - config.minimapSize * ((16384 - minimapMob.x) / 32768), game.screenY - config.minimapPaddingY - config.minimapSize / 2 * ((8192 - minimapMob.y) / 16384))
 };
+
 UI.wipeAllMinimapMobs = function() {
     for (var playerId in minimapMobs)
         game.graphics.layers.ui1.removeChild(minimapMobs[playerId].sprite),
         minimapMobs[playerId].sprite.destroy(),
         delete minimapMobs[playerId]
-}
-,
+};
+
 UI.showSpectator = function(e) {
     if (!isSpectating) {
         var t = config.mobile ? ' class="mobile"' : "";
@@ -198,13 +200,13 @@ UI.showSpectator = function(e) {
     }
     $("#spectator").html(e),
     Input.addTouchRejection("#spectator")
-}
-,
+};
+
 UI.hideSpectator = function() {
     isSpectating && ($("#spectator").remove(),
     isSpectating = false)
-}
-,
+};
+
 UI.addPowerup = function(e, t) {
     null != applyPowerupTimer && clearTimeout(applyPowerupTimer);
     var n = '<div class="powerup" id="powerup-' + e + '"><div class="percent ' + (1 == e ? "shield" : "rampage") + '" id="powerup-' + e + '-percent" style="transition: width ' + t + 'ms linear;"></div><div class="name">' + powerupNameById[e] + "</div></div>";
@@ -216,19 +218,19 @@ UI.addPowerup = function(e, t) {
     applyPowerupTimer = setTimeout(function() {
         $("#powerup-" + e).remove()
     }, t)
-}
-,
+};
+
 UI.resetPowerups = function() {
     $("#powerups").html("")
-}
-,
+};
+
 UI.changeMinimapTeam = function(playerId, team) {
     if (null != minimapMobs[playerId] && null != minimapMobs[playerId].sprite) {
         var r = 1 == team ? "minimapBlue" : "minimapMob";
         minimapMobs[playerId].sprite.texture = Textures.getNamed(r)
     }
-}
-,
+};
+
 UI.scoreboardUpdate = function(msgData, msgRankings, maxScoreboard) {
     for (var i, o, s, a, l, u = 0, c = "", h = {}, d = false, p = 0, f = {}, g = "", m = "", v = "", y = 0; y < msgRankings.length; y++)
         null != (i = Players.get(msgRankings[y].id)) && (f = Tools.decodeMinimapCoords(msgRankings[y].x, msgRankings[y].y),
@@ -272,8 +274,8 @@ UI.scoreboardUpdate = function(msgData, msgRankings, maxScoreboard) {
             ;
         $("#scoreboard").html(c)
     }
-}
-;
+};
+
 var N = function(e) {
     var t = "";
     e += "";
@@ -281,6 +283,7 @@ var N = function(e) {
         t += "<span>" + e[n] + "</span>";
     return t
 };
+
 UI.toggleChatBox = function(e) {
     if (!config.mobile)
         if (isChatBoxVisible) {
@@ -299,17 +302,18 @@ UI.toggleChatBox = function(e) {
             isChatBoxVisible = true,
             UI.show("#chatinput"),
             $("#chatinput").focus()
-}
-,
+};
+
 UI.shortcutChat = function(e) {
     isChatBoxVisible || ($("#chatinput").val(e),
     UI.toggleChatBox())
-}
-;
+};
+
 var removeChatHint = function() {
     isChatHintRemoved || (isChatHintRemoved = true,
     $("#chat-0").length && $("#chat-0").remove())
 };
+
 UI.parseCommand = function(e) {
     if ("/" !== e[0])
         return false;
@@ -339,8 +343,8 @@ UI.parseCommand = function(e) {
     } else
         "flag" === n || "flags" === n ? 2 == t.length ? Network.sendCommand("flag", e.substr(n.length + 2)) : UI.addChatMessage("Type /flag XX where XX is the 2-letter ISO code of a country", true) : "emotes" === n ? UI.addChatMessage("Emotes available: /tf /pepe /clap /lol /bro /kappa /cry /rage", true) : "help" === n ? UI.toggleHelp() : "debug" === n || (UI.isEmote(n) ? Network.sendSay(":" + n + ":") : Network.sendCommand(n, e.substr(n.length + 2)));
     return true
-}
-,
+};
+
 UI.addChatLine = function(msg, text, msgType) {
     if (!ignoredPlayerIdSet[msg.id]) {
         i++;
@@ -368,8 +372,8 @@ UI.addChatLine = function(msg, text, msgType) {
             h.scrollTop(h[0].scrollHeight))
         }
     }
-}
-,
+};
+
 UI.addChatMessage = function(e, t) {
     a = 0,
     s = -1;
@@ -380,30 +384,30 @@ UI.addChatMessage = function(e, t) {
     var o = $("#chatbox");
     o.perfectScrollbar("update"),
     o.scrollTop(o[0].scrollHeight)
-}
-,
+};
+
 UI.showChatLevel = function(e) {
     var t = null;
     2 == e ? t = "Type /flag XX where XX is the 2-letter ISO code of a country" : 3 == e ? t = "Emotes available: /tf /pepe /clap /lol /bro /kappa /cry /rage" : 4 == e && (t = "Flag Pack #1: communist confederate imperial rainbow jolly"),
     null != t && UI.addChatMessage(t, true)
-}
-,
+};
+
 UI.updateStats = function(e) {
     var t = e.playerstotal
         , n = "";
     n += '<div class="item"><span class="icon-container"><div class="icon players"></div></span><span class="greyed">' + e.playersgame + "&nbsp;/&nbsp;</span>" + t + '<span class="icon-container padded"><div class="icon ping"></div></span>' + e.ping + '<span class="millis">ms</span></div>',
     $("#gameinfo").html(n),
     game.ping = e.ping
-}
-,
+};
+
 UI.sayLine = function(e) {
     Players.say(e)
-}
-,
+};
+
 UI.escapeHTML = function(e) {
     return ("" + e).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#x27;").replace(/\//g, "&#x2F;").replace(/`/g, "&#x60;")
-}
-;
+};
+
 var onWindowResize = function() {
     var width = window.innerWidth
         , height = window.innerHeight;
@@ -412,6 +416,7 @@ var onWindowResize = function() {
         Graphics.resizeRenderer(width, height)
     }, 250))
 };
+
 UI.controlKey = function(e, t, n) {
     if (game.state != Network.STATE.PLAYING)
         return true;
@@ -484,24 +489,24 @@ UI.controlKey = function(e, t, n) {
                 UI.shortcutChat("/")
         } else
             UI.toggleChatBox(true)
-}
-,
+};
+
 UI.chatBoxOpen = function() {
     return isChatBoxVisible
-}
-,
+};
+
 UI.setupMinimap = function() {
     game.graphics.gui.minimap = Textures.init("minimap"),
     game.graphics.gui.minimap_box = Textures.init("minimapBox"),
     UI.resizeMinimap(),
     UI.visibilityMinimap(false)
-}
-,
+};
+
 UI.visibilityMinimap = function(isVisible) {
     game.graphics.gui.minimap.visible = isVisible,
     game.graphics.gui.minimap_box.visible = isVisible
-}
-,
+};
+
 UI.resizeMinimap = function() {
     game.graphics.gui.minimap.scale.set(config.minimapSize / 512),
     game.graphics.gui.minimap.position.set(game.screenX - config.minimapPaddingX, game.screenY - config.minimapPaddingY),
@@ -509,8 +514,8 @@ UI.resizeMinimap = function() {
     for (var playerId in minimapMobs)
         updateMinimapMob(minimapMobs[playerId]);
     Games.update(true)
-}
-,
+};
+
 UI.setupHUD = function() {
     game.graphics.gui.hudHealth_shadow = Textures.init("hudHealth_shadow"),
     game.graphics.gui.hudHealth = Textures.init("hudHealth"),
@@ -527,15 +532,15 @@ UI.setupHUD = function() {
     game.graphics.gui.hudEnergy_mask.position.set(-250, 174),
     UI.resizeHUD(),
     UI.visibilityHUD(false)
-}
-,
+};
+
 UI.visibilityHUD = function(e) {
     game.graphics.gui.hudHealth_shadow.visible = e,
     game.graphics.gui.hudHealth.visible = e,
     game.graphics.gui.hudEnergy_shadow.visible = e,
     game.graphics.gui.hudEnergy.visible = e
-}
-,
+};
+
 UI.resizeHUD = function() {
     var e = .5 * game.scale
         , t = game.halfScreenX - 30 * game.scale
@@ -548,18 +553,18 @@ UI.resizeHUD = function() {
     game.graphics.gui.hudSpriteHealth.position.set(t, game.halfScreenY),
     game.graphics.gui.hudSpriteEnergy.scale.set(e),
     game.graphics.gui.hudSpriteEnergy.position.set(n, game.halfScreenY)
-}
-,
+};
+
 UI.selectAircraft = function(e) {
     Network.sendCommand("respawn", e + "")
-}
-,
+};
+
 UI.aircraftSelected = function(e) {
     e = parseInt(e);
     for (var t = 1; t <= 5; t++)
         t == e ? $("#selectaircraft-" + t).addClass("sel") : $("#selectaircraft-" + t).removeClass("sel")
-}
-,
+};
+
 UI.killed = function(playerKillMsg) {
     var t = null == playerKillMsg.level ? "" : '<span class="level">' + playerKillMsg.level + "</span>";
     (game.time - lastTimePlayerWasKilled > 1500 || listOfPlayersKills.length >= 6) && (listOfPlayersKills = []),
@@ -574,8 +579,8 @@ UI.killed = function(playerKillMsg) {
         duration: 3e3,
         msg: "You have destroyed" + n
     }
-}
-,
+};
+
 UI.killedBy = function(playerKillMsg) {
     var t = null == playerKillMsg.level ? "" : '<span class="level">' + playerKillMsg.level + "</span>";
     hugeKillDeathNoticeInfo = {
@@ -583,8 +588,8 @@ UI.killedBy = function(playerKillMsg) {
         duration: 3e3,
         msg: 'Destroyed by<span class="playerbig"><span class="flag big flag-' + playerKillMsg.flag + '"></span>' + UI.escapeHTML(playerKillMsg.name) + t + "</span>"
     }
-}
-,
+};
+
 UI.errorHandler = function(e) {
     switch (e.error) {
     case 1:
@@ -648,8 +653,8 @@ UI.errorHandler = function(e) {
     case 100:
         UI.addChatMessage("Unknown command")
     }
-}
-,
+};
+
 UI.showCommandReply = function(e) {
     if (0 == e.type)
         UI.addChatMessage(UI.escapeHTML(e.text));
@@ -658,8 +663,8 @@ UI.showCommandReply = function(e) {
             , n = '<div class="close" onclick="$(this).parent().remove()"></div><div class="text"><pre>' + UI.escapeHTML(t) + "</pre></div>";
         $("body").append('<div id="debugpopup" oncontextmenu="event.stopPropagation()">' + n + "</div>")
     }
-}
-,
+};
+
 UI.updateHUD = function(e, t, n) {
     e = Tools.clamp(e, 0, 1),
     t = Tools.clamp(t, 0, 1),
@@ -669,8 +674,8 @@ UI.updateHUD = function(e, t, n) {
     var r = 3374821;
     n && (r = t < config.ships[n.type].energyLight ? 2841755 : 3374821),
     game.graphics.gui.hudEnergy.tint = r
-}
-,
+};
+
 UI.minimizeChat = function(e) {
     isChatMinimized || (isChatBoxVisible && UI.toggleChatBox(),
     isChatMinimized = true,
@@ -679,8 +684,8 @@ UI.minimizeChat = function(e) {
     UI.hide("#chatunreadlines"),
     UI.show("#maximizechat"),
     e && e.stopPropagation())
-}
-,
+};
+
 UI.maximizeChat = function() {
     if (isChatMinimized) {
         isChatMinimized = false,
@@ -690,14 +695,14 @@ UI.maximizeChat = function() {
         var e = $("#chatbox");
         e.scrollTop(e[0].scrollHeight)
     }
-}
-,
+};
+
 UI.closeScore = function() {
     isScoreVisible && (UI.hidePanel("#scoredetailed"),
     isScoreVisible = false,
     clearInterval(getScoresIntervalId))
-}
-,
+};
+
 UI.openScore = function() {
     isScoreVisible || (UI.closeAllPanels("score"),
     UI.showPanel("#scoredetailed"),
@@ -705,23 +710,23 @@ UI.openScore = function() {
     Network.getScores(),
     clearInterval(getScoresIntervalId),
     getScoresIntervalId = setInterval(Network.getScores, 5e3))
-}
-,
+};
+
 UI.toggleScore = function() {
     isScoreVisible ? UI.closeScore() : UI.openScore()
-}
-,
+};
+
 UI.openLogin = function() {
     isLoginVisible || (UI.showPanel("#loginselector"),
     isLoginVisible = true,
     Games.closeDropdowns())
-}
-,
+};
+
 UI.closeLogin = function() {
     isLoginVisible && (UI.hidePanel("#loginselector"),
     isLoginVisible = false)
-}
-,
+};
+
 UI.showPanel = function(e) {
     var t = .9
         , n = 1;
@@ -740,8 +745,8 @@ UI.showPanel = function(e) {
         transition: "all 0.75s cubic-bezier(0.23, 1, 0.32, 1)"
     }),
     "#custom-msg" != e && Sound.UIClick()
-}
-,
+};
+
 UI.hidePanel = function(e, t, n) {
     if ("#custom-msg" != e || $("#custom-msg").length) {
         var r = .9;
@@ -764,8 +769,8 @@ UI.hidePanel = function(e, t, n) {
             }
         }, 800, e)
     }
-}
-,
+};
+
 UI.openInvite = function() {
     isInviteVisible || (UI.closeAllPanels("invite"),
     game.inviteLink = "https://airmash.online/#" + game.playRegion + "-" + game.playRoom,
@@ -773,37 +778,37 @@ UI.openInvite = function() {
     $("#invite-link").attr("href", game.inviteLink),
     UI.showPanel("#invitefriends"),
     isInviteVisible = true)
-}
-,
+};
+
 UI.closeInvite = function() {
     isInviteVisible && (UI.hidePanel("#invitefriends"),
     isInviteVisible = false)
-}
-,
+};
+
 UI.toggleInvite = function() {
     isInviteVisible ? UI.closeInvite() : UI.openInvite()
-}
-,
+};
+
 UI.closeMainMenu = function() {
     isMainMenuVisible && (UI.hidePanel("#mainmenu"),
     isMainMenuVisible = false)
-}
-,
+};
+
 UI.updateMainMenuSettings = function() {
     config.settings.hidpi ? $("#mainmenu-hidpi-tick").addClass("ticked") : $("#mainmenu-hidpi-tick").removeClass("ticked")
-}
-,
+};
+
 UI.openMainMenu = function() {
     isMainMenuVisible || (UI.closeAllPanels("mainmenu"),
     UI.updateMainMenuSettings(),
     UI.showPanel("#mainmenu"),
     isMainMenuVisible = true)
-}
-,
+};
+
 UI.toggleMainMenu = function() {
     isMainMenuVisible ? UI.closeMainMenu() : UI.openMainMenu()
-}
-,
+};
+
 UI.closeAllPanels = function(e) {
     "mainmenu" !== e && UI.closeMainMenu(),
     "score" !== e && UI.closeScore(),
@@ -813,11 +818,12 @@ UI.closeAllPanels = function(e) {
     "login" !== e && UI.closeLogin(),
     "keybinds" !== e && Input.closeKeybinds(),
     $("#custom-msg").length && UI.hidePanel("#custom-msg", false, true)
-}
-;
+};
+
 var B = function(e) {
     return (e = Math.round(e)) < 1e3 ? e : e < 1e5 ? (e / 1e3).toFixed(1) + " K" : e < 1e6 ? Math.round(e / 1e3) + " K" : (e / 1e6).toFixed(1) + " M"
 };
+
 UI.updateScore = function(e) {
     if (isScoreVisible) {
         var t = e.scores
@@ -868,8 +874,8 @@ UI.updateScore = function(e) {
         $("#scorecontainer").html(h),
         $("#scoremvp").html(m)
     }
-}
-,
+};
+
 UI.popMenu = function(e, n) {
     if (game.state == Network.STATE.LOGIN)
         return Games.closeDropdowns(),
@@ -896,77 +902,79 @@ UI.popMenu = function(e, n) {
         false
     }
     UI.closeMenu()
-}
-;
+};
+
 var escapePlayerName = function(playerName) {
     return (playerName + "").replace(/&/g, "&a;").replace(/ /g, "&s;")
-}
-    , unescapePlayerName = function(e) {
+};
+
+var unescapePlayerName = function(e) {
     return (e + "").replace(/&s;/g, " ").replace(/&a;/g, "&")
 };
+
 UI.chatWhisper = function(playerName, t) {
     playerName = unescapePlayerName(playerName);
     var n = Players.getByName(playerName);
     null != n ? Network.sendWhisper(n.id, t) : UI.addChatMessage("Unknown player")
-}
-,
+};
+
 UI.chatIgnore = function(e) {
     var n = Players.get(e);
     null != n && e != game.myID && null == ignoredPlayerIdSet[n.id] && (ignoredPlayerIdSet[n.id] = true,
     UI.addChatMessage("Ignoring player " + UI.escapeHTML(n.name) + "&nbsp;&nbsp;&bull;&nbsp;&nbsp;To unignore type /unignore " + UI.escapeHTML(escapePlayerName(n.name)), true))
-}
-,
+};
+
 UI.chatUnignore = function(e) {
     ignoredPlayerIdSet[e.id] && (delete ignoredPlayerIdSet[e.id],
     UI.addChatMessage("Removed player " + UI.escapeHTML(e.name) + " from ignore list", true))
-}
-,
+};
+
 UI.chatVotemute = function(e) {
     if (e.id != game.myID) {
         Network.voteMute(e.id);
         var t = Math.floor(Math.sqrt(Players.count()[1])) + 1;
         UI.addChatMessage("Voted to mute " + UI.escapeHTML(e.name) + "&nbsp;&nbsp;&bull;&nbsp;&nbsp;" + t + " total votes are required", true)
     }
-}
-,
+};
+
 UI.chatVotemutePass = function(e) {
     UI.addChatMessage("The vote to mute " + UI.escapeHTML(e.name) + " has passed", true)
-}
-,
+};
+
 UI.chatMuted = function() {
     UI.addChatMessage("You have been muted")
-}
-,
+};
+
 UI.contextWhisper = function() {
     if (null != lastClickedPlayerId) {
         var e = Players.get(lastClickedPlayerId);
         null != e && lastClickedPlayerId != game.myID && UI.shortcutChat("/w " + escapePlayerName(e.name) + " ")
     }
-}
-,
+};
+
 UI.contextIgnore = function() {
     null != lastClickedPlayerId && lastClickedPlayerId != game.myID && UI.chatIgnore(lastClickedPlayerId)
-}
-,
+};
+
 UI.contextUnignore = function() {
     if (null != lastClickedPlayerId) {
         var e = Players.get(lastClickedPlayerId);
         null != e && lastClickedPlayerId != game.myID && UI.chatUnignore(e)
     }
-}
-,
+};
+
 UI.contextVotemute = function() {
     if (null != lastClickedPlayerId) {
         var e = Players.get(lastClickedPlayerId);
         null != e && lastClickedPlayerId != game.myID && UI.chatVotemute(e)
     }
-}
-,
+};
+
 UI.closeMenu = function() {
     isContextMenuVisible && (UI.hide("#contextmenu"),
     isContextMenuVisible = false)
-}
-,
+};
+
 UI.nameEntered = function() {
     var playerName = $("#playername").val().trim();
     if (playerName.length > 0) {
@@ -975,17 +983,18 @@ UI.nameEntered = function() {
     } else {
         Games.highlightInput("#playername");
     }
-}
-,
+};
+
 UI.selectUpgrade = function(e) {
     Network.sendCommand("upgrade", e + "")
-}
-;
+};
+
 var X = function() {
     for (var e = ["", "speed", "defense", "energy", "missile"], t = 1; t < 5; t++)
         t - 1,
         currentUpgradeValueByName[e[t]] < 5 && thisPlayerState.upgrades > 0 ? $("#selectupgrade-" + t).addClass("lighted") : $("#selectupgrade-" + t).removeClass("lighted")
 };
+
 UI.updateUpgrades = function(speedDefenseEnergyMissileArray, msgUpgrades, msgTypeId) {
     for (var r, upgradeKind = ["", "speed", "defense", "energy", "missile"], o = 1; o < 5; o++)
         r = o - 1,
@@ -1004,40 +1013,40 @@ UI.updateUpgrades = function(speedDefenseEnergyMissileArray, msgUpgrades, msgTyp
         $("#score-upgrades").html(msgUpgrades)
     }
     X()
-}
-,
+};
+
 UI.resetUpgrades = function() {
     UI.updateUpgrades([0, 0, 0, 0])
-}
-,
+};
+
 UI.popBigMsg = function(e) {
     if (1 == e)
         var t = '<div id="big-message" onclick="UI.closeBigMsg()"><div class="msg">Mobile mode</div><div class="small">Mobile mode has touch controls and requires latest phone/tablet hardware.</div><div class="small nopadtop">For the full experience please play on a PC with a physical keyboard.</div><div class="greyed">Tap anywhere to close</div></div>';
     else
         t = '<div id="big-message"><div class="msg">WebGL required</div><div class="small">This game requires a WebGL enabled browser in order to run.<br>Please allow WebGL for this domain to continue.</div>';
     $("body").append(t)
-}
-,
+};
+
 UI.closeBigMsg = function() {
     $("#big-message").remove()
-}
-,
+};
+
 UI.showHelp = function(e) {
     isHelpVisible || (UI.closeAllPanels("help"),
     true === e ? $("#howtoplay").addClass("hide") : $("#howtoplay").removeClass("hide"),
     UI.showPanel("#howtoplay"),
     isHelpVisible = true)
-}
-,
+};
+
 UI.hideHelp = function() {
     isHelpVisible && (UI.hidePanel("#howtoplay"),
     isHelpVisible = false)
-}
-,
+};
+
 UI.toggleHelp = function() {
     isHelpVisible ? UI.hideHelp() : UI.showHelp()
-}
-,
+};
+
 UI.updateSound = function(e) {
     config.settings.sound ? ($("#settings-sound").addClass("soundon"),
     $("#settings-sound").removeClass("soundoff"),
@@ -1049,8 +1058,8 @@ UI.updateSound = function(e) {
     $("#mainmenu-sound-icon").removeClass("soundon"),
     $("#mainmenu-sound-text").html("Enable Sound")),
     e && UI.showMessage("alert", '<span class="info">SOUND</span>' + (config.settings.sound ? "Enabled" : "Disabled"), 3e3)
-}
-,
+};
+
 UI.gameStart = function(playerName, isFirstTime) {
     if (isFirstTime) { 
         $("#login-ui").remove();
@@ -1087,15 +1096,18 @@ UI.gameStart = function(playerName, isFirstTime) {
     game.myName = playerName;
     Network.setup();
 };
+
 var setupMobile = function() {
     setupMobileUI(),
     Graphics.toggleFullscreen(),
     Input.setupTouch()
 };
+
 var setupMobileUI = function() {
     $("#howtoplay").addClass("mobile"),
     $("#howtoplay").html('<div class="header">HOW TO PLAY</div><div class="mobile-graphic"></div><div class="commands">For the best game experience play on a PC</div>')
 };
+
 UI.reconnection = function() {
     i = 0,
     s = -1,
@@ -1123,8 +1135,8 @@ UI.reconnection = function() {
     $("#score-rank").html("-"),
     $("#roomname").html("&nbsp;"),
     $("#open-menu").html("Switching Game...")
-}
-,
+};
+
 UI.loggedIn = function(e) {
     $("#roomname").html(game.roomName),
     $("#scoreheader").html(game.roomName + "&nbsp;&nbsp;"),
@@ -1132,8 +1144,8 @@ UI.loggedIn = function(e) {
     UI.visibilityHUD(true),
     UI.visibilityMinimap(true),
     UI.updateHUD(1, 1)
-}
-,
+};
+
 UI.popTooltip = function(e, t) {
     if (null == t)
         var n = e.data.t
@@ -1173,8 +1185,8 @@ UI.popTooltip = function(e, t) {
     null != hideTooltipTimer && clearTimeout(hideTooltipTimer),
     isTooltipVisible || (isTooltipVisible = true,
     UI.show("#tooltip"))
-}
-,
+};
+
 UI.closeTooltip = function() {
     isTooltipVisible && (null != hideTooltipTimer && clearTimeout(hideTooltipTimer),
     hideTooltipTimer = setTimeout(function() {
@@ -1183,8 +1195,8 @@ UI.closeTooltip = function() {
         isTooltipVisible = false,
         hideTooltipTimer = null)
     }, 250))
-}
-,
+};
+
 UI.startDragChat = function(e) {
     chatBoxDimensions.x = e.originalEvent.pageX,
     chatBoxDimensions.y = e.originalEvent.pageY,
@@ -1193,8 +1205,8 @@ UI.startDragChat = function(e) {
     $("#chatbox").addClass("hovered"),
     $(window).on("mousemove", UI.dragChat),
     $(window).on("mouseup", UI.endDragChat)
-}
-,
+};
+
 UI.dragChat = function(e) {
     var t = e.originalEvent.pageX
         , n = e.originalEvent.pageY;
@@ -1215,14 +1227,14 @@ UI.dragChat = function(e) {
             bottom: chatBoxDimensions.height - i + 20 + "px"
         })
     }
-}
-,
+};
+
 UI.endDragChat = function(e) {
     $("#chatbox").removeClass("hovered"),
     $(window).off("mousemove", UI.dragChat),
     $(window).off("mouseup", UI.endDragChat)
-}
-,
+};
+
 UI.setup = function() {
     $(window).resize(onWindowResize),
     $(window).on("orientationchange", onWindowResize),

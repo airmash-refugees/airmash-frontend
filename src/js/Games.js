@@ -20,15 +20,16 @@ var e = false
     , pixiJsGfx = null
     , minimapIsInitialized = false
     , firewallStatus = {
-    radius: 0,
-    pos: Vector.zero(),
-    speed: 0
-}
+        radius: 0,
+        pos: Vector.zero(),
+        speed: 0
+    }
     , unlockedFeature = {
-    2: "Custom country flags",
-    3: "Emotes",
-    4: "Flag Pack #1"
-};
+        2: "Custom country flags",
+        3: "Emotes",
+        4: "Flag Pack #1"
+    };
+
 Games.setup = function() {
     $("#playregion").on("click", function(e) {
         Games.updateRegion(true, e)
@@ -83,12 +84,12 @@ Games.setup = function() {
         Games.updateType(false),
         initGameHostState())
     }, true)
-}
-,
+};
+
 Games.popupLogin = function(e) {
     x("/auth_" + ["", "facebook", "google", "twitter", "reddit", "twitch"][e], "Login", 4 == e ? 900 : 500, 500)
-}
-;
+};
+
 var x = function(e, t, n, r) {
     var i = void 0 != window.screenLeft ? window.screenLeft : window.screenX
         , o = void 0 != window.screenTop ? window.screenTop : window.screenY
@@ -96,6 +97,7 @@ var x = function(e, t, n, r) {
         , a = (window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height) / 2 - r / 2 + o;
     window.open(e, t, "width=" + n + ", height=" + r + ", top=" + a + ", left=" + s)
 };
+
 window.loginSuccess = function(e) {
     config.settings.session = e,
     Tools.setSettings({
@@ -104,15 +106,15 @@ window.loginSuccess = function(e) {
     Tools.removeSetting("flag"),
     Games.playerAuth(),
     UI.closeLogin()
-}
-,
-window.loginFailure = function() {}
-,
+};
+
+window.loginFailure = function() {};
+
 Games.playerGuest = function() {
     UI.show("#playbutton", true),
     UI.show("#loginbutton", true)
-}
-,
+};
+
 Games.playerAuth = function() {
     Tools.ajaxPost("/auth", {
         session: config.settings.session
@@ -133,15 +135,15 @@ Games.playerAuth = function() {
         } else
             Games.playerGuest()
     })
-}
-,
+};
+
 Games.logout = function() {
     Tools.removeSetting("session"),
     Tools.removeSetting("name"),
     Tools.removeSetting("flag"),
     window.location = "/"
-}
-;
+};
+
 var refreshGamesJsonData = function(successCallback, t) {
     var url = "https://airmash.online/games";
     t && (url += "?main=1"),
@@ -174,8 +176,9 @@ var refreshGamesJsonData = function(successCallback, t) {
         },
         error: function() {}
     })
-}
-    , updatePlayersOnlineCount = function() {
+};
+
+var updatePlayersOnlineCount = function() {
     totalPlayersOnlineCount = 0;
     for (var e = 0, t = 0; t < gamesJsonData.length; t++)
         for (var n = 0; n < gamesJsonData[t].games.length; n++)
@@ -188,8 +191,9 @@ var refreshGamesJsonData = function(successCallback, t) {
         var r = '<div class="item smallerpad">' + totalPlayersOnlineCount + "</div>player" + (totalPlayersOnlineCount > 1 ? "s" : "") + " online";
         $("#gameinfo").html(r)
     }
-}
-    , getPlayRegion = function(regionName) {
+};
+
+var getPlayRegion = function(regionName) {
     if ("closest" === regionName)
         return {
             name: "Closest"
@@ -201,8 +205,9 @@ var refreshGamesJsonData = function(successCallback, t) {
     {
         name: "Closest"
     }
-}
-    , getPlayData = function(e, gameTypeId) {
+};
+
+var getPlayData = function(e, gameTypeId) {
     var n = getPlayRegion(e);
     if (null == n)
         return null;
@@ -219,8 +224,9 @@ var refreshGamesJsonData = function(successCallback, t) {
                     name: GameDescById[s]
                 };
     return null
-}
-    , I = function() {
+};
+
+var I = function() {
     var e = window.location.hash;
     if (history.replaceState(null, null, "/"),
     "#reload" !== e && null != e && !(e.length < 4 || e.length > 20)) {
@@ -234,26 +240,27 @@ var refreshGamesJsonData = function(successCallback, t) {
         }
     }
 };
+
 Games.selectRegion = function(e, t) {
     e.stopPropagation(),
     Sound.UIClick(),
     game.playRegion = t,
     Games.updateRegion(false),
     Games.updateType()
-}
-,
+};
+
 Games.selectGame = function(e, t) {
     e.stopPropagation(),
     Sound.UIClick(),
     game.playRoom = t,
     Games.updateType(false)
-}
-,
+};
+
 Games.closeDropdowns = function() {
     t && Games.updateType(false),
     e && Games.updateRegion(false)
-}
-,
+};
+
 Games.updateRegion = function(n, r) {
     var i = ""
         , o = null;
@@ -297,8 +304,8 @@ Games.updateRegion = function(n, r) {
         $("#playregion").css(o),
         e = n
     }
-}
-;
+};
+
 var getSelectedGameId = function() {
     var gameId = game.playRegion;
     if ("closest" === gameId) {
@@ -307,12 +314,14 @@ var getSelectedGameId = function() {
         gameId = gamesJsonData[closestGameRegion].id
     }
     return gameId
-}
-    , M = function(e) {
+};
+
+var M = function(e) {
     var t = '<div class="infott">';
     return 1 == e ? t += "Everyone versus everyone deathmatch. No teams." : 2 == e ? t += "Players split into 2 teams. 2 flags are placed inside each base. The objective is to move the enemy flag from their base to your base." : 3 == e ? t += "Players spawn at random locations all across the map. Destroyed players will not respawn. Last player standing wins." : 4 == e && (t += "Game environment for development and testing."),
     t += '<div class="arrow"></div></div>'
 };
+
 Games.updateType = function(trueOrFalseOrUndefined, clickEvent) {
     var s = ""
         , a = null;
@@ -363,8 +372,8 @@ Games.updateType = function(trueOrFalseOrUndefined, clickEvent) {
         $("#playtype").css(a),
         t = trueOrFalseOrUndefined
     }
-}
-,
+};
+
 Games.popGames = function() {
     if (!gamesSelectorVisible) {
         UI.closeAllPanels("games");
@@ -376,8 +385,8 @@ Games.popGames = function() {
         O(),
         Sound.UIClick()
     }
-}
-;
+};
+
 var A = function() {
     var e = "";
     e += '<div class="header">' + game.roomName + '<span class="region">&nbsp;&nbsp;&bull;&nbsp;&nbsp;' + game.regionName + '</span></div><div class="buttons"><div class="button" onclick="Games.redirRoot()">CHANGE REGION</div></div>';
@@ -395,28 +404,30 @@ var A = function() {
                 e += '<div class="item' + s + '"' + a + '><div class="gametype chooser">' + o[t][n].nameShort + '</div><div class="players number">' + o[t][n].players + '</div><div class="clear"></div></div>';
     return e
 };
+
 Games.redirRoot = function() {
     game.reloading = true,
     window.location = "/"
-}
-;
+};
+
 var O = function() {
     refreshGamesJsonData(function() {
         var e = A();
         $("#gameselector").html(e)
     })
 };
+
 Games.closeGames = function() {
     gamesSelectorVisible && (UI.hide("#gameselector"),
     UI.show("#menu"),
     gamesSelectorVisible = false,
     Sound.UIClick())
-}
-,
+};
+
 Games.toggleGames = function() {
     gamesSelectorVisible ? Games.closeGames() : Games.popGames()
-}
-,
+};
+
 Games.switchGame = function(e) {
     Games.closeGames(),
     null != e && (game.playRoom = e),
@@ -428,8 +439,8 @@ Games.switchGame = function(e) {
     Mobs.wipe(),
     UI.reconnection(),
     Games.start(game.myOriginalName)
-}
-;
+};
+
 var initGameHostState = function() {
     gameHostState = {},
     inProgressPingCount = 0;
@@ -449,6 +460,7 @@ var initGameHostState = function() {
     Games.performPing();
     performPingTimerId = setInterval(Games.performPing, 300);
 };
+
 Games.performPing = function() {
     if (!(inProgressPingCount > 3 || gameHasStarted)) {
         var e = 9999
@@ -467,8 +479,8 @@ Games.performPing = function() {
             })
         }
     }
-}
-;
+};
+
 var performSinglePing = function(gameKey, pingUrl, onSuccess) {
     if (null != gameHostState[gameKey] && !gameHasStarted) {
         inProgressPingCount++;
@@ -498,14 +510,15 @@ var performSinglePing = function(gameKey, pingUrl, onSuccess) {
         })
     }
 };
+
 Games.findClosest = function() {
     for (var bestPing = 9999, foundSaneGameRegion = false, n = 0; n < gamesJsonData.length; n++)
         null != gamesJsonData[n].ping && gamesJsonData[n].ping < bestPing && (bestPing = gamesJsonData[n].ping,
         closestGameRegion = n,
         foundSaneGameRegion = true);
     foundSaneGameRegion && "closest" === game.playRegion && Games.updateType()
-}
-,
+};
+
 Games.highlightInput = function(e) {
     $(e).css({
         transition: "none",
@@ -521,16 +534,16 @@ Games.highlightInput = function(e) {
     setTimeout(function() {
         $(e).focus()
     }, 200)
-}
-,
+};
+
 Games.copyInviteLink = function() {
     D(game.inviteLink) && (UI.show("#invite-copied"),
     null != inviteCopiedTimer && clearTimeout(inviteCopiedTimer),
     inviteCopiedTimer = setTimeout(function() {
         UI.hide("#invite-copied")
     }, 2e3))
-}
-;
+};
+
 var D = function(e) {
     var t = document.createElement("span");
     t.textContent = e,
@@ -556,6 +569,7 @@ var D = function(e) {
     n.remove(),
     s
 };
+
 Games.start = function(playerName, isFirstTime) {
     const stillInitializing = isFirstTime && game.state == Network.STATE.CONNECTING;
     if (isServerMaintenance || stillInitializing) {
@@ -674,8 +688,8 @@ Games.prep = function() {
     } else
         3 == game.gameType && ($("#gamespecific").html(""),
         UI.show("#gamespecific"))
-}
-,
+};
+
 Games.wipe = function() {
     deinitMinimapAndFirewall(),
     ctfGameState.flagBlue && ctfGameState.flagRed && (game.graphics.layers.flags.removeChild(ctfGameState.flagBlue.sprite),
@@ -694,8 +708,8 @@ Games.wipe = function() {
     ctfGameState.flagRed.minimapSprite.destroy(),
     ctfGameState.flagBlue.minimapBase.destroy(),
     ctfGameState.flagRed.minimapBase.destroy())
-}
-,
+};
+
 Games.networkFlag = function(flagMsg) {
     var flagState = 1 == flagMsg.flag ? ctfGameState.flagBlue : ctfGameState.flagRed
         , flagElemSelector = 1 == flagMsg.flag ? "#blueflag-name" : "#redflag-name"
@@ -724,8 +738,8 @@ Games.networkFlag = function(flagMsg) {
         $(flagElemSelector).html(i)
     }
     updateCtfFlagState(flagState, false)
-}
-;
+};
+
 var updateCtfFlagState = function(e, t) {
     if (t && (Graphics.minimapMob(e.minimapSprite, e.position.x, e.position.y),
     Graphics.minimapMob(e.minimapBase, e.basePos.x, e.basePos.y)),
@@ -761,26 +775,27 @@ var updateCtfFlagState = function(e, t) {
         e.spriteShadow.visible = s)
     }
 };
+
 Games.spectate = function(playerID) {
     null == game.spectatingID && 3 != game.gameType && UI.showMessage("alert", '<span class="info">SPECTATOR MODE</span>Click on Respawn to resume playing', 4e3),
     game.spectatingID = playerID;
     var player = Players.get(playerID)
         , n = '<div id="spectator-tag" class="spectating">Spectating ' + (null == player ? "" : UI.escapeHTML(player.name)) + '</div><div class="buttons"><div onclick="Network.spectateNext()" class="changeplayer left"><div class="arrow"></div></div><div onclick="Network.spectatePrev()" class="changeplayer right"><div class="arrow"></div></div></div>';
     UI.showSpectator(n)
-}
-,
+};
+
 Games.spectatorSwitch = function(e) {
     setTimeout(function() {
         e == game.spectatingID && Network.spectateNext()
     }, 2e3)
-}
-,
+};
+
 Games.playersAlive = function(e) {
     var t = "";
     e > 1 && (t = '<div class="playersalive">' + e + " players alive</div>"),
     $("#gamespecific").html(t)
-}
-,
+};
+
 Games.showBTRWin = function(e) {
     if (!$("#custom-msg").length) {
         var t = '<div id="custom-msg" class="btrwin"><div class="trophy"></div><div class="winner"><div class="player"><span class="flag big flag-' + e.f + '"></span>' + UI.escapeHTML(e.p) + '</div></div><div class="bounty"><span class="stat">' + e.k + " KILL" + (1 == e.k ? "" : "S") + "</span>+" + e.b + " BOUNTY</div></div>";
@@ -791,8 +806,8 @@ Games.showBTRWin = function(e) {
         }, 1e3 * e.t),
         Sound.gameComplete()
     }
-}
-,
+};
+
 Games.showCTFWin = function(e) {
     if (!$("#custom-msg").length) {
         var t = '<div id="custom-msg" class="ctfwin"><div class="trophy"></div><div class="winner">' + (1 == e.w ? '<div class="player blue">BLUE TEAM</div>' : '<div class="player red">RED TEAM</div>') + '</div><div class="bounty">+' + e.b + " BOUNTY</div></div>";
@@ -803,8 +818,8 @@ Games.showCTFWin = function(e) {
         }, 1e3 * e.t),
         Sound.gameComplete()
     }
-}
-,
+};
+
 Games.showLevelUP = function(e) {
     $("#custom-msg").length && $("#custom-msg").remove();
     var t = ""
@@ -816,8 +831,8 @@ Games.showLevelUP = function(e) {
     UI.showPanel("#custom-msg"),
     Sound.levelUp(),
     UI.showChatLevel(e)
-}
-,
+};
+
 Games.popFirewall = function(e, t) {
     t <= 0 && (t = 0),
     minimapIsInitialized || (minimapIsInitialized = true,
@@ -879,8 +894,8 @@ Games.popFirewall = function(e, t) {
         firewallHotSmokeSprites[x].sprite.tint = Tools.colorLerp(16427014, 16404230, firewallHotSmokeSprites[x].color)) : (game.graphics.layers.powerups.removeChild(firewallHotSmokeSprites[x].sprite),
         firewallHotSmokeSprites[x].sprite.destroy(),
         delete firewallHotSmokeSprites[x])
-}
-;
+};
+
 var deinitMinimapAndFirewall = function() {
     if (minimapIsInitialized) {
         for (var e in firewallHotSmokeSprites)
@@ -893,17 +908,18 @@ var deinitMinimapAndFirewall = function() {
         minimapIsInitialized = false
     }
 };
+
 Games.handleFirewall = function(firewallMsg) {
     0 == firewallMsg.status ? deinitMinimapAndFirewall() : (firewallStatus.radius = firewallMsg.radius,
     firewallStatus.pos.x = firewallMsg.posX,
     firewallStatus.pos.y = firewallMsg.posY,
     firewallStatus.speed = firewallMsg.speed,
     Games.popFirewall(firewallStatus.pos, firewallStatus.radius))
-}
-,
+};
+
 Games.update = function(e) {
     2 == game.gameType && ctfGameState.flagBlue && (updateCtfFlagState(ctfGameState.flagBlue, e),
     updateCtfFlagState(ctfGameState.flagRed, e)),
     3 == game.gameType && minimapIsInitialized && (firewallStatus.radius += firewallStatus.speed / 60 * game.timeFactor,
     Games.popFirewall(firewallStatus.pos, firewallStatus.radius))
-}
+};

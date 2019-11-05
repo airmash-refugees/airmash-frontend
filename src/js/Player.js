@@ -73,6 +73,7 @@ class Player {
         this.me() && (game.myType = e.type,
         UI.aircraftSelected(e.type))
     }
+
     setupGraphics(e) {
         var t = null;
         switch (this.me() && (t = {
@@ -164,11 +165,13 @@ class Player {
             game.graphics.layers.explosions.addChild(this.col)
         }
     }
+
     reteam(e) {
         this.team = e,
         this.sprites.name.style = new PIXI.TextStyle(this.nameplateTextStyle()),
         UI.changeMinimapTeam(this.id, this.team)
     }
+
     nameplateTextStyle() {
         if (2 == game.gameType)
             var e = 1 == this.team ? "#4076E2" : "#EA4242";
@@ -184,6 +187,7 @@ class Player {
             padding: 4
         }
     }
+
     setupNameplate() {
         var e = "";
         2 == game.gameType && (e = "  ■"),
@@ -199,6 +203,7 @@ class Player {
         game.graphics.layers.playernames.addChild(this.sprites.flag),
         game.graphics.layers.playernames.addChild(this.sprites.name)
     }
+
     setupChatBubbles() {
         this.sprites.bubble = new PIXI.Container,
         this.sprites.bubbleLeft = Graphics.initSprite("chatbubbleleft", this.sprites.bubble, {
@@ -227,6 +232,7 @@ class Player {
         this.sprites.bubble.pivot.set(.5, 34),
         game.graphics.layers.bubbles.addChild(this.sprites.bubble)
     }
+
     visibilityUpdate(e) {
         this.culled = !Graphics.inScreen(this.pos, 128);
         var t = !(this.hidden || this.culled || this.timedout);
@@ -264,6 +270,7 @@ class Player {
             t || Sound.clearThruster(this.id)
         }
     }
+
     stealth(e) {
         this.lastPacket = game.timeNetwork,
         this.energy = e.energy,
@@ -273,11 +280,13 @@ class Player {
         this.team != game.myTeam && (this.keystate.LEFT && delete this.keystate.LEFT,
         this.keystate.RIGHT && delete this.keystate.RIGHT)) : this.unstealth()
     }
+
     unstealth() {
         this.stealthed = false,
         this.state.stealthLevel = 0,
         this.opacity(1)
     }
+
     opacity(e) {
         this.alpha = e,
         this.sprites.sprite.alpha = e,
@@ -294,6 +303,7 @@ class Player {
         this.sprites.thruster2.alpha = e,
         this.sprites.thruster2Glow.alpha = e)
     }
+
     kill(ev) {
         this.status = 1;
         this.keystate = {};
@@ -329,9 +339,11 @@ class Player {
             Sound.playerKill(this)
         }
     }
+
     me() {
         return game.myID == this.id
     }
+
     destroy(e) {
         var t = this.me() ? game.graphics.layers.aircraftme : game.graphics.layers.aircraft;
         switch (t.removeChild(this.sprites.sprite),
@@ -378,6 +390,7 @@ class Player {
             children: true
         }))
     }
+
     sayBubble(e) {
         this.state.bubbleTime = game.time,
         this.state.bubbleFade = 0,
@@ -409,6 +422,7 @@ class Player {
         this.sprites.bubble.cacheAsBitmap = true,
         this.state.bubbleTextWidth = n
     }
+
     networkKey(msgTypeId, updateMsg) {
         this.lastPacket = game.timeNetwork;
         if (1 == this.status) {
@@ -448,12 +462,14 @@ class Player {
             Sound.playerImpact(this.pos, this.type, this.speed.length() / config.ships[this.type].maxSpeed);
         }
     }
+
     updateLevel(e) {
         this.me() && (1 == e.type && Games.showLevelUP(e.level),
         UI.updateMyLevel(e.level)),
         this.level = e.level,
         this.setupLevelPlate()
     }
+
     setupLevelPlate() {
         null == this.sprites.level ? (this.sprites.level = new PIXI.Text(this.level + "",{
             fontFamily: "MontserratWeb, Helvetica, sans-serif",
@@ -473,9 +489,11 @@ class Player {
         this.sprites.level.visible = this.render,
         this.sprites.levelBorder.visible = this.render
     }
+
     powerup(e) {
         UI.addPowerup(e.type, e.duration)
     }
+
     resetPowerups() {
         this.powerupActive && (this.sprites.powerup.visible = false,
         this.sprites.powerupCircle.visible = false),
@@ -487,6 +505,7 @@ class Player {
         this.state.powerupFade = 0,
         this.state.powerupFadeState = 0
     }
+
     updatePowerups() {
         var e = false;
         this.powerups.shield != this.powerupsShown.shield && (this.powerupsShown.shield = this.powerups.shield,
@@ -505,6 +524,7 @@ class Player {
         this.state.powerupFade = 0,
         this.state.powerupFadeState = 1))
     }
+
     impact(e, t, n, r) {
         this.health = n,
         this.healthRegen = r,
@@ -512,12 +532,14 @@ class Player {
         200 != e && Mobs.explosion(t, e),
         this.me() && 0 == this.status && Graphics.shakeCamera(t, 8)
     }
+
     changeType(e) {
         this.type != e.type && (this.destroy(false),
         this.type = e.type,
         this.setupGraphics(true),
         this.visibilityUpdate(true))
     }
+
     respawn(e) {
         this.lastPacket = game.timeNetwork,
         this.status = 0,
@@ -565,6 +587,7 @@ class Player {
 
         triggerAmEvent('spawned', {respawn: true, id: this.id});
     }
+
     revive() {
         this.status = 0,
         this.boost = false,
@@ -577,13 +600,16 @@ class Player {
         this.energyRegen = 1,
         this.stealthed && this.unstealth()
     }
+
     changeFlag(e) {
         this.flag = e.flag,
         this.sprites.flag.texture = Textures.get("flag_" + e.flag)
     }
+
     changeBadge(e) {
         this.sprites.badge.texture = Textures.get(e)
     }
+
     updateNameplate() {
         if (!this.reel) {
             var e = (this.sprites.name.width + this.sprites.flag.width + 10) / 2
@@ -596,6 +622,7 @@ class Player {
             this.state.hasBadge && this.sprites.badge.position.set(t - 28, n)
         }
     }
+
     updateBubble() {
         this.state.bubbleProgress += .015 * game.timeFactor,
         this.state.bubbleProgress >= 1 && (this.state.bubbleProgress = 1),
@@ -612,6 +639,7 @@ class Player {
         this.powerupActive && (n += 60),
         this.sprites.bubble.position.set(this.pos.x * game.scale + e, (this.pos.y - n) * game.scale + t)
     }
+
     detectTimeout() {
         if (!this.me()) {
             var e = this.timedout;
@@ -624,6 +652,7 @@ class Player {
             this.resetPowerups())
         }
     }
+
     leaveHorizon() {
         this.me() || this.timedout || (this.lastPacket = -1e4,
         this.timedout = true,
@@ -634,6 +663,7 @@ class Player {
         this.keystate = {},
         this.resetPowerups())
     }
+
     update(timeFrac) {
         if (this.reel) {
             this.clientCalcs(timeFrac);
@@ -753,6 +783,7 @@ class Player {
             }
         }
     }
+
     clientCalcs(timeFrac) {
         switch(this.type) {
             case 1:
@@ -814,6 +845,7 @@ class Player {
             }
         }
     }
+
     updateGraphics(e) {
         var t = Tools.oscillator(.025, 1e3, this.randomness) * this.scale
           , n = 1.5 * this.state.thrustLevel

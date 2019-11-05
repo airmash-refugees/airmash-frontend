@@ -4,6 +4,7 @@ import Vector from './Vector';
 var playersById = {}
     , t = [-1, -1, -1]
     , n = ["badge_gold", "badge_silver", "badge_bronze"];
+
 Players.update = function() {
     var t, n;
     for (t in playersById)
@@ -21,40 +22,40 @@ Players.update = function() {
         0 == n.status && UI.updateHUD(n.health, n.energy, n),
         Graphics.setCamera(n.pos.x, n.pos.y)
     }
-}
-,
+};
+
 Players.add = function(t, n) {
     playersById[t.id] = new Player(t,n)
-}
-,
+};
+
 Players.get = function(t) {
     return playersById[t]
-}
-,
+};
+
 Players.getMe = function() {
     return playersById[game.myID]
-}
-,
+};
+
 Players.amIAlive = function() {
     var e = Players.getMe();
     return null != e && 0 == e.status
-}
-,
+};
+
 Players.getIDs = function() {
     var t = {};
     for (var n in playersById)
         t[n] = true;
     return t
-}
-,
+};
+
 Players.getByName = function(name) {
     var id;
     for (id in playersById)
         if (playersById[id].name === name)
             return playersById[id];
     return null
-}
-,
+};
+
 Players.network = function(msgTypeId, updateMsg) {
     var player = playersById[updateMsg.id];
     if (null != player)
@@ -78,18 +79,18 @@ Players.network = function(msgTypeId, updateMsg) {
             })),
             player.changeFlag(updateMsg)
         }
-}
-,
+};
+
 Players.stealth = function(t) {
     var n = playersById[t.id];
     null != n && n.stealth(t)
-}
-,
+};
+
 Players.leaveHorizon = function(t) {
     var n = playersById[t.id];
     null != n && n.leaveHorizon()
-}
-,
+};
+
 Players.updateBadges = function(r) {
     for (var i, o = Tools.clamp(r.length, 0, 3), s = [], a = 0; a < o; a++)
         null != (i = playersById[r[a].id]) && (s.push(i.id),
@@ -105,23 +106,23 @@ Players.updateBadges = function(r) {
             i.sprites.badge.visible = false)
         }
     t = s
-}
-,
+};
+
 Players.chat = function(t) {
     var n = playersById[t.id];
     null != n && UI.addChatLine(n, t.text, 0)
-}
-,
+};
+
 Players.teamChat = function(t) {
     var n = playersById[t.id];
     null != n && UI.addChatLine(n, t.text, 3)
-}
-,
+};
+
 Players.votemutePass = function(t) {
     var n = playersById[t.id];
     null != n && UI.chatVotemutePass(n)
-}
-,
+};
+
 Players.whisper = function(t) {
     var n;
     if (t.to == game.myID) {
@@ -135,29 +136,29 @@ Players.whisper = function(t) {
         n = 1
     }
     UI.addChatLine(r, t.text, n)
-}
-,
+};
+
 Players.impact = function(t) {
     for (var n = 0; n < t.players.length; n++) {
         var r = playersById[t.players[n].id];
         null != r && r.impact(t.type, new Vector(t.posX,t.posY), t.players[n].health, t.players[n].healthRegen)
     }
-}
-,
+};
+
 Players.powerup = function(e) {
     Players.getMe().powerup(e)
-}
-,
+};
+
 Players.updateLevel = function(t) {
     var n = playersById[t.id];
     null != n && n.updateLevel(t)
-}
-,
+};
+
 Players.reteam = function(t) {
     var n = playersById[t.id];
     null != n && n.reteam(t.team)
-}
-;
+};
+
 Players.kill = function(ev) {
     var player = playersById[ev.id];
     if (!player) {
@@ -188,34 +189,35 @@ Players.kill = function(ev) {
             }),
             UI.visibilityHUD(false)
         }(player)
-}
-,
+};
+
 Players.destroy = function(t) {
     t == game.spectatingID && ($("#spectator-tag").html("Spectating"),
     Games.spectatorSwitch(t));
     var n = playersById[t];
     null != n && (n.destroy(true),
     delete playersById[t])
-}
-,
+};
+
 Players.changeType = function(t) {
     var n = playersById[t.id];
     null != n && n.changeType(t)
-}
-,
+};
+
 Players.count = function() {
     var t, n = 0, r = 0;
     for (t in playersById)
         n++,
         playersById[t].culled && r++;
     return [n - r, n]
-}
-,
+};
+
 Players.wipe = function() {
     for (var t in playersById)
         playersById[t].destroy(true),
         delete playersById[t]
-},
+};
+
 Players.all = function() { // SPATIE
     return playersById;
-}
+};

@@ -26,13 +26,13 @@ var e = {}
     , T = [0, .8, .5, 1, 0, .8, .8, .8]
     , E = [0, 1.5, .8, 2, 1, 1.5]
     , S = {
-    powerup_shield: .5,
-    upgrade: .2,
-    complete: .5,
-    levelup: .5,
-    respawn: .05,
-    click: .5
-}
+        powerup_shield: .5,
+        upgrade: .2,
+        complete: .5,
+        levelup: .5,
+        respawn: .05,
+        click: .5
+    }
     , I = {}
     , P = {
     src: ["assets/sounds.mp3?4"],
@@ -61,6 +61,7 @@ var e = {}
         upgrade: [103e3, 2062.517006802722]
     }
 };
+
 Sound.setup = function() {
     var n = {};
     for (var r in I) {
@@ -73,8 +74,8 @@ Sound.setup = function() {
         t[r] = new Howl(n)
     }
     e = new Howl(P)
-}
-,
+};
+
 Sound.toggle = function() {
     config.settings.sound = !config.settings.sound,
     Tools.setSettings({
@@ -82,86 +83,88 @@ Sound.toggle = function() {
     }),
     UI.updateSound(true),
     M()
-}
-;
+};
+
 var M = function() {
     config.settings.sound || e.stop()
-}
-    , A = function(e) {
+};
+
+var A = function(e) {
     var t = S[e];
     return null == t ? 1 : t
 };
+
 Sound.mobExplosion = function(e, t) {
     var n = v[t] * u
         , r = k(e) * n
         , i = "explosion" + Tools.randInt(1, 6);
     r < .01 || O("mobexplosions", 4) || C(i, r, e, Tools.rand(.8, 1.2))
-}
-,
+};
+
 Sound.playerKill = function(e) {
     var t = _[e.type] * c
         , n = k(e.pos) * t
         , r = "explosion" + Tools.randInt(1, 6);
     n < .01 || O("playerkills", 3) || C(r, n, e.pos, Tools.rand(.8, 1.2))
-}
-,
+};
+
 Sound.playerUpgrade = function() {
     if (!O("upgrades", 1)) {
         var e = A("upgrade");
         C("upgrade", e)
     }
-}
-,
+};
+
 Sound.playerRespawn = function(e) {
     var t = A("respawn") * (e.me() ? 1 : k(e.pos))
         , n = e.me() ? null : e.pos;
     C("respawn", t, n)
-}
-,
+};
+
 Sound.gameComplete = function() {
     var e = A("complete");
     C("complete", e)
-}
-,
+};
+
 Sound.levelUp = function() {
     var e = A("levelup");
     C("levelup", e)
-}
-,
+};
+
 Sound.UIClick = function() {
     if (!O("uiclick", 1, 200)) {
         var e = A("click");
         C("click", e)
     }
-}
-,
+};
+
 Sound.effectRepel = function(e) {
     var t = k(e) * m;
     C("repel", t, e, 1.5)
-}
-,
+};
+
 Sound.powerup = function(e, t) {
     var n = (null == t ? 1 : k(t)) * g
         , r = "";
     4 == e ? r = "powerup_upgrade" : 8 == e ? r = "powerup_shield" : 9 == e && (r = "powerup_rampage"),
     C(r, n * A(r), t)
-}
-,
+};
+
 Sound.missileLaunch = function(e, t) {
     var n = y[t] * h
         , r = k(e) * n
         , i = b[t]
         , o = "launch" + Tools.randInt(1, 2);
     r < .01 || O("launches", 5) || C(o, r, e, i)
-}
-,
+};
+
 Sound.playerImpact = function(e, t, n) {
     var r = f * Tools.clamp(n, 0, 1)
         , i = k(e) * r
         , o = E[t];
     C("impact", i, e, o)
-}
-,
+};
+
 Sound.update = function() {
     if (!(game.time - a < 100)) {
         var e = game.focus ? 300 : 1e3;
@@ -172,8 +175,8 @@ Sound.update = function() {
             delete o[r]);
         a = game.time
     }
-}
-;
+};
+
 var O = function(e, t, n) {
     if (null == l[e])
         return l[e] = {
@@ -186,8 +189,9 @@ var O = function(e, t, n) {
     l[e].time = game.time,
     false) : (l[e].num++,
     l[e].num > t)
-}
-    , C = function(n, r, i, o, s, a) {
+};
+
+var C = function(n, r, i, o, s, a) {
     if (config.settings.sound) {
         if (a) {
             if (null == t[n])
@@ -205,8 +209,9 @@ var O = function(e, t, n) {
             u
         }
     }
-}
-    , R = function(n, r, i, o, s, a, l) {
+};
+
+var R = function(n, r, i, o, s, a, l) {
     if (config.settings.sound) {
         if (l) {
             if (null == t[r])
@@ -219,8 +224,9 @@ var O = function(e, t, n) {
         null != s && u.rate(s, n),
         null == o || config.ios || u.stereo(L(o), n)
     }
-}
-    , D = function(n, r, i) {
+};
+
+var D = function(n, r, i) {
     if (i) {
         if (null == t[r])
             return;
@@ -229,6 +235,7 @@ var O = function(e, t, n) {
         o = e;
     o.stop(n)
 };
+
 Sound.clearThruster = function(e) {
     if (null != n[e]) {
         var t = n[e].soundId
@@ -244,8 +251,8 @@ Sound.clearThruster = function(e) {
         0 == n[e].type ? r-- : i--,
         delete n[e]
     }
-}
-,
+};
+
 Sound.updateThruster = function(e, t, o) {
     if (config.settings.sound) {
         if (0 == e) {
@@ -309,17 +316,18 @@ Sound.updateThruster = function(e, t, o) {
         else
             null != n[a] && Sound.clearThruster(a)
     }
-}
-;
+};
+
 var k = function(e) {
     var t = Graphics.getCamera()
         , n = Tools.length(e.x - t.x, e.y - t.y)
         , r = (game.halfScreenX / game.scale + game.halfScreenY / game.scale) / 2;
     return Tools.clamp(1.5 * (1 - n / r), 0, 1)
-}
-    , L = function(e) {
+};
+
+var L = function(e) {
     var t = Graphics.getCamera()
         , n = e.x - t.x
         , r = game.halfScreenX / game.scale;
     return Tools.clamp(.8 * n / r, -1, 1)
-}
+};

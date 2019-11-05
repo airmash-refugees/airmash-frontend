@@ -16,6 +16,7 @@ var primarySock = null
     , lastReceivedError = false
     , f = 2e3
     , g = 2e3;
+
 Network.sendKey = function(keyCode, isPressed) {
     if (game.state == Network.STATE.PLAYING) {
         sendKeyCount++;
@@ -29,37 +30,37 @@ Network.sendKey = function(keyCode, isPressed) {
         sendMessageDict(msg),
         backupSock && backupSockIsConnected && sendMessageDict(msg, true)
     }
-}
-,
+};
+
 Network.sendChat = function(text) {
     game.state == Network.STATE.PLAYING && sendMessageDict({
         c: ClientPacket.CHAT,
         text: text
     })
-}
-,
+};
+
 Network.sendWhisper = function(playerId, text) {
     game.state == Network.STATE.PLAYING && sendMessageDict({
         c: ClientPacket.WHISPER,
         id: playerId,
         text: text
     })
-}
-,
+};
+
 Network.sendSay = function(text) {
     game.state == Network.STATE.PLAYING && sendMessageDict({
         c: ClientPacket.SAY,
         text: text
     })
-}
-,
+};
+
 Network.sendTeam = function(text) {
     game.state == Network.STATE.PLAYING && sendMessageDict({
         c: ClientPacket.TEAMCHAT,
         text: text
     })
-}
-,
+};
+
 Network.sendCommand = function(com, data) {
     game.state == Network.STATE.PLAYING && ("flag" === com && (game.lastFlagSet = data),
     sendMessageDict({
@@ -67,15 +68,15 @@ Network.sendCommand = function(com, data) {
         com: com,
         data: data
     }))
-}
-,
+};
+
 Network.voteMute = function(playerId) {
     game.state == Network.STATE.PLAYING && sendMessageDict({
         c: ClientPacket.VOTEMUTE,
         id: playerId
     })
-}
-,
+};
+
 Network.force = function(repelMsg) {
     var t;
     Players.network(ServerPacket.PLAYER_UPDATE, repelMsg);
@@ -86,26 +87,26 @@ Network.force = function(repelMsg) {
     var n = new Vector(repelMsg.posX,repelMsg.posY);
     Particles.spiritShockwave(n),
     Sound.effectRepel(n)
-}
-,
+};
+
 Network.getScores = function() {
     game.state == Network.STATE.PLAYING && sendMessageDict({
         c: ClientPacket.SCOREDETAILED
     })
-}
-,
+};
+
 Network.resizeHorizon = function() {
     game.state == Network.STATE.PLAYING && sendMessageDict({
         c: ClientPacket.HORIZON,
         horizonX: Math.ceil(game.halfScreenX / game.scale),
         horizonY: Math.ceil(game.halfScreenY / game.scale)
     })
-}
-,
+};
+
 Network.detectConnectivity = function() {
     game.lagging = game.timeNetwork - oldTimeNetwork > 1300
-}
-,
+};
+
 Network.shutdown = function() {
     null != ackIntervalId && clearInterval(ackIntervalId),
     null != primarySock && primarySock.close(),
@@ -122,24 +123,24 @@ Network.shutdown = function() {
     lastReceivedError = false,
     f = 2e3,
     g = 2e3
-}
-,
+};
+
 Network.receivedError = function(errorText) {
     lastReceivedError = errorText
-}
-,
+};
+
 Network.spectateNext = function() {
     game.state == Network.STATE.PLAYING && Network.sendCommand("spectate", "-1")
-}
-,
+};
+
 Network.spectatePrev = function() {
     game.state == Network.STATE.PLAYING && Network.sendCommand("spectate", "-2")
-}
-,
+};
+
 Network.spectateForce = function() {
     game.state == Network.STATE.PLAYING && (Players.amIAlive() ? Network.sendCommand("spectate", "-3") : Network.spectateNext())
-}
-;
+};
+
 var sendRegularAckMsg = function() {
     game.lagging || game.state == Network.STATE.PLAYING && (shouldSendNextAckOnBackupSock ? backupSock && backupSockIsConnected && sendMessageDict({
         c: ClientPacket.ACK
@@ -147,16 +148,17 @@ var sendRegularAckMsg = function() {
         c: ClientPacket.ACK
     }),
     shouldSendNextAckOnBackupSock = !shouldSendNextAckOnBackupSock)
-}
-    , resetJitterMemoryEvery5Mins = function(packetDivClk) {
+};
+
+var resetJitterMemoryEvery5Mins = function(packetDivClk) {
     if(Math.abs(packetDivClk - baseDivClk) > 36e5) {
         baseDivClk = packetDivClk;
         baseDivClkLastResetTime = performance.now();
         jitterMemory = 0;
     }
-}
-    , dispatchIncomingMessage = function(msg) {
-        //console.log(msg);
+};
+
+var dispatchIncomingMessage = function(msg) {
     if (game.state == Network.STATE.PLAYING || msg.c == ServerPacket.LOGIN || msg.c == ServerPacket.ERROR) {
         if ((msg.c == ServerPacket.PLAYER_UPDATE || msg.c == ServerPacket.PLAYER_FIRE || msg.c == ServerPacket.EVENT_BOOST || msg.c == ServerPacket.EVENT_BOUNCE) && msg.id == game.myID || msg.c == ServerPacket.PING) {
             if (msg.c != ServerPacket.PING && shouldDiscardTimestampedMessage(msg))
@@ -341,16 +343,18 @@ var sendRegularAckMsg = function() {
             UI.showCommandReply(msg)
         }
     }
-}
-    , handleCustomMessage = function(msg) {
+};
+
+var handleCustomMessage = function(msg) {
     try {
         var parsedData = JSON.parse(msg.data)
     } catch (e) {
         return
     }
     1 == msg.type ? Games.showBTRWin(parsedData) : 2 == msg.type && Games.showCTFWin(parsedData)
-}
-    , shouldDiscardTimestampedMessage = function(msg) {
+};
+
+var shouldDiscardTimestampedMessage = function(msg) {
     var msgTombstone = msg.c + "_" + msg.clock + "_" + msg.posX + "_" + msg.posY + "_" + msg.rot + "_" + msg.speedX + "_" + msg.speedY;
     var now = performance.now();
 
@@ -370,15 +374,16 @@ var sendRegularAckMsg = function() {
         return false;
     }
 };
+
 Network.reconnectMessage = function() {
     game.reloading || UI.showMessage("alert", '<span class="info">DISCONNECTED</span>Connection reset<br><span class="button" onclick="Network.reconnect()">RECONNECT</span>', 6e5)
-}
-,
+};
+
 Network.reconnect = function() {
     UI.showMessage("alert", "", 100),
     Games.switchGame()
-}
-,
+};
+
 Network.setup = function() {
     if (DEVELOPMENT) {
         currentSockUrl = -1 != document.domain.indexOf("192.168.") ? "ws://" + document.domain + ":8010/" + game.playPath : "ws://" + game.playHost + ".airmash.devel:8000/" + game.playPath
@@ -416,8 +421,8 @@ Network.setup = function() {
     primarySock.onmessage = function(e) {
         dispatchIncomingMessage(decodeMessageToDict(e.data))
     }
-}
-;
+};
+
 var initBackupSock = function() {
     (backupSock = new WebSocket(currentSockUrl)).binaryType = "arraybuffer";
     backupSock.onopen = function() {
@@ -446,8 +451,9 @@ var initBackupSock = function() {
         msg.backup = true,
         dispatchIncomingMessage(msg)
     }
-}
-    , encodeNetworkMessage = function(msg, t) {
+};
+
+var encodeNetworkMessage = function(msg, t) {
     var n, msgLen = 1, encodedStrings = [], schema = ClientMessageSchema[msg.c];
     if (null == schema)
         return null;
@@ -522,8 +528,9 @@ var initBackupSock = function() {
             outputOffset += 1
         }
     return buf
-}
-    , decodeMessageToDict = function(encoded, t) {
+};
+
+var decodeMessageToDict = function(encoded, t) {
     var dataView = new DataView(encoded)
         , msg = {
         c: dataView.getUint8(0, true)
@@ -717,23 +724,26 @@ var initBackupSock = function() {
         }
     }
     return msg
-}
-    , sendMessageDict = function(msg, useBackupConn) {
+};
+
+var sendMessageDict = function(msg, useBackupConn) {
     if(useBackupConn) {
         backupSock.send(encodeNetworkMessage(msg));
     } else {
         primarySock.send(encodeNetworkMessage(msg));
     }
-}
-    , KeyCodes = {
+};
+
+var KeyCodes = {
     UP: 1,
     DOWN: 2,
     LEFT: 3,
     RIGHT: 4,
     FIRE: 5,
     SPECIAL: 6
-}
-    , FieldType = {
+};
+
+var FieldType = {
     text: 1,
     textbig: 2,
     array: 3,
@@ -753,8 +763,9 @@ var initBackupSock = function() {
     rotation: 17,
     healthnergy: 18,
     regen: 19
-}
-    , ClientPacket = {
+};
+
+var ClientPacket = {
     LOGIN: 0,
     BACKUP: 1,
     HORIZON: 2,
@@ -769,8 +780,9 @@ var initBackupSock = function() {
     TEAMCHAT: 23,
     VOTEMUTE: 24,
     LOCALPING: 255
-}
-    , ClientMessageSchema = {
+};
+
+var ClientMessageSchema = {
     [ClientPacket.LOGIN]: [["protocol", FieldType.uint8], ["name", FieldType.text], ["session", FieldType.text], ["horizonX", FieldType.uint16], ["horizonY", FieldType.uint16], ["flag", FieldType.text]],
     [ClientPacket.BACKUP]: [["token", FieldType.text]],
     [ClientPacket.HORIZON]: [["horizonX", FieldType.uint16], ["horizonY", FieldType.uint16]],
@@ -785,8 +797,9 @@ var initBackupSock = function() {
     [ClientPacket.TEAMCHAT]: [["text", FieldType.text]],
     [ClientPacket.VOTEMUTE]: [["id", FieldType.uint16]],
     [ClientPacket.LOCALPING]: [["auth", FieldType.uint32]]
-}
-    , ServerPacket = {
+};
+
+var ServerPacket = {
     LOGIN: 0,
     BACKUP: 1,
     PING: 5,
@@ -833,8 +846,9 @@ var initBackupSock = function() {
     SCORE_DETAILED_BTR: 84,
     SERVER_MESSAGE: 90,
     SERVER_CUSTOM: 91
-}
-    , ServerMessageSchema = {
+};
+
+var ServerMessageSchema = {
     [ServerPacket.LOGIN]: [["success", FieldType.boolean], ["id", FieldType.uint16], ["team", FieldType.uint16], ["clock", FieldType.uint32], ["token", FieldType.text], ["type", FieldType.uint8], ["room", FieldType.text], ["players", FieldType.array, [["id", FieldType.uint16], ["status", FieldType.uint8], ["level", FieldType.uint8], ["name", FieldType.text], ["type", FieldType.uint8], ["team", FieldType.uint16], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["rot", FieldType.rotation], ["flag", FieldType.uint16], ["upgrades", FieldType.uint8]]]],
     [ServerPacket.BACKUP]: [],
     [ServerPacket.PING]: [["clock", FieldType.uint32], ["num", FieldType.uint32]],
@@ -883,7 +897,9 @@ var initBackupSock = function() {
     [ServerPacket.SERVER_MESSAGE]: [["type", FieldType.uint8], ["duration", FieldType.uint32], ["text", FieldType.textbig]],
     [ServerPacket.SERVER_CUSTOM]: [["type", FieldType.uint8], ["data", FieldType.textbig]]
 };
-Network.KEYPACKET = KeyCodes,
+
+Network.KEYPACKET = KeyCodes;
+
 Network.KEYLOOKUP = {
     1: "UP",
     2: "DOWN",
@@ -891,11 +907,13 @@ Network.KEYLOOKUP = {
     4: "RIGHT",
     5: "FIRE",
     6: "SPECIAL"
-},
-Network.CLIENTPACKET = ClientPacket,
-Network.SERVERPACKET = ServerPacket,
+};
+
+Network.CLIENTPACKET = ClientPacket;
+Network.SERVERPACKET = ServerPacket;
+
 Network.STATE = {
     LOGIN: 1,
     CONNECTING: 2,
     PLAYING: 3
-}
+};

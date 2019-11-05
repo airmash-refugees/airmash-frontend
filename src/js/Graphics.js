@@ -7,7 +7,11 @@ var e, t = {
     lastOverdraw: Vector.zero(),
     lastOverdrawTime: 0,
     shake: 0
-}, n = {}, r = {}, i = {};
+    }, 
+    n = {}, 
+    r = {}, 
+    i = {};
+
 Graphics.setup = function() {
     l(window.innerWidth, window.innerHeight),
     o(),
@@ -19,8 +23,8 @@ Graphics.setup = function() {
     Mobs.setupDoodads(),
     UI.setupMinimap(),
     UI.setupHUD()
-}
-;
+};
+
 var o = function() {
     PIXI.utils.skipHello(),
     PIXI.settings.PRECISION_FRAGMENT = PIXI.PRECISION.HIGH;
@@ -37,7 +41,8 @@ var o = function() {
     }
     document.body.appendChild(e.view)
 }
-    , s = function() {
+
+var s = function() {
     for (var e of ["game", "ui0", "ui1", "ui2", "ui3", "ui4", "hudHealth", "hudEnergy", "flags", "doodads", "map", "sea", "objects", "groundobjects", "fields", "shadows", "powerups", "crates", "aircraft", "aircraftme", "glows", "playernames", "bubbles", "thrusters", "projectiles", "smoke", "explosions"])
         i[e] = new PIXI.Container;
     for (var t of ["smoke", "crates", "thrusters", "projectiles", "aircraft", "aircraftme", "glows", "explosions", "powerups", "playernames", "flags", "bubbles"])
@@ -54,7 +59,8 @@ var o = function() {
         i.objects.addChild(o)
     }
 }
-    , a = function() {
+
+var a = function() {
     n.render = PIXI.RenderTexture.create(game.screenX + config.overdraw, game.screenY + config.overdraw, void 0, config.settings.hidpi ? 2 : void 0),
     n.renderSprite = new PIXI.Sprite(n.render),
     n.shadows = PIXI.RenderTexture.create(game.shadowX, game.shadowY, void 0, config.settings.hidpi ? 2 : void 0),
@@ -85,6 +91,7 @@ var o = function() {
     i.game.addChild(r.hudSpriteEnergy),
     i.game.addChild(r.hudSpriteHealth)
 };
+
 Graphics.resizeRenderer = function(r, i) {
     var o = r + config.overdraw
         , s = i + config.overdraw;
@@ -104,8 +111,8 @@ Graphics.resizeRenderer = function(r, i) {
     p(),
     Graphics.setCamera(t.center.x, t.center.y),
     game.state == Network.STATE.PLAYING && Network.resizeHorizon()
-}
-,
+};
+
 Graphics.toggleHiDPI = function() {
     config.settings.hidpi = !(1 == config.settings.hidpi),
     config.settings.hidpi ? Tools.setSettings({
@@ -113,8 +120,8 @@ Graphics.toggleHiDPI = function() {
     }) : Tools.removeSetting("hidpi"),
     UI.updateMainMenuSettings(),
     1 == config.settings.oldhidpi == config.settings.hidpi ? UI.showMessage("alert", "", 1e3) : UI.showMessage("alert", 'Reload game to apply HiDPI settings<br><span class="button" onclick="Games.redirRoot()">RELOAD</span>', 1e4)
-}
-;
+};
+
 var l = function(e, t) {
     game.screenX = e,
     game.screenY = t,
@@ -122,8 +129,9 @@ var l = function(e, t) {
     game.halfScreenY = t / 2,
     game.shadowX = Math.floor(game.screenX / config.shadowScaling),
     game.shadowY = Math.floor(game.screenY / config.shadowScaling)
-}
-    , u = function() {
+};
+
+var u = function() {
     game.scale = (game.screenX + game.screenY) / config.scalingFactor,
     i.groundobjects.scale.set(game.scale),
     i.objects.scale.set(game.scale),
@@ -131,8 +139,9 @@ var l = function(e, t) {
     i.doodads.scale.set(game.scale),
     i.bubbles.scale.set(1 / game.scale),
     c()
-}
-    , c = function() {
+};
+
+var c = function() {
     if (config.mobile) {
         var e = game.screenX > game.screenY ? "landscape" : "portrait";
         config.phone = game.screenX <= 599 && "portrait" == e || game.screenY <= 599 && "landscape" == e,
@@ -143,8 +152,9 @@ var l = function(e, t) {
         config.tablet && (config.maxScoreboard = 7),
         config.minimapPaddingX = game.screenX / 2 - config.minimapSize / 2
     }
-}
-    , h = function() {
+};
+
+var h = function() {
     var t = e.width + config.overdraw
         , r = e.height + config.overdraw;
     n.sea = Textures.tile("map_sea", t, r),
@@ -168,19 +178,22 @@ var l = function(e, t) {
     i.map.addChild(i.doodads),
     f(),
     d()
-}
-    , d = function() {
+};
+
+var d = function() {
     var e;
     for (e of ["sea", "forest", "sand", "rock"])
         n[e].tileScale.set(game.scale, game.scale);
     for (e of ["sea", "sand", "rock"])
         n[e + "_mask"].scale.set(8 * game.scale, 8 * game.scale)
-}
-    , p = function() {
+};
+
+var p = function() {
     n.polygons.scale.x = game.scale,
     n.polygons.scale.y = game.scale
-}
-    , f = function() {
+};
+
+var f = function() {
     $.getJSON("assets/map.json", function(e) {
         n.polygons = new PIXI.Graphics,
         n.polygons.beginFill();
@@ -206,6 +219,7 @@ var l = function(e, t) {
         i.map.mask = n.polygons
     })
 };
+
 Graphics.initSprite = function(e, t, n) {
     var r = Textures.sprite(e);
     return n.position && r.position.set(n.position[0], n.position[1]),
@@ -220,15 +234,15 @@ Graphics.initSprite = function(e, t, n) {
     n.visible && (r.visible = n.visible),
     t.addChild(r),
     r
-}
-,
+};
+
 Graphics.transform = function(e, t, n, r, i, o, s) {
     e.position.set(t, n),
     null != o ? e.scale.set(i, o) : null != i && e.scale.set(i),
     null != r && (e.rotation = r),
     null != s && (e.alpha = s)
-}
-,
+};
+
 Graphics.update = function() {
     n.shade.position.set(t.center.x / config.shadowScaling, t.center.y / config.shadowScaling),
     n.renderSprite.position.set(game.scale * (-t.position.x + t.lastOverdraw.x) - config.overdraw / 2, game.scale * (-t.position.y + t.lastOverdraw.y) - config.overdraw / 2),
@@ -238,8 +252,8 @@ Graphics.update = function() {
     i.shadows.position.set(-t.position.x * (game.scale / config.shadowScaling), -t.position.y * (game.scale / config.shadowScaling)),
     r.minimap_box.position.set(game.screenX - config.minimapPaddingX - config.minimapSize * ((16384 - t.center.x) / 32768), game.screenY - config.minimapPaddingY - config.minimapSize / 2 * ((8192 - t.center.y) / 16384)),
     config.overdrawOptimize ? (Math.abs(t.position.x - t.lastOverdraw.x) > config.overdraw / 2 / game.scale || Math.abs(t.position.y - t.lastOverdraw.y) > config.overdraw / 2 / game.scale || game.time - t.lastOverdrawTime > 2e3) && g() : g()
-}
-,
+};
+
 Graphics.setCamera = function(e, n) {
     var r = 0
         , i = 0;
@@ -254,28 +268,28 @@ Graphics.setCamera = function(e, n) {
     t.position.y = i + n - game.screenY / 2 / game.scale,
     t.center.x = r + e,
     t.center.y = i + n
-}
-,
+};
+
 Graphics.getCamera = function() {
     return t.center
-}
-,
+};
+
 Graphics.shakeCamera = function(e, n) {
     var r = Tools.length(e.x - t.center.x, e.y - t.center.y)
         , i = (game.halfScreenX / game.scale + game.halfScreenY / game.scale) / 2
         , o = Tools.clamp(1.3 * (1 - r / i), 0, 1);
     o < .1 || (t.shake = o * n)
-}
-,
+};
+
 Graphics.shadowCoords = function(e) {
     var t = Mobs.getClosestDoodad(e);
     return new Vector((e.x + config.shadowOffsetX * t) / config.shadowScaling,(e.y + config.shadowOffsetY * t) / config.shadowScaling)
-}
-,
+};
+
 Graphics.minimapMob = function(e, t, n) {
     null != e && e.position.set(game.screenX - config.minimapPaddingX - config.minimapSize * ((16384 - t) / 32768), game.screenY - config.minimapPaddingY - config.minimapSize / 2 * ((8192 - n) / 16384))
-}
-;
+};
+
 Graphics.toggleFullscreen = function() {
     !function() {
         var e = document;
@@ -291,12 +305,12 @@ Graphics.toggleFullscreen = function() {
         var e = document;
         e.exitFullscreen ? e.exitFullscreen() : e.mozCancelFullScreen ? e.mozCancelFullScreen() : e.webkitExitFullscreen ? e.webkitExitFullscreen() : e.msExitFullscreen && e.msExitFullscreen()
     }()
-}
-,
+};
+
 Graphics.inScreen = function(e, n) {
     return e.x >= t.center.x - game.halfScreenX / game.scale - n && e.x <= t.center.x + game.halfScreenX / game.scale + n && e.y >= t.center.y - game.halfScreenY / game.scale - n && e.y <= t.center.y + game.halfScreenY / game.scale + n
-}
-;
+};
+
 var g = function() {
     Mobs.updateDoodads(),
     t.lastOverdraw.x = t.position.x,
@@ -312,9 +326,10 @@ var g = function() {
     e.render(i.sea, n.render),
     e.render(i.map, n.render)
 };
+
 Graphics.render = function() {
     e.render(i.shadows, n.shadows, true),
     e.render(i.hudEnergy, r.hudTextureEnergy, true),
     e.render(i.hudHealth, r.hudTextureHealth, true),
     e.render(i.game)
-}
+};

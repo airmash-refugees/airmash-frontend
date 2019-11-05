@@ -3,14 +3,15 @@ import Vector from './Vector';
 var bucketState = {}
     , clientErrorCount = 0
     , reelState = {
-    started: false,
-    startX: 200,
-    startY: -2450,
-    pan: 0,
-    dist: 100,
-    explosion: 4e3,
-    direction: 1
-};
+        started: false,
+        startX: 200,
+        startY: -2450,
+        pan: 0,
+        dist: 100,
+        explosion: 4e3,
+        direction: 1
+    };
+
 Tools.updateReel = function() {
     if (!reelState.started) {
         reelState.pos = Vector.zero();
@@ -50,21 +51,21 @@ Tools.updateReel = function() {
         Particles.explosion(new Vector(a.x + Tools.rand(-100, 100),a.y + Tools.rand(-100, 100)), Tools.rand(1, 1.2)),
         reelState.explosion = game.time + Tools.rand(1e3, 3e3)
     }
-}
-,
+};
+
 Tools.wipeReel = function() {
     Particles.wipe(),
     Players.wipe()
-}
-,
+};
+
 Tools.startupMsg = function() {
     console.log("%cΛIRMΛSH Engine " + game.version + " starting up!", "font-size: 20px;"),
     console.log(""),
     console.log("%c*** Important message ***", "font-size: 16px; color: red;"),
     console.log("%cDo not paste any commands given by players in this console window", "font-size: 14px; color: red;"),
     console.log("")
-}
-,
+};
+
 Tools.detectCapabilities = function() {
     initMobileConstants(),
     config.mobile && !config.settings.mobileshown && (UI.popBigMsg(1),
@@ -73,14 +74,15 @@ Tools.detectCapabilities = function() {
         mobileshown: true
     })),
     config.mobile && Input.setupLogin()
-}
-;
+};
+
 var initMobileConstants = function() {
     config.mobile = "ontouchstart"in document.documentElement && void 0 !== window.orientation || -1 !== navigator.userAgent.indexOf("IEMobile"),
     config.ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream,
     "#forcemobile" == window.location.hash && (config.mobile = true),
     "#nomobile" == window.location.hash && (config.mobile = false)
 };
+
 Tools.loadSettings = function() {
     var storage = getSettingsFromLocalStorage();
     config.storage = storage,
@@ -97,8 +99,8 @@ Tools.loadSettings = function() {
     null != storage.keybinds && (config.settings.keybinds = storage.keybinds),
     null != storage.mousemode && (config.settings.mousemode = storage.mousemode),
     i()
-}
-;
+};
+
 var i = function() {
     if (null == config.settings.id) {
         var e = Tools.randomID(16);
@@ -115,17 +117,19 @@ var i = function() {
     UI.updateSound(),
     config.settings.oldhidpi = config.settings.hidpi
 };
+
 Tools.randomID = function(e) {
     var t = new Uint8Array(e);
     return window.crypto.getRandomValues(t),
     o(t).substr(0, e)
-}
-;
+};
+
 var o = function(str) {
     for (var t, n = "", r = 0; r < str.length; r++)
         n += t = 1 === (t = (255 & str[r]).toString(16)).length ? "0" + t : t;
     return n
 };
+
 Tools.setSettings = function(e) {
     if (null != window.localStorage) {
         for (var t in e)
@@ -134,8 +138,8 @@ Tools.setSettings = function(e) {
             localStorage.setItem("settings", JSON.stringify(config.storage))
         } catch (e) {}
     }
-}
-,
+};
+
 Tools.removeSetting = function(e) {
     if (null != window.localStorage) {
         null != config.storage[e] && delete config.storage[e];
@@ -143,8 +147,8 @@ Tools.removeSetting = function(e) {
             localStorage.setItem("settings", JSON.stringify(config.storage))
         } catch (e) {}
     }
-}
-,
+};
+
 Tools.wipeSettings = function() {
     if (null != window.localStorage) {
         config.storage = {},
@@ -153,8 +157,8 @@ Tools.wipeSettings = function() {
             localStorage.setItem("settings", JSON.stringify(config.storage))
         } catch (e) {}
     }
-}
-;
+};
+
 var getSettingsFromLocalStorage = function() {
     if (null == window.localStorage)
         return {};
@@ -169,6 +173,7 @@ var getSettingsFromLocalStorage = function() {
         } catch (e) {}
     return t
 };
+
 Tools.ajaxPost = function(url, data, callback) {
     $.ajax({
         url: url,
@@ -183,42 +188,42 @@ Tools.ajaxPost = function(url, data, callback) {
             null != callback && callback(null)
         }
     })
-}
-,
+};
+
 Tools.length = function(e, t) {
     return Math.sqrt(e * e + t * t)
-}
-,
+};
+
 Tools.oscillator = function(e, t, n) {
     return 1 + Math.sin((game.time + (n || 0)) / t) * e
-}
-,
+};
+
 Tools.converge = function(e, t, n) {
     return Math.abs(e - t) < .01 ? t : e + n * (t - e)
-}
-,
+};
+
 Tools.rand = function(e, t) {
     return Math.random() * (t - e) + e
-}
-,
+};
+
 Tools.randCircle = function() {
     return Tools.rand(0, 6.28318530718)
-}
-,
+};
+
 Tools.randInt = function(e, t) {
     var n = Math.floor(Math.random() * (t + 1 - e) + e);
     return n >= t && (n = t),
     n
-}
-,
+};
+
 Tools.clamp = function(e, t, n) {
     return e <= t ? t : e >= n ? n : e
-}
-,
+};
+
 Tools.lerp = function(e, t, n) {
     return n * (t - e) + e
-}
-,
+};
+
 Tools.colorLerp = function(e, t, n) {
     n <= 0 && (n = .001),
     n >= 1 && (n = .999);
@@ -226,40 +231,41 @@ Tools.colorLerp = function(e, t, n) {
         , i = e >> 8 & 255
         , o = 255 & e;
     return (1 << 24) + (r + n * ((t >> 16) - r) << 16) + (i + n * ((t >> 8 & 255) - i) << 8) + (o + n * ((255 & t) - o)) | 0
-}
-,
+};
+
 Tools.distance = function(e, t, n, r) {
     var i = e - n
         , o = t - r;
     return Math.sqrt(i * i + o * o)
-}
-,
+};
+
 Tools.distFastCheck = function(e, t, n, r) {
     return Math.abs(e.x - t.x) <= n && Math.abs(e.y - t.y) <= r
-}
-,
+};
+
 Tools.distFastCheckFloat = function(e, t, n, r, i) {
     return Math.abs(e - n) <= i && Math.abs(t - r) <= i
-}
-,
+};
+
 Tools.updateTime = function(fractionalFrames) {
     game.timeFactor = fractionalFrames < 60 ? fractionalFrames : 60,
     game.timeFactorUncapped = game.timeFactor,
     game.timeFactor > 10 && (game.timeFactor = 10),
     game.time = performance.now(),
     game.frames++
-}
-,
+};
+
 Tools.reducedFactor = function() {
     var e = (performance.now() - game.time) / 16.666;
     return Math.abs(game.jitter) > .1 && (e += game.jitter / 16.666),
     e
-}
-;
+};
+
 var a = {
     shockwave: [.1, .1, .11, .12, .12, .13, .14, .14, .15, .16, .17, .18, .2, .21, .22, .24, .26, .29, .31, .35, .38, .42, .47, .52, .58, .64, .71, .78, .84, .9, .95, .98, 1, 1, 1, .98, .97, .94, .9, .85, .78, .7, .62, .52, .43, .34, .26, .18, .11, .05, 0],
     explosionSmoke: [0, 0, .02, .06, .13, .26, .45, .71, .91, .99, .99, .97, .94, .92, .89, .86, .83, .8, .77, .74, .71, .68, .65, .63, .6, .57, .54, .51, .48, .45, .42, .4, .37, .34, .31, .29, .26, .24, .21, .19, .16, .14, .12, .1, .08, .06, .04, .02, .01, 0, 0]
 };
+
 Tools.easing = {
     outElastic: function(e, t) {
         var n = 1 - (t || .7)
@@ -276,7 +282,8 @@ Tools.easing = {
             , o = n[i];
         return i === r - 1 ? o : Tools.lerp(o, n[i + 1], e * (r - 1) % 1)
     }
-},
+};
+
 Tools.setupDebug = function() {
     DEVELOPMENT && config.debug.show && (UI.show("#debug"),
     game.debug = {
@@ -285,12 +292,12 @@ Tools.setupDebug = function() {
         frames: game.frames
     },
     setInterval(Tools.updateDebug, 2123))
-}
-,
+};
+
 Tools.debugLine = function(e, t) {
     return '<div class="line"><span class="attr">' + UI.escapeHTML(e) + '</span><span class="val">' + UI.escapeHTML(t) + "</span></div>"
-}
-,
+};
+
 Tools.updateDebug = function() {
     var e = performance.now()
         , t = 1e3 * (game.frames - game.debug.frames) / (e - game.debug.last)
@@ -305,28 +312,28 @@ Tools.updateDebug = function() {
     game.debug.last = e,
     game.debug.ticks = 0,
     game.debug.frames = game.frames
-}
-,
+};
+
 Tools.hideDebug = function() {
     UI.hide("#debug")
-}
-,
+};
+
 Tools.debugStartFrame = function() {
     DEVELOPMENT && config.debug.show && (game.debug.startedFrame = performance.now())
-}
-,
+};
+
 Tools.debugEndFrame = function() {
     DEVELOPMENT && config.debug.show && null != game.debug.startedFrame && (game.debug.ticks += performance.now() - game.debug.startedFrame)
-}
-,
+};
+
 Tools.earningsToRank = function(e) {
     return Math.floor(.0111 * Math.pow(e, .5)) + 1
-}
-,
+};
+
 Tools.rankToEarnings = function(e) {
     return Math.pow((e - 1) / .0111, 2)
-}
-,
+};
+
 Tools.decodeKeystate = function(e, t) {
     e.keystate.UP = 0 != (1 & t),
     e.keystate.DOWN = 0 != (2 & t),
@@ -336,56 +343,58 @@ Tools.decodeKeystate = function(e, t) {
     e.strafe = 0 != (32 & t),
     e.stealthed = 0 != (64 & t),
     e.flagspeed = 0 != (128 & t)
-}
-,
+};
+
 Tools.decodeUpgrades = function(e, t) {
     e.speedupgrade = (0 != (1 & t) ? 1 : 0) + (0 != (2 & t) ? 2 : 0) + (0 != (4 & t) ? 4 : 0),
     e.powerups.shield = 0 != (8 & t),
     e.powerups.rampage = 0 != (16 & t)
-}
-,
+};
+
 Tools.decodeMinimapCoords = function(e, t) {
     return new Vector(128 * e - 16384 + 64,Tools.clamp(128 * t - 16384, -8192, 8192) + 64)
-}
-,
+};
+
 Tools.decodeSpeed = function(e) {
     return (e - 32768) / 1638.4
-}
-,
+};
+
 Tools.decodeCoordX = function(e) {
     return (e - 32768) / 2
-}
-,
+};
+
 Tools.decodeCoordY = function(e) {
     return (e - 32768) / 4
-}
-,
+};
+
 Tools.decodeCoord24 = function(e) {
     return (e - 8388608) / 512
-}
-,
+};
+
 Tools.decodeAccel = function(e) {
     return (e - 32768) / 32768
-}
-,
+};
+
 Tools.decodeRotation = function(e) {
     return e / 6553.6
-}
-,
+};
+
 Tools.decodeHealthnergy = function(e) {
     return e / 255
-}
-,
+};
+
 Tools.decodeRegen = function(e) {
     return (e - 32768) / 1e6
-}
-;
+};
+
 var l = function(t) {
     return Tools.clamp(Math.floor(t / bucketState.size) + bucketState.bucketsHalfX, 0, bucketState.bucketsMaxX)
-}
-    , u = function(t) {
+};
+
+var u = function(t) {
     return Tools.clamp(Math.floor(t / bucketState.size) + bucketState.bucketsHalfY, 0, bucketState.bucketsMaxY)
 };
+
 Tools.initBuckets = function() {
     bucketState = {
         size: config.bucketSize,
@@ -404,16 +413,16 @@ Tools.initBuckets = function() {
         t = l(config.doodads[r][0]),
         n = u(config.doodads[r][1]),
         game.buckets[t][n][0].push(r)
-}
-,
+};
+
 Tools.getBucketBounds = function(t, n, r) {
     return [Tools.clamp(Math.floor((t.x - n) / bucketState.size) + bucketState.bucketsHalfX, 0, bucketState.bucketsMaxX), Tools.clamp(Math.floor((t.x + n) / bucketState.size) + bucketState.bucketsHalfX, 0, bucketState.bucketsMaxX), Tools.clamp(Math.floor((t.y - r) / bucketState.size) + bucketState.bucketsHalfY, 0, bucketState.bucketsMaxY), Tools.clamp(Math.floor((t.y + r) / bucketState.size) + bucketState.bucketsHalfY, 0, bucketState.bucketsMaxY)]
-}
-,
+};
+
 Tools.deferUpdate = function(e) {
     setTimeout(e, 1)
-}
-;
+};
+
 var jsonErrorReplacer = function(key, obj) {
     if (obj instanceof Error) {
         var n = {};
@@ -424,14 +433,15 @@ var jsonErrorReplacer = function(key, obj) {
     }
     return obj
 };
+
 Tools.handleError = function(e) {
     ++clientErrorCount > 5 || (null != e.error && (e.error = JSON.stringify(e.error, jsonErrorReplacer)),
     Tools.ajaxPost("/clienterror", {
         type: "runtime",
         error: JSON.stringify(e, null, "\t\t")
     }))
-}
-,
+};
+
 Tools.encodeUTF8 = function(e) {
     for (var t = 0, n = new Uint8Array(4 * e.length), r = 0; r != e.length; r++) {
         var i = e.charCodeAt(r);
@@ -458,8 +468,8 @@ Tools.encodeUTF8 = function(e) {
         }
     }
     return n.subarray(0, t)
-}
-,
+};
+
 Tools.decodeUTF8 = function(e) {
     for (var t = "", n = 0; n < e.length; ) {
         var r = e[n++];
@@ -492,4 +502,4 @@ Tools.decodeUTF8 = function(e) {
         }
     }
     return t
-}
+};

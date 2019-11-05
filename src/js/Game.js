@@ -1,4 +1,5 @@
 const subscriptions = {};
+
 window.triggerAmEvent = function(evName, data) {
     var subs = subscriptions[evName];
     if (!subs) {
@@ -8,12 +9,15 @@ window.triggerAmEvent = function(evName, data) {
         subs[i](data);
     }
 };
+
 window.subscribeToAmEvent = function(evName, subscriber) {
     var subs = subscriptions[evName] || [];
     subs.push(subscriber);
     subscriptions[evName] = subs;
 };
+
 window.DEVELOPMENT = false;
+
 window.game = {
     protocol: 5,
     version: "v1.0.2",
@@ -62,7 +66,8 @@ window.game = {
     graphics: {},
     debug: {},
     buckets: []
-},
+};
+
 window.config = {
     storage: {},
     settings: {},
@@ -177,18 +182,20 @@ window.config = {
     bucketSize: 512,
     mapWidth: 32768,
     mapHeight: 16384
-},
-window.Tools = {},
-window.Textures = {},
-window.Graphics = {},
-window.Network = {},
-window.Input = {},
-window.Players = {},
-window.Mobs = {},
-window.Particles = {},
-window.UI = {},
-window.Games = {},
+};
+
+window.Tools = {};
+window.Textures = {};
+window.Graphics = {};
+window.Network = {};
+window.Input = {};
+window.Players = {};
+window.Mobs = {};
+window.Particles = {};
+window.UI = {};
+window.Games = {};
 window.Sound = {};
+
 var scheduleFrame = function(fractionalFramesSinceLastFrame, skipGraphicsRendering) {
     Tools.updateTime(fractionalFramesSinceLastFrame);
     Tools.debugStartFrame();
@@ -212,10 +219,12 @@ var scheduleFrame = function(fractionalFramesSinceLastFrame, skipGraphicsRenderi
     Tools.debugEndFrame();
     triggerAmEvent('tick');
 };
+
 var scheduleOccasionalFrameWhileBlurred = function() {
     var msSinceLastFrame = performance.now() - game.time;
     msSinceLastFrame > 450 && !game.focus && scheduleFrame(msSinceLastFrame / 16.666, true)
 };
+
 $(function() {
     game.state = Network.STATE.LOGIN,
     Tools.startupMsg(),
@@ -233,4 +242,4 @@ $(function() {
     ticker.add(scheduleFrame),
     ticker.start(),
     setInterval(scheduleOccasionalFrameWhileBlurred, 500)
-})
+});
