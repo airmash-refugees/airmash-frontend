@@ -436,7 +436,7 @@ var jsonErrorReplacer = function(key, obj) {
 
 Tools.handleError = function(e) {
     ++clientErrorCount > 5 || (null != e.error && (e.error = JSON.stringify(e.error, jsonErrorReplacer)),
-    Tools.ajaxPost("/clienterror", {
+    Tools.ajaxPost("https://" + game.backendHost + "/clienterror", {
         type: "runtime",
         error: JSON.stringify(e, null, "\t\t")
     }))

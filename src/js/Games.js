@@ -151,7 +151,7 @@ Games.logout = function() {
 };
 
 var refreshGamesJsonData = function(successCallback, t) {
-    var url = "https://airmash.online/games";
+    var url = "https://" + game.backendHost + "/games";
     t && (url += "?main=1"),
     $.ajax({
         url: url,
@@ -166,7 +166,7 @@ var refreshGamesJsonData = function(successCallback, t) {
             if ("xx" == game.myFlag && (game.myFlag = response.country),
             t && game.protocol != response.protocol) {
                 if ("#reload" !== window.location.hash)
-                    return void Tools.ajaxPost("/clienterror", {
+                    return void Tools.ajaxPost("https://" + game.backendHost + "/clienterror", {
                         type: "protocol"
                     }, function(e) {
                         UI.showMessage("alert", '<span class="mainerror">Protocol update<br>Your client is being updated to the new version</span>', 3e4),
@@ -174,7 +174,7 @@ var refreshGamesJsonData = function(successCallback, t) {
                             window.location = "/?" + Tools.randomID(10) + "#reload"
                         }, 5e3)
                     });
-                Tools.ajaxPost("/clienterror", {
+                Tools.ajaxPost("https://" + game.backendHost + "/clienterror", {
                     type: "protocolretry"
                 })
             }
@@ -618,7 +618,7 @@ Games.start = function(playerName, isFirstTime) {
     
     // this is for stats and not necessary for the game
     if (isFirstTime) {
-        Tools.ajaxPost("/enter", {
+        Tools.ajaxPost("https://" + game.backendHost + "/enter", {
             id: config.settings.id,
             name: playerName,
             game: game.playRegion + "-" + game.playRoom,
