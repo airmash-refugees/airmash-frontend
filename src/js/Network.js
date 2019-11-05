@@ -1,21 +1,21 @@
 import Vector from './Vector';
 
-var primarySock = null
-    , backupSock = null
-    , backupSockIsConnected = false
-    , currentSockUrl = ""
-    , shouldSendNextAckOnBackupSock = false
-    , ackIntervalId = null
-    , baseDivClk = -1
-    , baseDivClkLastResetTime = -1
-    , jitterMemory = 0
-    , messageTombstoneMap = {}
-    , lastTombstoneGcTime = 0
-    , sendKeyCount = 0
-    , oldTimeNetwork = 0
-    , lastReceivedError = false
-    , f = 2e3
-    , g = 2e3;
+var primarySock = null,
+    backupSock = null,
+    backupSockIsConnected = false,
+    currentSockUrl = "",
+    shouldSendNextAckOnBackupSock = false,
+    ackIntervalId = null,
+    baseDivClk = -1,
+    baseDivClkLastResetTime = -1,
+    jitterMemory = 0,
+    messageTombstoneMap = {},
+    lastTombstoneGcTime = 0,
+    sendKeyCount = 0,
+    oldTimeNetwork = 0,
+    lastReceivedError = false,
+    f = 2e3,
+    g = 2e3;
 
 Network.sendKey = function(keyCode, isPressed) {
     if (game.state == Network.STATE.PLAYING) {
@@ -483,10 +483,10 @@ var encodeNetworkMessage = function(msg, t) {
         case FieldType.boolean:
             msgLen += 1
         }
-    var buf = new ArrayBuffer(msgLen)
-        , dataView = new DataView(buf)
-        , curEncodedString = 0
-        , outputOffset = 1;
+    var buf = new ArrayBuffer(msgLen),
+        dataView = new DataView(buf),
+        curEncodedString = 0,
+        outputOffset = 1;
     for (dataView.setUint8(0, msg.c, true),
     n = 0; n < schema.length; n++)
         switch (schema[n][1]) {
@@ -531,12 +531,12 @@ var encodeNetworkMessage = function(msg, t) {
 };
 
 var decodeMessageToDict = function(encoded, t) {
-    var dataView = new DataView(encoded)
-        , msg = {
-        c: dataView.getUint8(0, true)
-    }
-        , inputPos = 1
-        , schema = ServerMessageSchema[msg.c];
+    var dataView = new DataView(encoded),
+        msg = {
+            c: dataView.getUint8(0, true)
+        },
+        inputPos = 1,
+        schema = ServerMessageSchema[msg.c];
     if (null == schema)
         return null;
     for (var fieldIdx = 0; fieldIdx < schema.length; fieldIdx++) {

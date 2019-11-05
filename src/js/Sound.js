@@ -1,66 +1,66 @@
 import { Howl } from 'howler';
 
-var e = {}
-    , t = {}
-    , n = {}
-    , r = 0
-    , i = 0
-    , o = {}
-    , s = 0
-    , a = 0
-    , l = {}
-    , u = .3
-    , c = 1
-    , h = .3
-    , d = .06
-    , p = .08
-    , f = .05
-    , g = .25
-    , m = .3
-    , v = [0, .7, 1, .4, 0, .7, .4, .7]
-    , y = [0, .7, 1, .4, 0, .7, 1, .7]
-    , b = [0, .8, .5, 1, 0, .8, .5, .8]
-    , _ = [0, .8, 1, .7, .8, .8]
-    , x = [0, 1.5, 1.2, .8, 1.35, 1.7]
-    , w = [0, 1, 1, .35, 1, 1]
-    , T = [0, .8, .5, 1, 0, .8, .8, .8]
-    , E = [0, 1.5, .8, 2, 1, 1.5]
-    , S = {
-        powerup_shield: .5,
-        upgrade: .2,
-        complete: .5,
-        levelup: .5,
-        respawn: .05,
-        click: .5
-    }
-    , I = {}
-    , P = {
-    src: ["assets/sounds.mp3?4"],
-    volume: 0,
-    sprite: {
-        chopper: [0, 3206.1451247165533, true],
-        click: [5e3, 374.9886621315195],
-        complete: [7e3, 1910.9750566893417],
-        explosion1: [1e4, 4137.460317460316],
-        explosion2: [16e3, 4155.44217687075],
-        explosion3: [22e3, 4168.367346938776],
-        explosion4: [28e3, 4580.272108843537],
-        explosion5: [34e3, 4144.943310657595],
-        explosion6: [4e4, 4191.360544217688],
-        impact: [46e3, 3730.7709750566855],
-        launch1: [51e3, 1492.4943310657568],
-        launch2: [54e3, 1511.2244897959215],
-        levelup: [57e3, 1886.4172335600883],
-        missile: [6e4, 8335.351473922898, true],
-        powerup_rampage: [7e4, 7423.083900226758],
-        powerup_shield: [79e3, 2070.4761904761854],
-        powerup_upgrade: [83e3, 1640.8616780045406],
-        repel: [86e3, 2e3],
-        respawn: [89e3, 1315.9410430838961],
-        thruster: [92e3, 9499.841269841269, true],
-        upgrade: [103e3, 2062.517006802722]
-    }
-};
+var e = {},
+    t = {},
+    n = {},
+    r = 0,
+    i = 0,
+    o = {},
+    s = 0,
+    a = 0,
+    l = {},
+    u = 0.3,
+    c = 1,
+    h = 0.3,
+    d = 0.06,
+    p = 0.08,
+    f = 0.05,
+    g = 0.25,
+    m = 0.3,
+    v = [0, 0.7, 1, 0.4, 0, 0.7, 0.4, 0.7],
+    y = [0, 0.7, 1, 0.4, 0, 0.7, 1, 0.7],
+    b = [0, 0.8, 0.5, 1, 0, 0.8, 0.5, 0.8],
+    _ = [0, 0.8, 1, 0.7, 0.8, 0.8],
+    x = [0, 1.5, 1.2, 0.8, 1.35, 1.7],
+    w = [0, 1, 1, 0.35, 1, 1],
+    T = [0, 0.8, 0.5, 1, 0, 0.8, 0.8, 0.8],
+    E = [0, 1.5, 0.8, 2, 1, 1.5],
+    S = {
+        powerup_shield: 0.5,
+        upgrade: 0.2,
+        complete: 0.5,
+        levelup: 0.5,
+        respawn: 0.05,
+        click: 0.5
+    },
+    I = {},
+    P = {
+        src: ["assets/sounds.mp3?4"],
+        volume: 0,
+        sprite: {
+            chopper: [0, 3206.1451247165533, true],
+            click: [5e3, 374.9886621315195],
+            complete: [7e3, 1910.9750566893417],
+            explosion1: [1e4, 4137.460317460316],
+            explosion2: [16e3, 4155.44217687075],
+            explosion3: [22e3, 4168.367346938776],
+            explosion4: [28e3, 4580.272108843537],
+            explosion5: [34e3, 4144.943310657595],
+            explosion6: [4e4, 4191.360544217688],
+            impact: [46e3, 3730.7709750566855],
+            launch1: [51e3, 1492.4943310657568],
+            launch2: [54e3, 1511.2244897959215],
+            levelup: [57e3, 1886.4172335600883],
+            missile: [6e4, 8335.351473922898, true],
+            powerup_rampage: [7e4, 7423.083900226758],
+            powerup_shield: [79e3, 2070.4761904761854],
+            powerup_upgrade: [83e3, 1640.8616780045406],
+            repel: [86e3, 2e3],
+            respawn: [89e3, 1315.9410430838961],
+            thruster: [92e3, 9499.841269841269, true],
+            upgrade: [103e3, 2062.517006802722]
+        }
+    };
 
 Sound.setup = function() {
     var n = {};
@@ -95,16 +95,16 @@ var A = function(e) {
 };
 
 Sound.mobExplosion = function(e, t) {
-    var n = v[t] * u
-        , r = k(e) * n
-        , i = "explosion" + Tools.randInt(1, 6);
+    var n = v[t] * u,
+        r = k(e) * n,
+        i = "explosion" + Tools.randInt(1, 6);
     r < .01 || O("mobexplosions", 4) || C(i, r, e, Tools.rand(.8, 1.2))
 };
 
 Sound.playerKill = function(e) {
-    var t = _[e.type] * c
-        , n = k(e.pos) * t
-        , r = "explosion" + Tools.randInt(1, 6);
+    var t = _[e.type] * c,
+        n = k(e.pos) * t,
+        r = "explosion" + Tools.randInt(1, 6);
     n < .01 || O("playerkills", 3) || C(r, n, e.pos, Tools.rand(.8, 1.2))
 };
 
@@ -116,8 +116,8 @@ Sound.playerUpgrade = function() {
 };
 
 Sound.playerRespawn = function(e) {
-    var t = A("respawn") * (e.me() ? 1 : k(e.pos))
-        , n = e.me() ? null : e.pos;
+    var t = A("respawn") * (e.me() ? 1 : k(e.pos)),
+        n = e.me() ? null : e.pos;
     C("respawn", t, n)
 };
 
@@ -144,24 +144,24 @@ Sound.effectRepel = function(e) {
 };
 
 Sound.powerup = function(e, t) {
-    var n = (null == t ? 1 : k(t)) * g
-        , r = "";
+    var n = (null == t ? 1 : k(t)) * g,
+        r = "";
     4 == e ? r = "powerup_upgrade" : 8 == e ? r = "powerup_shield" : 9 == e && (r = "powerup_rampage"),
     C(r, n * A(r), t)
 };
 
 Sound.missileLaunch = function(e, t) {
-    var n = y[t] * h
-        , r = k(e) * n
-        , i = b[t]
-        , o = "launch" + Tools.randInt(1, 2);
+    var n = y[t] * h,
+        r = k(e) * n,
+        i = b[t],
+        o = "launch" + Tools.randInt(1, 2);
     r < .01 || O("launches", 5) || C(o, r, e, i)
 };
 
 Sound.playerImpact = function(e, t, n) {
-    var r = f * Tools.clamp(n, 0, 1)
-        , i = k(e) * r
-        , o = E[t];
+    var r = f * Tools.clamp(n, 0, 1),
+        i = k(e) * r,
+        o = E[t];
     C("impact", i, e, o)
 };
 
@@ -238,8 +238,8 @@ var D = function(n, r, i) {
 
 Sound.clearThruster = function(e) {
     if (null != n[e]) {
-        var t = n[e].soundId
-            , a = n[e].vol;
+        var t = n[e].soundId,
+            a = n[e].vol;
         R(t, n[e].sound, null, null, null, [a, 0, 200, true]),
         function(e, t, n) {
             o[++s] = {
@@ -277,8 +277,8 @@ Sound.updateThruster = function(e, t, o) {
                     return;
                 var l = k(t.pos);
                 if (0 == e)
-                    var u = l * w[t.type] * d
-                        , c = x[t.type];
+                    var u = l * w[t.type] * d,
+                        c = x[t.type];
                 else
                     u = l * p,
                     c = T[t.type];
@@ -319,15 +319,15 @@ Sound.updateThruster = function(e, t, o) {
 };
 
 var k = function(e) {
-    var t = Graphics.getCamera()
-        , n = Tools.length(e.x - t.x, e.y - t.y)
-        , r = (game.halfScreenX / game.scale + game.halfScreenY / game.scale) / 2;
+    var t = Graphics.getCamera(),
+        n = Tools.length(e.x - t.x, e.y - t.y),
+        r = (game.halfScreenX / game.scale + game.halfScreenY / game.scale) / 2;
     return Tools.clamp(1.5 * (1 - n / r), 0, 1)
 };
 
 var L = function(e) {
-    var t = Graphics.getCamera()
-        , n = e.x - t.x
-        , r = game.halfScreenX / game.scale;
+    var t = Graphics.getCamera(),
+        n = e.x - t.x,
+        r = game.halfScreenX / game.scale;
     return Tools.clamp(.8 * n / r, -1, 1)
 };

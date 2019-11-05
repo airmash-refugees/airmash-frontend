@@ -83,8 +83,8 @@ Mobs.setupDoodads = function () {
 };
 
 Mobs.addDoodad = function (e) {
-    var t = Number.isInteger(e[2])
-        , n = Textures.init((t ? "mountain" : "") + e[2]);
+    var t = Number.isInteger(e[2]),
+        n = Textures.init((t ? "mountain" : "") + e[2]);
     n.scale.set(e[3]),
         n.position.set(e[0], e[1]),
         n.visible = false,

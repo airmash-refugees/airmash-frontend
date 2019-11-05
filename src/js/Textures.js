@@ -13,8 +13,8 @@ var e = {
         flags: "assets/flagsbig.png?4",
         items: "assets/items.png?2",
         gui: "assets/gui.png"
-    }
-    , t = {
+    },
+    t = {
         spirit: ["aircraft", [4, 4, 512, 256]],
         tornado: ["aircraft", [524, 4, 256, 256]],
         raptor: ["aircraft", [788, 4, 256, 256]],
@@ -124,8 +124,8 @@ var e = {
         chatbubblecenter: ["gui", [350, 274, 82, 82]],
         chatbubbleright: ["gui", [438, 274, 16, 82]],
         chatbubblepoint: ["gui", [297, 352, 36, 22]]
-    }
-    , n = {
+    },
+    n = {
         flag_1: ["flags", [2, 962, 80, 60]],
         flag_2: ["flags", [2, 898, 80, 60]],
         flag_3: ["flags", [2, 834, 80, 60]],
@@ -251,14 +251,14 @@ var e = {
         flag_123: ["flags", [422, 2, 80, 60]],
         flag_124: ["flags", [506, 2, 80, 60]],
         flag_125: ["flags", [590, 2, 80, 60]]
-    }
-    , r = {
+    },
+    r = {
         hudHealth_shadow: {
             texture: "hud_shadow",
             layer: "ui0",
             pivot: [330, 174],
             position: "screencenter",
-            alpha: .2
+            alpha: 0.2
         },
         hudHealth_mask: {
             texture: "hud_mask",
@@ -277,7 +277,7 @@ var e = {
             layer: "ui0",
             pivot: [330, 174],
             position: "screencenter",
-            alpha: .2,
+            alpha: 0.2,
             rotation: Math.PI
         },
         hudEnergy_mask: {
@@ -298,140 +298,140 @@ var e = {
             texture: "ui_minimap",
             layer: "ui0",
             anchor: [1, 1],
-            alpha: .25
+            alpha: 0.25
         },
         minimapBox: {
             texture: "ui_minimap_box",
             layer: "ui4",
-            anchor: [.5, .5],
-            alpha: .6
+            anchor: [0.5, 0.5],
+            alpha: 0.6
         },
         minimapMob: {
             texture: "ui_minimap_mob",
             layer: "ui1",
-            anchor: [.5, .5],
-            alpha: .5,
-            scale: .8
+            anchor: [0.5, 0.5],
+            alpha: 0.5,
+            scale: 0.8
         },
         minimapBlue: {
             texture: "ui_minimap_blue",
             layer: "ui1",
-            anchor: [.5, .5],
-            alpha: .5,
-            scale: .8
+            anchor: [0.5, 0.5],
+            alpha: 0.5,
+            scale: 0.8
         },
         minimapFlagBlue: {
             texture: "ui_minimap_flag_blue",
             layer: "ui3",
-            anchor: [.5, .5],
-            scale: .5
+            anchor: [0.5, 0.5],
+            scale: 0.5
         },
         minimapFlagRed: {
             texture: "ui_minimap_flag_red",
             layer: "ui3",
-            anchor: [.5, .5],
-            scale: .5
+            anchor: [0.5, 0.5],
+            scale: 0.5
         },
         minimapBaseBlue: {
             texture: "ui_minimap_base_blue",
             layer: "ui2",
-            anchor: [.5, .5],
-            scale: .5
+            anchor: [0.5, 0.5],
+            scale: 0.5
         },
         minimapBaseRed: {
             texture: "ui_minimap_base_red",
             layer: "ui2",
-            anchor: [.5, .5],
-            scale: .5
+            anchor: [0.5, 0.5],
+            scale: 0.5
         },
         thrusterShadow: {
             texture: "afterburner_shadow",
             layer: "shadows",
-            anchor: [.5, .1]
+            anchor: [0.5, 0.1]
         },
         missile: {
             texture: "missile",
             layer: "projectiles",
-            anchor: [.5, 0],
-            scale: [.2, .15]
+            anchor: [0.5, 0],
+            scale: [0.2, 0.15]
         },
         missileFat: {
             texture: "missile_fat",
             layer: "projectiles",
-            anchor: [.5, 0],
-            scale: [.2, .2]
+            anchor: [0.5, 0],
+            scale: [0.2, 0.2]
         },
         missileSmall: {
             texture: "missile_small",
             layer: "projectiles",
-            anchor: [.5, 0],
-            scale: [.2, .2]
+            anchor: [0.5, 0],
+            scale: [0.2, 0.2]
         },
         missileShadow: {
             texture: "missile_shadow",
             layer: "shadows",
-            anchor: [.5, .25]
+            anchor: [0.5, 0.25]
         },
         missileThruster: {
             texture: "afterburner",
             layer: "thrusters",
-            anchor: [.5, .1],
-            scale: [.15, .15]
+            anchor: [0.5, 0.1],
+            scale: [0.15, 0.15]
         },
         thrusterGlowSmall: {
             texture: "glowsmall_copy",
             layer: "glows",
-            anchor: [.5, .5],
+            anchor: [0.5, 0.5],
             blend: "ADD"
         },
         smokeGlow: {
             texture: "glowdirectional",
             layer: "glows",
-            anchor: [.5, .3],
+            anchor: [0.5, 0.3],
             blend: "ADD"
         },
         crateShadow: {
             texture: "crate_shadow",
             layer: "shadows",
-            anchor: [.5, .5]
+            anchor: [0.5, 0.5]
         },
         crateUpgrade: {
             texture: "crate_upgrade",
             layer: "crates",
-            anchor: [.5, .5]
+            anchor: [0.5, 0.5]
         },
         crateShield: {
             texture: "crate_shield",
             layer: "crates",
-            anchor: [.5, .5]
+            anchor: [0.5, 0.5]
         },
         crateRampage: {
             texture: "crate_rampage",
             layer: "crates",
-            anchor: [.5, .5]
+            anchor: [0.5, 0.5]
         },
         powerupCircle: {
             texture: "powerup_circle",
             layer: "powerups",
-            anchor: [.5, .5],
+            anchor: [0.5, 0.5],
             blend: "ADD"
         },
         powerupShield: {
             texture: "powerup_shield",
             layer: "powerups",
-            anchor: [.5, .5],
+            anchor: [0.5, 0.5],
             blend: "ADD"
         },
         powerupRampage: {
             texture: "powerup_rampage",
             layer: "powerups",
-            anchor: [.5, .5],
+            anchor: [0.5, 0.5],
             blend: "ADD"
         },
         powerupRampage: {
             texture: "powerup_rampage",
             layer: "powerups",
-            anchor: [.5, .5],
+            anchor: [0.5, 0.5],
             blend: "ADD"
         },
         ctfFlagRed: {
@@ -452,103 +452,103 @@ var e = {
         shipRaptor: {
             texture: "raptor",
             layer: "aircraft",
-            anchor: [.5, .6]
+            anchor: [0.5, 0.6]
         },
         shipRaptorShadow: {
             texture: "raptor_shadow",
             layer: "shadows",
-            anchor: [.5, .57]
+            anchor: [0.5, 0.57]
         },
         shipRaptorThruster: {
             texture: "afterburner",
             layer: "thrusters",
-            anchor: [.5, .1],
-            scale: [.25, .25]
+            anchor: [0.5, 0.1],
+            scale: [0.25, 0.25]
         },
         shipSpirit: {
             texture: "spirit",
             layer: "aircraft",
-            anchor: [.5, .5]
+            anchor: [0.5, 0.5]
         },
         shipSpiritShadow: {
             texture: "spirit_shadow",
             layer: "shadows",
-            anchor: [.5, .5]
+            anchor: [0.5, 0.5]
         },
         shipSpiritThruster: {
             texture: "afterburner",
             layer: "thrusters",
-            anchor: [.5, .1],
-            scale: [.25, .25]
+            anchor: [0.5, 0.1],
+            scale: [0.25, 0.25]
         },
         shipComanche: {
             texture: "comanche",
             layer: "aircraft",
-            anchor: [.5, .4]
+            anchor: [0.5, 0.4]
         },
         shipComancheShadow: {
             texture: "comanche_shadow",
             layer: "shadows",
-            anchor: [.5, .43]
+            anchor: [0.5, 0.43]
         },
         shipComancheRotor: {
             texture: "comanche_rotor",
             layer: "aircraft",
-            anchor: [.5, .5],
-            scale: [.25, .25]
+            anchor: [0.5, 0.5],
+            scale: [0.25, 0.25]
         },
         shipComancheRotorShadow: {
             texture: "comanche_rotor_shadow",
             layer: "shadows",
-            anchor: [.5, .5]
+            anchor: [0.5, 0.5]
         },
         shipTornado: {
             texture: "tornado",
             layer: "aircraft",
-            anchor: [.5, .65]
+            anchor: [0.5, 0.65]
         },
         shipTornadoShadow: {
             texture: "tornado_shadow",
             layer: "shadows",
-            anchor: [.5, .605]
+            anchor: [0.5, 0.605]
         },
         shipProwler: {
             texture: "prowler",
             layer: "aircraft",
-            anchor: [.5, .5]
+            anchor: [0.5, 0.5]
         },
         shipProwlerShadow: {
             texture: "prowler_shadow",
             layer: "shadows",
-            anchor: [.5, .5]
+            anchor: [0.5, 0.5]
         },
         mountain1: {
             texture: "mountain1",
             layer: "doodads",
-            anchor: [.5, .5]
+            anchor: [0.5, 0.5]
         },
         mountain2: {
             texture: "mountain2",
             layer: "doodads",
-            anchor: [.5, .5]
+            anchor: [0.5, 0.5]
         },
         mountain3: {
             texture: "mountain3",
             layer: "doodads",
-            anchor: [.5, .5]
+            anchor: [0.5, 0.5]
         },
         mountain4: {
             texture: "mountain4",
             layer: "doodads",
-            anchor: [.5, .5]
+            anchor: [0.5, 0.5]
         },
         doodadField: {
             texture: "doodad_field",
             layer: "fields",
-            anchor: [.5, .5]
+            anchor: [0.5, 0.5]
         }
-    }
-    , i = {};
+    },
+    i = {};
 
 Textures.load = function() {
     for (var r in e)

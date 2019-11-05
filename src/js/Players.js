@@ -1,9 +1,9 @@
 import Player from './Player';
 import Vector from './Vector';
 
-var playersById = {}
-    , t = [-1, -1, -1]
-    , n = ["badge_gold", "badge_silver", "badge_bronze"];
+var playersById = {},
+    t = [-1, -1, -1],
+    n = ["badge_gold", "badge_silver", "badge_bronze"];
 
 Players.update = function() {
     var t, n;

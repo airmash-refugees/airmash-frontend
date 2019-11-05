@@ -1,30 +1,36 @@
 import Vector from './Vector';
 
-var e = false
-    , t = false
-    , gamesSelectorVisible = false
-    , GameDescById = ["", "Free For All", "Capture The Flag", "Battle Royale", "Development"]
-    , GameTypeById = ["", "ffa", "ctf", "br", "dev"]
-    , totalPlayersOnlineCount = 0
-    , gameHostState = {}
-    , inProgressPingCount = 0
-    , performPingTimerId = null
-    , closestGameRegion = null
-    , gameHasStarted = false
-    , gamesJsonDataIsLoaded = false
-    , inviteCopiedTimer = null
-    , gamesJsonData = []
-    , isServerMaintenance = false
-    , ctfGameState = {}
-    , firewallHotSmokeSprites = {}
-    , pixiJsGfx = null
-    , minimapIsInitialized = false
-    , firewallStatus = {
+var e = false,
+    t = false,
+    gamesSelectorVisible = false,
+    GameDescById = [
+        "",
+        "Free For All",
+        "Capture The Flag",
+        "Battle Royale",
+        "Development"
+    ],
+    GameTypeById = ["", "ffa", "ctf", "br", "dev"],
+    totalPlayersOnlineCount = 0,
+    gameHostState = {},
+    inProgressPingCount = 0,
+    performPingTimerId = null,
+    closestGameRegion = null,
+    gameHasStarted = false,
+    gamesJsonDataIsLoaded = false,
+    inviteCopiedTimer = null,
+    gamesJsonData = [],
+    isServerMaintenance = false,
+    ctfGameState = {},
+    firewallHotSmokeSprites = {},
+    pixiJsGfx = null,
+    minimapIsInitialized = false,
+    firewallStatus = {
         radius: 0,
         pos: Vector.zero(),
         speed: 0
-    }
-    , unlockedFeature = {
+    },
+    unlockedFeature = {
         2: "Custom country flags",
         3: "Emotes",
         4: "Flag Pack #1"
@@ -91,10 +97,10 @@ Games.popupLogin = function(e) {
 };
 
 var x = function(e, t, n, r) {
-    var i = void 0 != window.screenLeft ? window.screenLeft : window.screenX
-        , o = void 0 != window.screenTop ? window.screenTop : window.screenY
-        , s = (window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width) / 2 - n / 2 + i
-        , a = (window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height) / 2 - r / 2 + o;
+    var i = void 0 != window.screenLeft ? window.screenLeft : window.screenX,
+        o = void 0 != window.screenTop ? window.screenTop : window.screenY,
+        s = (window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width) / 2 - n / 2 + i,
+        a = (window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height) / 2 - r / 2 + o;
     window.open(e, t, "width=" + n + ", height=" + r + ", top=" + a + ", left=" + s)
 };
 
@@ -122,9 +128,9 @@ Games.playerAuth = function() {
         if (null != e) {
             game.loggedIn = true,
             game.myUserID = e.user;
-            var t = UI.escapeHTML(e.authName.substr(0, 30)) + '<span class="grey">(' + ["", "Facebook", "Google", "Twitter", "Reddit", "Twitch"][e.authType] + ")</span>"
-                , n = t + '<span class="link" onclick="Games.logout()">Logout</span>'
-                , r = "Logged in as " + t + '<span class="button" onclick="Games.logout()">LOG OUT</span>';
+            var t = UI.escapeHTML(e.authName.substr(0, 30)) + '<span class="grey">(' + ["", "Facebook", "Google", "Twitter", "Reddit", "Twitch"][e.authType] + ")</span>",
+                n = t + '<span class="link" onclick="Games.logout()">Logout</span>',
+                r = "Logged in as " + t + '<span class="button" onclick="Games.logout()">LOG OUT</span>';
             null != e.name && $("#playername").val(e.name),
             $("#logout").html(n),
             $("#logout-mainmenu").html(r),
@@ -232,8 +238,8 @@ var I = function() {
     "#reload" !== e && null != e && !(e.length < 4 || e.length > 20)) {
         var t = (e = e.substr(1)).indexOf("-");
         if (-1 != t) {
-            var n = e.substr(0, t)
-                , r = e.substr(t + 1);
+            var n = e.substr(0, t),
+                r = e.substr(t + 1);
             null != getPlayData(n, r) && (game.playRegion = n,
             game.playRoom = r,
             game.playInvited = true)
@@ -262,8 +268,8 @@ Games.closeDropdowns = function() {
 };
 
 Games.updateRegion = function(n, r) {
-    var i = ""
-        , o = null;
+    var i = "",
+        o = null;
     if (gamesJsonDataIsLoaded && !isServerMaintenance) {
         if (null != r && (r.stopPropagation(),
         e || Sound.UIClick()),
@@ -323,8 +329,8 @@ var M = function(e) {
 };
 
 Games.updateType = function(trueOrFalseOrUndefined, clickEvent) {
-    var s = ""
-        , a = null;
+    var s = "",
+        a = null;
     if (gamesJsonDataIsLoaded && !isServerMaintenance) {
         if (null != clickEvent && (clickEvent.stopPropagation(),
         t || Sound.UIClick()),
@@ -463,8 +469,8 @@ var initGameHostState = function() {
 
 Games.performPing = function() {
     if (!(inProgressPingCount > 3 || gameHasStarted)) {
-        var e = 9999
-            , gameKey = null;
+        var e = 9999,
+            gameKey = null;
         for (var key in gameHostState)
             gameHostState[key].num < e && (e = gameHostState[key].num,
             gameKey = key);
@@ -711,9 +717,9 @@ Games.wipe = function() {
 };
 
 Games.networkFlag = function(flagMsg) {
-    var flagState = 1 == flagMsg.flag ? ctfGameState.flagBlue : ctfGameState.flagRed
-        , flagElemSelector = 1 == flagMsg.flag ? "#blueflag-name" : "#redflag-name"
-        , r = 1 == flagMsg.flag ? flagMsg.blueteam : flagMsg.redteam;
+    var flagState = 1 == flagMsg.flag ? ctfGameState.flagBlue : ctfGameState.flagRed,
+        flagElemSelector = 1 == flagMsg.flag ? "#blueflag-name" : "#redflag-name",
+        r = 1 == flagMsg.flag ? flagMsg.blueteam : flagMsg.redteam;
     flagState.momentum = 0,
     flagState.direction = 1,
     flagState.sprite.scale.x = .4,
@@ -779,8 +785,8 @@ var updateCtfFlagState = function(e, t) {
 Games.spectate = function(playerID) {
     null == game.spectatingID && 3 != game.gameType && UI.showMessage("alert", '<span class="info">SPECTATOR MODE</span>Click on Respawn to resume playing', 4e3),
     game.spectatingID = playerID;
-    var player = Players.get(playerID)
-        , n = '<div id="spectator-tag" class="spectating">Spectating ' + (null == player ? "" : UI.escapeHTML(player.name)) + '</div><div class="buttons"><div onclick="Network.spectateNext()" class="changeplayer left"><div class="arrow"></div></div><div onclick="Network.spectatePrev()" class="changeplayer right"><div class="arrow"></div></div></div>';
+    var player = Players.get(playerID),
+        n = '<div id="spectator-tag" class="spectating">Spectating ' + (null == player ? "" : UI.escapeHTML(player.name)) + '</div><div class="buttons"><div onclick="Network.spectateNext()" class="changeplayer left"><div class="arrow"></div></div><div onclick="Network.spectatePrev()" class="changeplayer right"><div class="arrow"></div></div></div>';
     UI.showSpectator(n)
 };
 
@@ -822,8 +828,8 @@ Games.showCTFWin = function(e) {
 
 Games.showLevelUP = function(e) {
     $("#custom-msg").length && $("#custom-msg").remove();
-    var t = ""
-        , n = " lvlsmaller";
+    var t = "",
+        n = " lvlsmaller";
     null != unlockedFeature[e + ""] && (n = "",
     t = '<div class="unlocked">FEATURE UNLOCKED<br><div class="unlockedtext">' + unlockedFeature[e + ""] + "</div></div>");
     var r = '<div id="custom-msg" class="levelup' + n + '"><div class="leveltext">NEW LEVEL REACHED</div><div class="levelbadge"></div><div class="levelnum">' + e + "</div>" + t + "</div>";
@@ -842,19 +848,19 @@ Games.popFirewall = function(e, t) {
     pixiJsGfx.beginFill(16777215),
     pixiJsGfx.drawCircle(game.screenX - config.minimapPaddingX - config.minimapSize * (16384 - e.x) / 32768, game.screenY - config.minimapPaddingY - config.minimapSize / 2 * (8192 - e.y) / 16384, 2 * t / (256 / config.minimapSize * 256)),
     pixiJsGfx.endFill();
-    var n = Graphics.getCamera()
-        , r = Math.ceil((game.halfScreenX + 64) / game.scale / 64)
-        , i = Math.ceil((game.halfScreenY + 64) / game.scale / 64)
-        , o = 0
-        , s = 0
-        , a = ""
-        , l = {}
-        , u = 0
-        , c = 0
-        , h = new Vector(n.x - game.halfScreenX / game.scale - 64,n.y - game.halfScreenY / game.scale - 64)
-        , d = new Vector(n.x + game.halfScreenX / game.scale + 64,n.y - game.halfScreenY / game.scale - 64)
-        , p = new Vector(n.x - game.halfScreenX / game.scale - 64,n.y + game.halfScreenY / game.scale + 64)
-        , f = new Vector(n.x + game.halfScreenX / game.scale + 64,n.y + game.halfScreenY / game.scale + 64);
+    var n = Graphics.getCamera(),
+          r = Math.ceil((game.halfScreenX + 64) / game.scale / 64),
+          i = Math.ceil((game.halfScreenY + 64) / game.scale / 64),
+          o = 0,
+          s = 0,
+          a = "",
+          l = {},
+          u = 0,
+          c = 0,
+          h = new Vector(n.x - game.halfScreenX / game.scale - 64,n.y - game.halfScreenY / game.scale - 64),
+          d = new Vector(n.x + game.halfScreenX / game.scale + 64,n.y - game.halfScreenY / game.scale - 64),
+          p = new Vector(n.x - game.halfScreenX / game.scale - 64,n.y + game.halfScreenY / game.scale + 64),
+          f = new Vector(n.x + game.halfScreenX / game.scale + 64,n.y + game.halfScreenY / game.scale + 64);
     if (Tools.distance(e.x, e.y, h.x, h.y) > t || Tools.distance(e.x, e.y, d.x, d.y) > t || Tools.distance(e.x, e.y, p.x, p.y) > t || Tools.distance(e.x, e.y, f.x, f.y) > t)
         for (var g = -r; g <= r; g++)
             for (var b = -i; b <= i; b++)

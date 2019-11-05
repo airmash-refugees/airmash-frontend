@@ -16,25 +16,25 @@ class e {
 
     addParticle(e, t, n, r, i, o, s, a, l, u, c, h, d, p) {
         if (!(game.timeFactorUncapped > 20 || this.particles.length >= this.maxParticles)) {
-            var f = Textures.sprite(t)
-                , g = {
-                type: e,
-                sprite: f,
-                speed: n,
-                pos: r,
-                scale: i,
-                alpha: o,
-                rotationSpeed: s,
-                rotation: a,
-                lastRotation: 0,
-                time: game.time,
-                tint: l,
-                life: 0,
-                data: null != d ? d : 0,
-                emitter: null != p ? p : null,
-                _prev: -1,
-                _next: -1
-            };
+            var f = Textures.sprite(t),
+                g = {
+                    type: e,
+                    sprite: f,
+                    speed: n,
+                    pos: r,
+                    scale: i,
+                    alpha: o,
+                    rotationSpeed: s,
+                    rotation: a,
+                    lastRotation: 0,
+                    time: game.time,
+                    tint: l,
+                    life: 0,
+                    data: null != d ? d : 0,
+                    emitter: null != p ? p : null,
+                    _prev: -1,
+                    _next: -1
+                };
             null != l && (f.tint = l),
             null != c && (f.blendMode = c),
             null != h && (g.life = h),
@@ -86,11 +86,11 @@ class e {
                 r.pos.y += r.speed.y * e,
                 r.type) {
                 case n.EMITTER_EXPLOSION_FRAGMENT:
-                    var i = Tools.randInt(1, 16)
-                        , o = .5 * (1 - r.life)
-                        , s = 1 - r.life
-                        , a = Tools.rand(-.1, .1)
-                        , l = Tools.randCircle();
+                    var i = Tools.randInt(1, 16),
+                        o = 0.5 * (1 - r.life),
+                        s = 1 - r.life,
+                        a = Tools.rand(-0.1, 0.1),
+                        l = Tools.randCircle();
                     this.addParticle(n.FRAGMENT_SMOKE, "smoke_" + i, Vector.zero(), r.pos.clone(), Vector.diag(o), 1, a, l, null, null, null, null, s + .2),
                     r.shadowLayer && r.shadowLayer.addParticle(n.FRAGMENT_SMOKE, "smokeshadow_" + i, Vector.zero(), r.pos.clone(), Vector.diag(o), 1, a, l, null, null, null, null, s + .2)
                 }
@@ -102,8 +102,8 @@ class e {
         if (0 != t && !(e >= t)) {
             this.container.removeChild(this.particles[e].sprite),
             this.particles[e].sprite.destroy();
-            var n = this.particles[e]._prev
-                , r = this.particles[e]._next;
+            var n = this.particles[e]._prev,
+                r = this.particles[e]._next;
             return t--,
             -1 != n ? this.particles[n]._next = r : this.first = r,
             -1 != r ? this.particles[r]._prev = n : this.last = n,
@@ -234,14 +234,14 @@ Particles.wipe = function() {
 };
 
 Particles.planeDamage = function(e) {
-    var r = 2 == e.type ? 2 : 1
-        , i = Tools.randInt(1, 4)
-        , o = Tools.randCircle()
-        , s = Tools.rand(.5, 2)
-        , a = Tools.rand(.2, .8)
-        , l = Tools.rand(0, .3)
-        , u = Vector.createOff(e.pos, o, Tools.rand(0, 5 * r))
-        , c = Vector.create(o, s);
+    var r = 2 == e.type ? 2 : 1,
+        i = Tools.randInt(1, 4),
+        o = Tools.randCircle(),
+        s = Tools.rand(0.5, 2),
+        a = Tools.rand(0.2, 0.8),
+        l = Tools.rand(0, 0.3),
+        u = Vector.createOff(e.pos, o, Tools.rand(0, 5 * r)),
+        c = Vector.create(o, s);
     t.explosions.addParticle(n.PLANE_DAMAGE, "spark_" + i, new Vector(c.x + e.speed.x,c.y + e.speed.y), u, Vector.diag(a), 0, 0, Tools.randCircle(), 16739073, null, PIXI.BLEND_MODES.ADD, l)
 };
 
@@ -286,27 +286,36 @@ Particles.explosion = function(e, r, i) {
 };
 
 Particles.missileSmoke = function(e, r, i) {
-    var o = [null, n.MISSILE, n.MISSILE_FAT, n.MISSILE_SMALL, null, n.MISSILE, n.MISSILE, n.MISSILE][e.type]
-        , s = e.spriteRot + Math.PI
-        , a = Vector.createOff(e.pos, s, r)
-        , l = .2 * (i = i || 1)
-        , u = Tools.rand(-.1, .1)
-        , c = Vector.create(s + u, 5 * i)
-        , h = Tools.randInt(1, 16)
-        , d = Tools.rand(-.1, .1);
+    var o = [
+        null,
+        n.MISSILE,
+        n.MISSILE_FAT,
+        n.MISSILE_SMALL,
+        null,
+        n.MISSILE,
+        n.MISSILE,
+        n.MISSILE
+    ][e.type];
+    var s = e.spriteRot + Math.PI,
+        a = Vector.createOff(e.pos, s, r),
+        l = 0.2 * (i = i || 1),
+        u = Tools.rand(-0.1, 0.1),
+        c = Vector.create(s + u, 5 * i),
+        h = Tools.randInt(1, 16),
+        d = Tools.rand(-0.1, 0.1);
     Tools.randCircle();
     t.smoke.addParticle(o, "smoke_" + h, c.clone(), a.clone(), new Vector(1.25 * l,4 * l), 1, d, s, 16775590, null, null, null, i),
     t.shadows.addParticle(o, "smokeshadow_" + h, c.clone(), a.clone(), new Vector(1.25 * l,4 * l), 1, d, s, null, null, null, null, i)
 };
 
 Particles.planeBoost = function(e, r) {
-    var i = e.rot + e.state.thrustDir / 2 + Math.PI
-        , o = Vector.createOff(e.pos, i, r ? 40 : -20)
-        , s = Tools.rand(-.1, .1)
-        , a = r ? 0 : Math.PI
-        , l = Vector.create(i + s + a, 6)
-        , u = Tools.randInt(1, 16)
-        , c = Tools.rand(-.1, .1);
+    var i = e.rot + e.state.thrustDir / 2 + Math.PI,
+        o = Vector.createOff(e.pos, i, r ? 40 : -20),
+        s = Tools.rand(-0.1, 0.1),
+        a = r ? 0 : Math.PI,
+        l = Vector.create(i + s + a, 6),
+        u = Tools.randInt(1, 16),
+        c = Tools.rand(-0.1, 0.1);
     Tools.randCircle();
     t.smoke.addParticle(n.MISSILE, "smoke_" + u, l.clone(), o.clone(), new Vector(.3,1.2), 1, c, i, 16775590, null, null, null, 1.2),
     t.shadows.addParticle(n.MISSILE, "smokeshadow_" + u, l.clone(), o.clone(), new Vector(.3,1.2), 1, c, i, null, null, null, null, 1.2)

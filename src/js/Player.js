@@ -612,9 +612,9 @@ class Player {
 
     updateNameplate() {
         if (!this.reel) {
-            var e = (this.sprites.name.width + this.sprites.flag.width + 10) / 2
-              , t = this.pos.x - e + (this.state.hasBadge ? 12 : 0) - (null != this.level ? this.sprites.level.width / 2 + 8 : 0)
-              , n = this.pos.y + this.state.nameplateDist * this.scale;
+            var e = (this.sprites.name.width + this.sprites.flag.width + 10) / 2,
+                t = this.pos.x - e + (this.state.hasBadge ? 12 : 0) - (null != this.level ? this.sprites.level.width / 2 + 8 : 0),
+                n = this.pos.y + this.state.nameplateDist * this.scale;
             this.sprites.name.position.set(t + 40, n),
             this.sprites.flag.position.set(t + 15, n + 10),
             null != this.level && (this.sprites.level.position.set(t + 2 * e + 13, n + 2),
@@ -633,9 +633,9 @@ class Player {
         this.state.bubbleFade >= 1 && (this.state.bubble = false,
         this.sprites.bubble.visible = false)) : (this.sprites.bubble.scale.set(Tools.easing.outElastic(this.state.bubbleProgress, .5)),
         this.sprites.bubble.alpha = 1);
-        var e = (this.state.bubbleTextWidth + game.screenX) % 2 == 0 ? .5 : 0
-          , t = game.screenY % 2 == 0 ? 0 : .5
-          , n = this.state.nameplateDist * this.scale;
+        var e = (this.state.bubbleTextWidth + game.screenX) % 2 == 0 ? .5 : 0,
+            t = game.screenY % 2 == 0 ? 0 : .5,
+            n = this.state.nameplateDist * this.scale;
         this.powerupActive && (n += 60),
         this.sprites.bubble.position.set(this.pos.x * game.scale + e, (this.pos.y - n) * game.scale + t)
     }
@@ -847,21 +847,21 @@ class Player {
     }
 
     updateGraphics(e) {
-        var t = Tools.oscillator(.025, 1e3, this.randomness) * this.scale
-          , n = 1.5 * this.state.thrustLevel
-          , r = this.rot
-          , i = Graphics.shadowCoords(this.pos);
+        var t = Tools.oscillator(0.025, 1e3, this.randomness) * this.scale,
+            n = 1.5 * this.state.thrustLevel,
+            r = this.rot,
+            i = Graphics.shadowCoords(this.pos);
         if (Graphics.transform(this.sprites.sprite, this.pos.x, this.pos.y, r, t * this.state.baseScale, t * this.state.baseScale),
         Graphics.transform(this.sprites.shadow, i.x, i.y, r, this.state.baseScale * (2.4 / config.shadowScaling) * this.scale, this.state.baseScale * (2.4 / config.shadowScaling) * this.scale),
         this.powerupActive) {
-            var o = .35 * (0 == this.state.powerupFadeState ? 2 * (1 - this.state.powerupFade) + 1 : 1 - this.state.powerupFade) * Tools.oscillator(.075, 100, this.randomness)
-              , s = .75 * (0 == this.state.powerupFadeState ? Tools.clamp(2 * this.state.powerupFade, 0, 1) : Tools.clamp(1 - 1.3 * this.state.powerupFade, 0, 1)) * this.alpha;
+            var o = .35 * (0 == this.state.powerupFadeState ? 2 * (1 - this.state.powerupFade) + 1 : 1 - this.state.powerupFade) * Tools.oscillator(.075, 100, this.randomness),
+                s = .75 * (0 == this.state.powerupFadeState ? Tools.clamp(2 * this.state.powerupFade, 0, 1) : Tools.clamp(1 - 1.3 * this.state.powerupFade, 0, 1)) * this.alpha;
             Graphics.transform(this.sprites.powerup, this.pos.x, this.pos.y - 80, 0, o, o, s),
             Graphics.transform(this.sprites.powerupCircle, this.pos.x, this.pos.y - 80, this.state.powerupAngle, 1.35 * o, 1.35 * o, s)
         }
-        var a = Tools.oscillator(.1, .5, this.randomness)
-          , l = Math.abs(this.state.thrustLevel) < .01 ? 0 : this.state.thrustLevel / 2 + (this.state.thrustLevel > 0 ? .5 : -.5)
-          , u = Tools.clamp(2 * Math.abs(this.state.thrustLevel) - .1, 0, 1);
+        var a = Tools.oscillator(.1, .5, this.randomness),
+            l = Math.abs(this.state.thrustLevel) < .01 ? 0 : this.state.thrustLevel / 2 + (this.state.thrustLevel > 0 ? .5 : -.5),
+            u = Tools.clamp(2 * Math.abs(this.state.thrustLevel) - .1, 0, 1);
         switch (this.type) {
         case 1:
             Graphics.transform(this.sprites.thruster, this.pos.x + Math.sin(-r) * (20 * t), this.pos.y + Math.cos(-r) * (20 * t), r + (this.state.thrustLevel > 0 ? this.state.thrustDir : 0), .3 * a * l * this.scale, .5 * a * l * this.scale, u),

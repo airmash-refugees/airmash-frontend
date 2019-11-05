@@ -1,19 +1,19 @@
 import Vector from './Vector';
 import nipplejs from 'nipplejs';
 
-var lastTransmittedKeyState = {}
-    , t = {}
-    , isPressedByKeyCode = {}
-    , maybeRotationTimerId = null
-    , i = 0
-    , TWO_PI = 2 * Math.PI
-    , joystick = null
-    , isGamepadConnected = false
-    , gamepadState = {}
-    , isKeybindsUiVisible = false
-    , c = null
-    , h = 0
-    , keyBindDescription = {
+var lastTransmittedKeyState = {},
+    t = {},
+    isPressedByKeyCode = {},
+    maybeRotationTimerId = null,
+    i = 0,
+    TWO_PI = 2 * Math.PI,
+    joystick = null,
+    isGamepadConnected = false,
+    gamepadState = {},
+    isKeybindsUiVisible = false,
+    c = null,
+    h = 0,
+    keyBindDescription = {
         LEFT: ["LEFT", "A"],
         RIGHT: ["RIGHT", "D"],
         UP: ["UP", "W"],
@@ -40,9 +40,9 @@ var lastTransmittedKeyState = {}
         HELP: ["H"],
         INVITE: ["I"],
         MOUSEMODE: ["M"]
-    }
-    , p = {}
-    , movementKeySet = {
+    },
+    p = {},
+    movementKeySet = {
         LEFT: true,
         RIGHT: true,
         UP: true,
@@ -51,9 +51,9 @@ var lastTransmittedKeyState = {}
         SPECIAL: true,
         STRAFELEFT: true,
         STRAFERIGHT: true
-    }
-    , g = {}
-    , controlKeySet = {
+    },
+    g = {},
+    controlKeySet = {
         MAINMENU: true,
         FULLSCREEN: true,
         INVITE: true,
@@ -61,10 +61,39 @@ var lastTransmittedKeyState = {}
         SHOWSCORE: true,
         SHOWGAMES: true,
         HELP: true
-    }
-    , v = [["Forward", "UP"], ["Backward", "DOWN"], ["Turn Left", "LEFT"], ["Turn Right", "RIGHT"], ["Fire", "FIRE"], ["Special", "SPECIAL"], ["Strafe Left", "STRAFELEFT"], ["Strafe Right", "STRAFERIGHT"], [""], ["Spectate", "SPECTATE"], ["Upgrade Speed", "UPGRADE1"], ["Upgrade Defense", "UPGRADE2"], ["Upgrade Energy", "UPGRADE3"], ["Upgrade Missiles", "UPGRADE4"], ["Scoreboard", "SHOWSCORE"], ["Main Menu", "MAINMENU"], ["Show Games", "SHOWGAMES"], ["Fullscreen", "FULLSCREEN"], ["Maximize Chat", "MAXIMIZECHAT"], ["Minimize Chat", "MINIMIZECHAT"], [""], ["In-game Say", "SAY"], ["Team Chat", "TEAM"], ["Reply", "REPLY"], ["Toggle Sound", "SOUND"], ["Help", "HELP"], ["Invite Friends", "INVITE"], ["Mouse Mode", "MOUSEMODE"]]
-    , keyNameByCode = {}
-    , keyCodeByName = {
+    },
+    v = [
+        ["Forward", "UP"],
+        ["Backward", "DOWN"],
+        ["Turn Left", "LEFT"],
+        ["Turn Right", "RIGHT"],
+        ["Fire", "FIRE"],
+        ["Special", "SPECIAL"],
+        ["Strafe Left", "STRAFELEFT"],
+        ["Strafe Right", "STRAFERIGHT"],
+        [""],
+        ["Spectate", "SPECTATE"],
+        ["Upgrade Speed", "UPGRADE1"],
+        ["Upgrade Defense", "UPGRADE2"],
+        ["Upgrade Energy", "UPGRADE3"],
+        ["Upgrade Missiles", "UPGRADE4"],
+        ["Scoreboard", "SHOWSCORE"],
+        ["Main Menu", "MAINMENU"],
+        ["Show Games", "SHOWGAMES"],
+        ["Fullscreen", "FULLSCREEN"],
+        ["Maximize Chat", "MAXIMIZECHAT"],
+        ["Minimize Chat", "MINIMIZECHAT"],
+        [""],
+        ["In-game Say", "SAY"],
+        ["Team Chat", "TEAM"],
+        ["Reply", "REPLY"],
+        ["Toggle Sound", "SOUND"],
+        ["Help", "HELP"],
+        ["Invite Friends", "INVITE"],
+        ["Mouse Mode", "MOUSEMODE"]
+    ],
+    keyNameByCode = {},
+    keyCodeByName = {
         BACKSPACE: 8,
         TAB: 9,
         SHIFT: 16,
@@ -161,9 +190,9 @@ var lastTransmittedKeyState = {}
         "\\": 220,
         "]": 221,
         QUOTE: 222
-    }
-    , networkKeyNames = ["UP", "DOWN", "LEFT", "RIGHT", "FIRE", "SPECIAL"]
-    , x = ["UP", "DOWN", "LEFT", "RIGHT", "FIRE", "SPECIAL"];
+    },
+    networkKeyNames = ["UP", "DOWN", "LEFT", "RIGHT", "FIRE", "SPECIAL"],
+    x = ["UP", "DOWN", "LEFT", "RIGHT", "FIRE", "SPECIAL"];
 
 Input.setup = function() {
     for (var name in keyCodeByName)
@@ -208,8 +237,8 @@ var onWindowKeyDown = function(event) {
 
 var onWindowKeyUp = function(event) {
     if (game.state == Network.STATE.PLAYING || game.state == Network.STATE.CONNECTING) {
-        var keyCode = event.which
-            , bind = Input.getBind(keyCode);
+        var keyCode = event.which,
+            bind = Input.getBind(keyCode);
         if (null == movementKeySet[bind] && isPressedByKeyCode[keyCode] && (isPressedByKeyCode[keyCode] = false),
         !shouldInterpretAsControlKey(keyCode))
             return lastTransmittedKeyState[bind] && (lastTransmittedKeyState[bind] = false,
@@ -284,8 +313,8 @@ var P = function(keyCode) {
             2 == keyBindDescription[n].length && "" === keyBindDescription[n][1] && keyBindDescription[n].splice(-1, 1);
         return M(),
         function() {
-            var e = {}
-                , t = "";
+            var e = {},
+                t = "";
             for (var n in keyBindDescription)
                 null != p[n] && (t = JSON.stringify(keyBindDescription[n])) !== JSON.stringify(p[n]) && (e[n] = JSON.parse(t));
             Object.keys(e).length > 0 ? Tools.setSettings({
@@ -299,10 +328,10 @@ var P = function(keyCode) {
 };
 
 var M = function(e) {
-    var t = ""
-        , n = ""
-        , r = ""
-        , i = null;
+    var t = "",
+        n = "",
+        r = "",
+        i = null;
     t += '<div class="left-binds">';
     for (var o = 0; o < v.length; o++)
         null != v[o][0] && ("" != v[o][0] ? (null == (i = keyBindDescription[v[o][1]]) ? (n = "&nbsp;",
@@ -341,12 +370,12 @@ Input.update = function() {
         if (null != gamepads && null != gamepads.length && 0 != gamepads.length && null != gamepads[0]) {
             var gamepad = gamepads[0];
             if (!(gamepad.buttons.length < 16)) {
-                var n = gamepad.buttons[12].pressed
-                    , r = gamepad.buttons[13].pressed
-                    , i = gamepad.buttons[15].pressed
-                    , s = gamepad.buttons[14].pressed
-                    , u = gamepad.buttons[0].pressed || gamepad.buttons[2].pressed
-                    , c = gamepad.buttons[1].pressed || gamepad.buttons[3].pressed;
+                var n = gamepad.buttons[12].pressed,
+                    r = gamepad.buttons[13].pressed,
+                    i = gamepad.buttons[15].pressed,
+                    s = gamepad.buttons[14].pressed,
+                    u = gamepad.buttons[0].pressed || gamepad.buttons[2].pressed,
+                    c = gamepad.buttons[1].pressed || gamepad.buttons[3].pressed;
                 gamepadState.up != n && (A("UP", n),
                 gamepadState.up = n),
                 gamepadState.down != r && (A("DOWN", r),
@@ -359,10 +388,10 @@ Input.update = function() {
                 gamepadState.fire = u),
                 gamepadState.special != c && (A("SPECIAL", c),
                 gamepadState.special = c);
-                var h = new Vector(gamepad.axes[1],gamepad.axes[0])
-                    , d = h.length()
-                    , p = -h.angle() + Math.PI / 2
-                    , f = p = (p % TWO_PI + TWO_PI) % TWO_PI;
+                var h = new Vector(gamepad.axes[1],gamepad.axes[0]),
+                    d = h.length(),
+                    p = -h.angle() + Math.PI / 2,
+                    f = p = (p % TWO_PI + TWO_PI) % TWO_PI;
                 d > .2 ? (gamepadState.forward = true,
                 handleRotation(f, d)) : (gamepadState.forward && !n && A("UP", false),
                 gamepadState.forward = false)
@@ -519,8 +548,8 @@ var handleRotation = function(rotation, touchForce) {
         if (!((s -= Math.round(game.ping)) < 10 || game.time - i < 100)) {
             null != maybeRotationTimerId && clearTimeout(maybeRotationTimerId),
             i = game.time;
-            var a = o > 0 ? "RIGHT" : "LEFT"
-                , l = o <= 0 ? "RIGHT" : "LEFT";
+            var a = o > 0 ? "RIGHT" : "LEFT",
+                l = o <= 0 ? "RIGHT" : "LEFT";
             A("UP", !(null != touchForce && touchForce < .5)),
             A(a, true),
             A(l, false),
@@ -532,8 +561,8 @@ var handleRotation = function(rotation, touchForce) {
 };
 
 Input.touchMove = function(event, touchPoint) {
-    var n = -touchPoint.angle.radian + Math.PI / 2
-        , r = n = (n % TWO_PI + TWO_PI) % TWO_PI;
+    var n = -touchPoint.angle.radian + Math.PI / 2,
+        r = n = (n % TWO_PI + TWO_PI) % TWO_PI;
     handleRotation(r, touchPoint.force)
 };
 

@@ -1,8 +1,8 @@
 import Vector from './Vector';
 
-var bucketState = {}
-    , clientErrorCount = 0
-    , reelState = {
+var bucketState = {},
+    clientErrorCount = 0,
+    reelState = {
         started: false,
         startX: 200,
         startY: -2450,
@@ -162,8 +162,8 @@ Tools.wipeSettings = function() {
 var getSettingsFromLocalStorage = function() {
     if (null == window.localStorage)
         return {};
-    var e = null
-        , t = {};
+    var e = null,
+        t = {};
     try {
         e = localStorage.getItem("settings")
     } catch (e) {}
@@ -227,15 +227,15 @@ Tools.lerp = function(e, t, n) {
 Tools.colorLerp = function(e, t, n) {
     n <= 0 && (n = .001),
     n >= 1 && (n = .999);
-    var r = e >> 16
-        , i = e >> 8 & 255
-        , o = 255 & e;
+    var r = e >> 16,
+        i = (e >> 8) & 255,
+        o = 255 & e;
     return (1 << 24) + (r + n * ((t >> 16) - r) << 16) + (i + n * ((t >> 8 & 255) - i) << 8) + (o + n * ((255 & t) - o)) | 0
 };
 
 Tools.distance = function(e, t, n, r) {
-    var i = e - n
-        , o = t - r;
+    var i = e - n,
+        o = t - r;
     return Math.sqrt(i * i + o * o)
 };
 
@@ -268,18 +268,18 @@ var a = {
 
 Tools.easing = {
     outElastic: function(e, t) {
-        var n = 1 - (t || .7)
-            , r = 2 * e;
+        var n = 1 - (t || 0.7),
+            r = 2 * e;
         if (0 === e || 1 === e)
             return e;
         var i = n / (2 * Math.PI) * Math.asin(1);
         return Math.pow(2, -10 * r) * Math.sin((r - i) * (2 * Math.PI) / n) + 1
     },
     custom: function(e, t) {
-        var n = a[t]
-            , r = n.length
-            , i = Math.floor(e * (r - 1))
-            , o = n[i];
+        var n = a[t],
+            r = n.length,
+            i = Math.floor(e * (r - 1)),
+            o = n[i];
         return i === r - 1 ? o : Tools.lerp(o, n[i + 1], e * (r - 1) % 1)
     }
 };
@@ -299,13 +299,13 @@ Tools.debugLine = function(e, t) {
 };
 
 Tools.updateDebug = function() {
-    var e = performance.now()
-        , t = 1e3 * (game.frames - game.debug.frames) / (e - game.debug.last)
-        , n = Players.count()
-        , r = Mobs.count()
-        , i = Mobs.countDoodads()
-        , o = ""
-        , s = Players.getMe();
+    var e = performance.now(),
+        t = (1e3 * (game.frames - game.debug.frames)) / (e - game.debug.last),
+        n = Players.count(),
+        r = Mobs.count(),
+        i = Mobs.countDoodads(),
+        o = "",
+        s = Players.getMe();
     null != s && (o = Tools.debugLine("Coords", Math.round(s.pos.x) + ", " + Math.round(s.pos.y)));
     var a = Tools.debugLine("FPS", Math.round(t)) + Tools.debugLine("Ticks", (game.debug.ticks / (e - game.debug.last) * 100).toFixed(2) + "%") + Tools.debugLine("Ping", game.ping.toFixed(2) + " ms") + Tools.debugLine("Res", game.screenX + " x " + game.screenY) + '<div class="spacer"></div>' + Tools.debugLine("Players", n[0] + " / " + n[1]) + Tools.debugLine("Mobs", r[0] + " / " + r[1]) + Tools.debugLine("Particles", Particles.count()) + Tools.debugLine("Doodads", i[0] + " / " + i[1]) + '<div class="spacer"></div>' + o + Tools.debugLine("Scale", game.scale.toFixed(2)) + Tools.debugLine("Jitter", game.jitter.toFixed(3)) + '<div class="close" onclick="Tools.hideDebug()">x</div>';
     $("#debug").html(a),

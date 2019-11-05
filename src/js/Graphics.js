@@ -93,8 +93,8 @@ var a = function() {
 };
 
 Graphics.resizeRenderer = function(r, i) {
-    var o = r + config.overdraw
-        , s = i + config.overdraw;
+    var o = r + config.overdraw,
+        s = i + config.overdraw;
     l(r, i),
     u(),
     e.resize(r, i),
@@ -155,8 +155,8 @@ var c = function() {
 };
 
 var h = function() {
-    var t = e.width + config.overdraw
-        , r = e.height + config.overdraw;
+    var t = e.width + config.overdraw,
+        r = e.height + config.overdraw;
     n.sea = Textures.tile("map_sea", t, r),
     n.sea_mask = Textures.sprite("map_sea_mask"),
     n.sea_mask.scale.set(8, 8),
@@ -255,13 +255,13 @@ Graphics.update = function() {
 };
 
 Graphics.setCamera = function(e, n) {
-    var r = 0
-        , i = 0;
+    var r = 0,
+        i = 0;
     t.shake > .5 && (r = Tools.rand(-t.shake, t.shake),
     i = Tools.rand(-t.shake, t.shake),
     t.shake *= 1 - .06 * game.timeFactor);
-    var o = game.halfScreenX / game.scale
-        , s = game.halfScreenY / game.scale;
+    var o = game.halfScreenX / game.scale,
+        s = game.halfScreenY / game.scale;
     e = Tools.clamp(e, -16384 + o, 16384 - o),
     n = Tools.clamp(n, -8192 + s, 8192 - s),
     t.position.x = r + e - game.screenX / 2 / game.scale,
@@ -275,9 +275,9 @@ Graphics.getCamera = function() {
 };
 
 Graphics.shakeCamera = function(e, n) {
-    var r = Tools.length(e.x - t.center.x, e.y - t.center.y)
-        , i = (game.halfScreenX / game.scale + game.halfScreenY / game.scale) / 2
-        , o = Tools.clamp(1.3 * (1 - r / i), 0, 1);
+    var r = Tools.length(e.x - t.center.x, e.y - t.center.y),
+        i = (game.halfScreenX / game.scale + game.halfScreenY / game.scale) / 2,
+        o = Tools.clamp(1.3 * (1 - r / i), 0, 1);
     o < .1 || (t.shake = o * n)
 };
 
