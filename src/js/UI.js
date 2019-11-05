@@ -807,7 +807,7 @@ UI.hidePanel = function(e, t, n) {
 
 UI.openInvite = function() {
     isInviteVisible || (UI.closeAllPanels("invite"),
-    game.inviteLink = "https://airmash.online/#" + game.playRegion + "-" + game.playRoom,
+    game.inviteLink = document.URL + "#" + game.playRegion + "-" + game.playRoom,
     $("#invite-link").html(game.inviteLink),
     $("#invite-link").attr("href", game.inviteLink),
     UI.showPanel("#invitefriends"),
