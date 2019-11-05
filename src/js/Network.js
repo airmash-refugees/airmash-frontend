@@ -399,7 +399,7 @@ Network.setup = function() {
             session: config.settings.session ? config.settings.session : "none",
             horizonX: Math.ceil(game.halfScreenX / game.scale),
             horizonY: Math.ceil(game.halfScreenY / game.scale),
-            flag: game.myFlag
+            flag: game.myFlag.toUpperCase()
         });
     }
     ,
