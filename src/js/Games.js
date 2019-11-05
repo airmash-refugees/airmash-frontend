@@ -639,7 +639,7 @@ function getPlayRoom() {
                 roomIds.push(playRegionGames[i].id);
             }
         }
-        result = roomIds[0];
+        result = roomIds[Tools.rand(0, 1) < .5 ? (roomIds.length - 1) : Tools.randInt(0, roomIds.length - 1)];
     }
     return result;
 }
