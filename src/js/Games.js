@@ -3,14 +3,27 @@ import Vector from './Vector';
 var e = false,
     t = false,
     gamesSelectorVisible = false,
-    GameDescById = [
+    gameTypes = [
+        "",
+        "ffa",
+        "ctf",
+        "br",
+        "dev"
+    ],
+    gameTypeNames = [
         "",
         "Free For All",
         "Capture The Flag",
         "Battle Royale",
         "Development"
     ],
-    GameTypeById = ["", "ffa", "ctf", "br", "dev"],
+    gameTypeDescriptions = [
+        "",
+        "Everyone versus everyone deathmatch. No teams.",
+        "Players split into 2 teams. 2 flags are placed inside each base. The objective is to move the enemy flag from their base to your base.",
+        "Players spawn at random locations all across the map. Destroyed players will not respawn. Last player standing wins.",
+        "Game environments for development and testing."
+    ],
     totalPlayersOnlineCount = 0,
     gameHostState = {},
     inProgressPingCount = 0,
@@ -222,12 +235,12 @@ var getPlayData = function(e, gameTypeId) {
     for (var o = 0; o < n.games.length; o++)
         if (n.games[o].id === gameTypeId)
             return n.games[o];
-    var s = GameTypeById.indexOf(gameTypeId);
+    var s = gameTypes.indexOf(gameTypeId);
     if (-1 != s)
         for (o = 0; o < n.games.length; o++)
             if (n.games[o].type == s)
                 return {
-                    name: GameDescById[s]
+                    name: gameTypeNames[s]
                 };
     return null
 };
@@ -322,10 +335,11 @@ var getSelectedGameId = function() {
     return gameId
 };
 
-var M = function(e) {
+var getGameTypeInfoHtml = function(gameType) {
     var t = '<div class="infott">';
-    return 1 == e ? t += "Everyone versus everyone deathmatch. No teams." : 2 == e ? t += "Players split into 2 teams. 2 flags are placed inside each base. The objective is to move the enemy flag from their base to your base." : 3 == e ? t += "Players spawn at random locations all across the map. Destroyed players will not respawn. Last player standing wins." : 4 == e && (t += "Game environment for development and testing."),
-    t += '<div class="arrow"></div></div>'
+    t += gameTypeDescriptions[gameType];
+    t += '<div class="arrow"></div></div>';
+    return t;
 };
 
 Games.updateType = function(trueOrFalseOrUndefined, clickEvent) {
@@ -341,13 +355,13 @@ Games.updateType = function(trueOrFalseOrUndefined, clickEvent) {
             s += '<div class="item"><div class="gametype header">GAME</div><div class="players header">PLAYERS</div><div class="clear"></div></div>';
             if (null == (p = getSelectedGameId()))
                 return;
-            null == getPlayData(p, game.playRoom) && (game.playRoom = GameTypeById[1]);
+            null == getPlayData(p, game.playRoom) && (game.playRoom = gameTypes[1]);
             var l, u, c = getPlayRegion(p).games, d = [[], [], [], [], [], [], [], [], []];
             for (l = 0; l < c.length; l++)
                 d[c[l].type].push(c[l]);
             for (l = 1; l < d.length; l++)
                 if (0 != d[l].length)
-                    for (s += '<div class="item selectable' + (GameTypeById[l] === game.playRoom ? " sel" : "") + '" onclick="Games.selectGame(event, &quot;' + GameTypeById[l] + '&quot;)"><div class="gametype chooser">' + GameDescById[l] + '<span class="infocontainer">&nbsp;<div class="infoicon">' + M(l) + '</div></span></div><div class="clear"></div></div>',
+                    for (s += '<div class="item selectable' + (gameTypes[l] === game.playRoom ? " sel" : "") + '" onclick="Games.selectGame(event, &quot;' + gameTypes[l] + '&quot;)"><div class="gametype chooser">' + gameTypeNames[l] + '<span class="infocontainer">&nbsp;<div class="infoicon">' + getGameTypeInfoHtml(l) + '</div></span></div><div class="clear"></div></div>',
                     u = 0; u < d[l].length; u++)
                         s += '<div class="item selectable' + (d[l][u].id === game.playRoom ? " sel" : "") + '" onclick="Games.selectGame(event, &quot;' + d[l][u].id + '&quot;)"><div class="gametype chooser">' + d[l][u].nameShort + '</div><div class="players number">' + d[l][u].players + '</div><div class="clear"></div></div>';
             s += '<div class="item"></div>',
@@ -364,8 +378,8 @@ Games.updateType = function(trueOrFalseOrUndefined, clickEvent) {
             if (null == (p = getSelectedGameId()))
                 return;
             var g = getPlayData(p, game.playRoom);
-            null == g ? (name = GameDescById[1],
-            game.playRoom = GameTypeById[1]) : name = g.name,
+            null == g ? (name = gameTypeNames[1],
+            game.playRoom = gameTypes[1]) : name = g.name,
             s += '<div class="playbottom">' + name + "</div>",
             a = {
                 width: "190px",
@@ -402,7 +416,7 @@ var A = function() {
     var s, a;
     for (t = 1; t < o.length; t++)
         if (0 != o[t].length)
-            for (e += '<div class="item head"><div class="gametype chooser section">' + GameDescById[t] + '<span class="infocontainer">&nbsp;<div class="infoicon">' + M(t) + '</div></span></div><div class="clear"></div></div>',
+            for (e += '<div class="item head"><div class="gametype chooser section">' + gameTypeNames[t] + '<span class="infocontainer">&nbsp;<div class="infoicon">' + getGameTypeInfoHtml(t) + '</div></span></div><div class="clear"></div></div>',
             n = 0; n < o[t].length; n++)
                 o[t][n].id === game.playRoom ? (s = " sel",
                 a = "") : (s = " selectable",
@@ -630,7 +644,7 @@ Games.start = function(playerName, isFirstTime) {
 
 function getPlayRoom() {
     var result = game.playRoom;
-    var playRoomIndex = GameTypeById.indexOf(result);
+    var playRoomIndex = gameTypes.indexOf(result);
     if (-1 != playRoomIndex) {
         var playRegionGames = getPlayRegion(game.playRegion).games;
         var roomIds = [];
