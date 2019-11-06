@@ -460,6 +460,9 @@ UI.controlKey = function(e, t, n) {
             if (191 != e)
                 if (75 != e)
                     switch (t) {
+                    case "DROPUPGRADE":
+                        UI.dropUpgrade();
+                        break;
                     case "SHOWSCORE":
                         UI.toggleScore();
                         break;
@@ -1017,6 +1020,10 @@ UI.nameEntered = function() {
     } else {
         Games.highlightInput("#playername");
     }
+};
+
+UI.dropUpgrade = function(e) {
+    Network.sendCommand("upgrades", "drop");
 };
 
 UI.selectUpgrade = function(e) {
