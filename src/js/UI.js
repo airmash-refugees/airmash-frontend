@@ -346,36 +346,102 @@ var removeChatHint = function() {
     $("#chat-0").length && $("#chat-0").remove())
 };
 
-UI.parseCommand = function(e) {
-    if ("/" !== e[0])
-        return false;
-    var t = e.split(" "),
-        n = t[0].substr(1).toLowerCase();
-    if (0 == n.length)
-        return false;
-    if ("s" === n) {
-        var r = e.indexOf(" "),
-            i = e.substr(r + 1);
-        i.length > 0 && Network.sendSay(i)
-    } else if ("t" === n) {
-        r = e.indexOf(" ");
-        var o = e.substr(r + 1);
-        o.length > 0 && Network.sendTeam(o)
-    } else if ("ignore" === n) {
-        null == (s = Players.getByName(unescapePlayerName(t[1]))) ? UI.addChatMessage("Unknown player") : UI.chatIgnore(s.id)
-    } else if ("unignore" === n) {
-        null == (s = Players.getByName(unescapePlayerName(t[1]))) ? UI.addChatMessage("Unknown player") : UI.chatUnignore(s)
-    } else if ("votemute" === n) {
-        null == (s = Players.getByName(unescapePlayerName(t[1]))) ? UI.addChatMessage("Unknown player") : UI.chatVotemute(s)
-    } else if ("w" === n)
-        t.length >= 3 ? UI.chatWhisper(t[1], e.substr(4 + t[1].length)) : UI.addChatMessage("Usage: /w player message");
-    else if ("spectate" === n) {
-        var s;
-        null == (s = Players.getByName(unescapePlayerName(t[1]))) ? UI.addChatMessage("Unknown player") : Network.sendCommand("spectate", s.id + "")
-    } else
-        "flag" === n || "flags" === n ? 2 == t.length ? Network.sendCommand("flag", e.substr(n.length + 2)) : UI.addChatMessage("Type /flag XX where XX is the 2-letter ISO code of a country", true) : "emotes" === n ? UI.addChatMessage("Emotes available: /tf /pepe /clap /lol /bro /kappa /cry /rage", true) : "help" === n ? UI.toggleHelp() : "debug" === n || (UI.isEmote(n) ? Network.sendSay(":" + n + ":") : Network.sendCommand(n, e.substr(n.length + 2)));
-    return true
+/**
+ * @param {string} s
+ * @return {?}
+ */
+UI.parseCommand = function(chatInput) {
+  if ("/" !== chatInput[0]) {
+    return false;
+  }
+  var words = chatInput.split(" ");
+  var command = words[0].substr(1).toLowerCase();
+  if (0 == command.length) {
+    return false;
+  }
+  if ("s" === command) {
+    var eIndex = chatInput.indexOf(" ");
+    var value = chatInput.substr(eIndex + 1);
+    if (value.length > 0) {
+      Network.sendSay(value);
+    }
+  } else {
+    if ("t" === command) {
+      eIndex = chatInput.indexOf(" ");
+      var value = chatInput.substr(eIndex + 1);
+      if (value.length > 0) {
+        Network.sendTeam(value);
+      }
+    } else {
+      if ("ignore" === command) {
+        if (null == (e = Players.getByName(unescapePlayerName(words[1])))) {
+          UI.addChatMessage("Unknown player");
+        } else {
+          UI.chatIgnore(e.id);
+        }
+      } else {
+        if ("unignore" === command) {
+          if (null == (e = Players.getByName(unescapePlayerName(words[1])))) {
+            UI.addChatMessage("Unknown player");
+          } else {
+            UI.chatUnignore(e);
+          }
+        } else {
+          if ("votemute" === command) {
+            if (null == (e = Players.getByName(unescapePlayerName(words[1])))) {
+              UI.addChatMessage("Unknown player");
+            } else {
+              UI.chatVotemute(e);
+            }
+          } else {
+            if ("w" === command) {
+              if (words.length >= 3) {
+                UI.chatWhisper(words[1], chatInput.substr(4 + words[1].length));
+              } else {
+                UI.addChatMessage("Usage: /w player message");
+              }
+            } else {
+              if ("spectate" === command) {
+                var e;
+                if (null == (e = Players.getByName(unescapePlayerName(words[1])))) {
+                  UI.addChatMessage("Unknown player");
+                } else {
+                  Network.sendCommand("spectate", e.id + "");
+                }
+              } else {
+                if ("flag" === command || "flags" === command) {
+                  if (2 == words.length) {
+                    Network.sendCommand("flag", chatInput.substr(command.length + 2));
+                  } else {
+                    UI.addChatMessage("Type /flag XX where XX is the 2-letter ISO code of a country", true);
+                  }
+                } else {
+                  if ("emotes" === command) {
+                    UI.addChatMessage("Emotes available: /tf /pepe /clap /lol /bro /kappa /cry /rage", true);
+                  } else {
+                    if ("help" === command) {
+                      UI.toggleHelp();
+                    } else {
+                      if (!("debug" === command)) {
+                        if (UI.isEmote(command)) {
+                          Network.sendSay(":" + command + ":");
+                        } else {
+                          Network.sendCommand(command, chatInput.substr(command.length + 2));
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return true;
 };
+
 
 UI.addChatLine = function(msg, text, msgType) {
     if (!ignoredPlayerIdSet[msg.id]) {
