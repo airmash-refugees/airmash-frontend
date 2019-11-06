@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ProvidePlugin = require('webpack').ProvidePlugin;
@@ -21,6 +22,7 @@ module.exports = {
     filename: '[name]',
     path: path.resolve(__dirname, 'dist'),
   },
+  devtool: false,
   plugins: [
     new CleanWebpackPlugin(),
     new ProvidePlugin({
@@ -47,6 +49,9 @@ module.exports = {
       inject: 'head'
     }),
     new ExtractTextPlugin("assets/style.css"),
+    new webpack.SourceMapDevToolPlugin({
+      filename: '[name].map'
+    })
   ],
   module: {
     rules: [
@@ -68,6 +73,7 @@ module.exports = {
     minimizer: [
       new TerserPlugin({
         extractComments: false,
+        sourceMap: true,
         terserOptions: {
           output: {
             comments: false
