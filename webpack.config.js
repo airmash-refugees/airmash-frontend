@@ -67,9 +67,11 @@ module.exports = {
   optimization: {
     minimizer: [
       new TerserPlugin({
+        extractComments: false,
         terserOptions: {
-          mangle: true,
-          comments: false
+          output: {
+            comments: false
+          }
         },
       }),
       new OptimizeCssAssetsPlugin({
