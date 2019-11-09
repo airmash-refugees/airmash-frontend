@@ -37,6 +37,8 @@ The output will be created in `dist/`, and can be served using a local web serve
 
 The latest successful build of this repo is deployed automatically to https://test.airmash.online. 
 
+For development, ``DEBUG=1 npm run build`` cuts build time down by disabling minification.
+
 ### This repository contains proprietary code
 
 The original Airmash game was never published as free software, and so the
