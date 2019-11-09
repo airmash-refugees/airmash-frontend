@@ -1,31 +1,31 @@
 import { Howl } from './howler';
 
-var e = {},
-    t = {},
-    n = {},
-    r = 0,
-    i = 0,
+var mainHowlInstance = {},
+    howlsBySpriteName = {},
+    thrustersByPlayerId = {},
+    playerThrustersPlayingCount = 0,
+    missileThrustersPlayingCount = 0,
     o = {},
-    s = 0,
-    a = 0,
+    lastAllocatedThrusterSoundId = 0,
+    lastSoundscapeUpdateTime = 0,
     l = {},
-    u = 0.3,
-    c = 1,
-    h = 0.3,
+    mobExplosionBaseVolume = 0.3,
+    playerKillBaseVolume = 1,
+    missileLaunchBaseVolume = 0.3,
     d = 0.06,
     p = 0.08,
-    f = 0.05,
-    g = 0.25,
-    m = 0.3,
-    v = [0, 0.7, 1, 0.4, 0, 0.7, 0.4, 0.7],
-    y = [0, 0.7, 1, 0.4, 0, 0.7, 1, 0.7],
-    b = [0, 0.8, 0.5, 1, 0, 0.8, 0.5, 0.8],
-    _ = [0, 0.8, 1, 0.7, 0.8, 0.8],
-    x = [0, 1.5, 1.2, 0.8, 1.35, 1.7],
-    w = [0, 1, 1, 0.35, 1, 1],
-    T = [0, 0.8, 0.5, 1, 0, 0.8, 0.8, 0.8],
-    E = [0, 1.5, 0.8, 2, 1, 1.5],
-    S = {
+    playerImpactSpeedVolumeBoost = 0.05,
+    powerupBaseVolume = 0.25,
+    repelBaseVolume = 0.3,
+    explosionVolumeByMobType = [0, 0.7, 1, 0.4, 0, 0.7, 0.4, 0.7],
+    launchVolumeByMissileType = [0, 0.7, 1, 0.4, 0, 0.7, 1, 0.7],
+    launchPlaybackRateByMissileType = [0, 0.8, 0.5, 1, 0, 0.8, 0.5, 0.8],
+    playerKillVolumeByPlaneType = [0, 0.8, 1, 0.7, 0.8, 0.8],
+    thrusterPlaybackRateByPlaneType = [0, 1.5, 1.2, 0.8, 1.35, 1.7],
+    someKindOfThrusterVolumeByPlaneType = [0, 1, 1, 0.35, 1, 1],
+    thrusterPlaybackRateByMobType = [0, 0.8, 0.5, 1, 0, 0.8, 0.8, 0.8],
+    playbackRateByMissileType = [0, 1.5, 0.8, 2, 1, 1.5],
+    customVolumeBySpriteName = {
         powerup_shield: 0.5,
         upgrade: 0.2,
         complete: 0.5,
@@ -34,7 +34,7 @@ var e = {},
         click: 0.5
     },
     I = {},
-    P = {
+    mainHowlConfig = {
         src: ["assets/sounds.mp3?4"],
         volume: 0,
         sprite: {
@@ -71,9 +71,9 @@ Sound.setup = function() {
         Object.keys(I[r]).length > 0)
             for (var i in I[r])
                 n[i] = I[r][i];
-        t[r] = new Howl(n)
+        howlsBySpriteName[r] = new Howl(n)
     }
-    e = new Howl(P)
+    mainHowlInstance = new Howl(mainHowlConfig)
 };
 
 Sound.toggle = function() {
@@ -82,102 +82,112 @@ Sound.toggle = function() {
         sound: config.settings.sound
     }),
     UI.updateSound(true),
-    M()
+    stopSoundsIfPlaying()
 };
 
-var M = function() {
-    config.settings.sound || e.stop()
+var stopSoundsIfPlaying = function() {
+    config.settings.sound || mainHowlInstance.stop()
 };
 
-var A = function(e) {
-    var t = S[e];
+var getSpriteVolume = function(soundName) {
+    var t = customVolumeBySpriteName[soundName];
     return null == t ? 1 : t
 };
 
-Sound.mobExplosion = function(e, t) {
-    var n = v[t] * u,
-        r = k(e) * n,
-        i = "explosion" + Tools.randInt(1, 6);
-    r < .01 || O("mobexplosions", 4) || C(i, r, e, Tools.rand(.8, 1.2))
+Sound.mobExplosion = function(pos, mobType) {
+    var n = explosionVolumeByMobType[mobType] * mobExplosionBaseVolume,
+        volume = getVolumeForCameraDistance(pos) * n,
+        spriteName = "explosion" + Tools.randInt(1, 6);
+    volume < .01 || someKindOfBooleanIsPlayingCheckMaybe("mobexplosions", 4) || maybePlaySound(spriteName, volume, pos, Tools.rand(.8, 1.2))
 };
 
-Sound.playerKill = function(e) {
-    var t = _[e.type] * c,
-        n = k(e.pos) * t,
-        r = "explosion" + Tools.randInt(1, 6);
-    n < .01 || O("playerkills", 3) || C(r, n, e.pos, Tools.rand(.8, 1.2))
+Sound.playerKill = function(playerObj) {
+    var t = playerKillVolumeByPlaneType[playerObj.type] * playerKillBaseVolume,
+        volume = getVolumeForCameraDistance(playerObj.pos) * t,
+        spriteName = "explosion" + Tools.randInt(1, 6);
+    volume < .01 || someKindOfBooleanIsPlayingCheckMaybe("playerkills", 3) || maybePlaySound(spriteName, volume, playerObj.pos, Tools.rand(.8, 1.2))
 };
 
 Sound.playerUpgrade = function() {
-    if (!O("upgrades", 1)) {
-        var e = A("upgrade");
-        C("upgrade", e)
+    if (!someKindOfBooleanIsPlayingCheckMaybe("upgrades", 1)) {
+        var volume = getSpriteVolume("upgrade");
+        maybePlaySound("upgrade", volume)
     }
 };
 
-Sound.playerRespawn = function(e) {
-    var t = A("respawn") * (e.me() ? 1 : k(e.pos)),
-        n = e.me() ? null : e.pos;
-    C("respawn", t, n)
+Sound.playerRespawn = function(playerObj) {
+    var volume = getSpriteVolume("respawn") * (playerObj.me() ? 1 : getVolumeForCameraDistance(playerObj.pos)),
+        pos = playerObj.me() ? null : playerObj.pos;
+    maybePlaySound("respawn", volume, pos)
 };
 
 Sound.gameComplete = function() {
-    var e = A("complete");
-    C("complete", e)
+    var e = getSpriteVolume("complete");
+    maybePlaySound("complete", e)
 };
 
 Sound.levelUp = function() {
-    var e = A("levelup");
-    C("levelup", e)
+    var e = getSpriteVolume("levelup");
+    maybePlaySound("levelup", e)
 };
 
 Sound.UIClick = function() {
-    if (!O("uiclick", 1, 200)) {
-        var e = A("click");
-        C("click", e)
+    if (!someKindOfBooleanIsPlayingCheckMaybe("uiclick", 1, 200)) {
+        var e = getSpriteVolume("click");
+        maybePlaySound("click", e)
     }
 };
 
-Sound.effectRepel = function(e) {
-    var t = k(e) * m;
-    C("repel", t, e, 1.5)
+Sound.effectRepel = function(pos) {
+    var volume = getVolumeForCameraDistance(pos) * repelBaseVolume;
+    maybePlaySound("repel", volume, pos, 1.5)
 };
 
-Sound.powerup = function(e, t) {
-    var n = (null == t ? 1 : k(t)) * g,
-        r = "";
-    4 == e ? r = "powerup_upgrade" : 8 == e ? r = "powerup_shield" : 9 == e && (r = "powerup_rampage"),
-    C(r, n * A(r), t)
+Sound.powerup = function(mobType, pos) {
+  var volume = (null == pos ? 1 : getVolumeForCameraDistance(pos)) * powerupBaseVolume;
+  var spriteName = "";
+  if (4 == mobType) {
+    spriteName = "powerup_upgrade";
+  } else {
+    if (8 == mobType) {
+      spriteName = "powerup_shield";
+    } else {
+      if (9 == mobType) {
+        spriteName = "powerup_rampage";
+      }
+    }
+  }
+  maybePlaySound(spriteName, volume * getSpriteVolume(spriteName), pos);
 };
 
-Sound.missileLaunch = function(e, t) {
-    var n = y[t] * h,
-        r = k(e) * n,
-        i = b[t],
-        o = "launch" + Tools.randInt(1, 2);
-    r < .01 || O("launches", 5) || C(o, r, e, i)
+Sound.missileLaunch = function(pos, missileType) {
+    var n = launchVolumeByMissileType[missileType] * missileLaunchBaseVolume,
+        volume = getVolumeForCameraDistance(pos) * n,
+        rate = launchPlaybackRateByMissileType[missileType],
+        spriteName = "launch" + Tools.randInt(1, 2);
+    volume < .01 || someKindOfBooleanIsPlayingCheckMaybe("launches", 5) || maybePlaySound(spriteName, volume, pos, rate)
 };
 
-Sound.playerImpact = function(e, t, n) {
-    var r = f * Tools.clamp(n, 0, 1),
-        i = k(e) * r,
-        o = E[t];
-    C("impact", i, e, o)
+Sound.playerImpact = function(pos, missileType, impactSpeed) {
+    var r = playerImpactSpeedVolumeBoost * Tools.clamp(impactSpeed, 0, 1),
+        volume = getVolumeForCameraDistance(pos) * r,
+        rate = playbackRateByMissileType[missileType];
+    maybePlaySound("impact", volume, pos, rate)
 };
 
 Sound.update = function() {
-    if (!(game.time - a < 100)) {
+    if (!(game.time - lastSoundscapeUpdateTime < 100)) {
         var e = game.focus ? 300 : 1e3;
-        for (var t in n)
-            game.time - n[t].last > e && Sound.clearThruster(t);
+        for (var playerId in thrustersByPlayerId)
+            game.time - thrustersByPlayerId[playerId].last > e && Sound.clearThruster(playerId);
         for (var r in o)
-            game.time >= o[r].time && (D(o[r].id, o[r].sound),
+            game.time >= o[r].time && (stopPlayingAParticularInstance(o[r].id, o[r].sound),
             delete o[r]);
-        a = game.time
+        lastSoundscapeUpdateTime = game.time
     }
 };
 
-var O = function(e, t, n) {
+var someKindOfBooleanIsPlayingCheckMaybe = function(e, t, n) {
     if (null == l[e])
         return l[e] = {
             num: 1,
@@ -191,143 +201,143 @@ var O = function(e, t, n) {
     l[e].num > t)
 };
 
-var C = function(n, r, i, o, s, a) {
+var maybePlaySound = function(spriteName, volume, pos, rate, fade, useSpecificHowlerInstance) {
     if (config.settings.sound) {
-        if (a) {
-            if (null == t[n])
+        if (useSpecificHowlerInstance) {
+            if (null == howlsBySpriteName[spriteName])
                 return;
-            var l = t[n]
+            var howl = howlsBySpriteName[spriteName]
         } else
-            l = e;
-        if (!(null != r && r < .01)) {
-            var u = l.play(a ? void 0 : n);
-            if ("thruster" === n || "missile" === n || "chopper" === n) {
-                var c = l.seek(null, u);
-                l.seek(c + Tools.rand(0, 1), u)
+            howl = mainHowlInstance;
+        if (!(null != volume && volume < .01)) {
+            var soundId = howl.play(useSpecificHowlerInstance ? void 0 : spriteName);
+            if ("thruster" === spriteName || "missile" === spriteName || "chopper" === spriteName) {
+                var c = howl.seek(null, soundId);
+                howl.seek(c + Tools.rand(0, 1), soundId)
             }
-            return R(u, n, r, i, o, s, a),
-            u
+            return playIfSoundEnabled(soundId, spriteName, volume, pos, rate, fade, useSpecificHowlerInstance),
+            soundId
         }
     }
 };
 
-var R = function(n, r, i, o, s, a, l) {
+var playIfSoundEnabled = function(soundId, howlerInstanceName, volume, pos, rate, fade, useSpecificHowlerInstance) {
     if (config.settings.sound) {
-        if (l) {
-            if (null == t[r])
+        if (useSpecificHowlerInstance) {
+            if (null == howlsBySpriteName[howlerInstanceName])
                 return;
-            var u = t[r]
+            var howl = howlsBySpriteName[howlerInstanceName]
         } else
-            u = e;
-        null != i && u.volume(i, n),
-        null != a && u.fade(a[0], a[1], a[2], n, 4 == a.length || null),
-        null != s && u.rate(s, n),
-        null == o || config.ios || u.stereo(L(o), n)
+            howl = mainHowlInstance;
+        null != volume && howl.volume(volume, soundId),
+        null != fade && howl.fade(fade[0], fade[1], fade[2], soundId, 4 == fade.length || null),
+        null != rate && howl.rate(rate, soundId),
+        null == pos || config.ios || howl.stereo(getStereoDirection(pos), soundId)
     }
 };
 
-var D = function(n, r, i) {
-    if (i) {
-        if (null == t[r])
+var stopPlayingAParticularInstance = function(soundId, spriteName, useSpecificHowlerInstance) {
+    if (useSpecificHowlerInstance) {
+        if (null == howlsBySpriteName[spriteName])
             return;
-        var o = t[r]
+        var howl = howlsBySpriteName[spriteName]
     } else
-        o = e;
-    o.stop(n)
+        howl = mainHowlInstance;
+    howl.stop(soundId)
 };
 
-Sound.clearThruster = function(e) {
-    if (null != n[e]) {
-        var t = n[e].soundId,
-            a = n[e].vol;
-        R(t, n[e].sound, null, null, null, [a, 0, 200, true]),
+Sound.clearThruster = function(playerId) {
+    if (null != thrustersByPlayerId[playerId]) {
+        var thrusterSoundId = thrustersByPlayerId[playerId].soundId,
+            thrusterSoundVol = thrustersByPlayerId[playerId].vol;
+        playIfSoundEnabled(thrusterSoundId, thrustersByPlayerId[playerId].sound, null, null, null, [thrusterSoundVol, 0, 200, true]),
         function(e, t, n) {
-            o[++s] = {
+            o[++lastAllocatedThrusterSoundId] = {
                 id: e,
                 sound: t,
                 time: game.time + n
             }
-        }(t, n[e].sound, 300),
-        0 == n[e].type ? r-- : i--,
-        delete n[e]
+        }(thrusterSoundId, thrustersByPlayerId[playerId].sound, 300),
+        0 == thrustersByPlayerId[playerId].type ? playerThrustersPlayingCount-- : missileThrustersPlayingCount--,
+        delete thrustersByPlayerId[playerId]
     }
 };
 
-Sound.updateThruster = function(e, t, o) {
+Sound.updateThruster = function(zeroIfPlayerOneIfMob, mobOrPlayer, isVisible) {
     if (config.settings.sound) {
-        if (0 == e) {
-            if (3 == t.type) {
-                o = t.render;
-                var s = "chopper"
+        if (0 == zeroIfPlayerOneIfMob) {
+            if (3 == mobOrPlayer.type) {
+                isVisible = mobOrPlayer.render;
+                var spriteName = "chopper"
             } else {
-                o = t.keystate.UP || t.keystate.DOWN;
-                s = "thruster"
+                isVisible = mobOrPlayer.keystate.UP || mobOrPlayer.keystate.DOWN;
+                spriteName = "thruster"
             }
-            var a = "player_" + t.id + "_" + t.type
+            var a = "player_" + mobOrPlayer.id + "_" + mobOrPlayer.type
         } else {
-            s = "missile";
-            a = "mob_" + t.id
+            spriteName = "missile";
+            a = "mob_" + mobOrPlayer.id
         }
-        if (o)
-            if (null == n[a]) {
-                if (0 == e) {
-                    if (!t.me() && r >= 5)
+        if (isVisible)
+            if (null == thrustersByPlayerId[a]) {
+                if (0 == zeroIfPlayerOneIfMob) {
+                    if (!mobOrPlayer.me() && playerThrustersPlayingCount >= 5)
                         return
-                } else if (i >= 5)
+                } else if (missileThrustersPlayingCount >= 5)
                     return;
-                var l = k(t.pos);
-                if (0 == e)
-                    var u = l * w[t.type] * d,
-                        c = x[t.type];
+                var l = getVolumeForCameraDistance(mobOrPlayer.pos);
+                if (0 == zeroIfPlayerOneIfMob)
+                    var finalVolume = l * someKindOfThrusterVolumeByPlaneType[mobOrPlayer.type] * d,
+                        rateToUse = thrusterPlaybackRateByPlaneType[mobOrPlayer.type];
                 else
-                    u = l * p,
-                    c = T[t.type];
-                if (u < .01)
+                    finalVolume = l * p,
+                    rateToUse = thrusterPlaybackRateByMobType[mobOrPlayer.type];
+                if (finalVolume < .01)
                     return;
-                var h = C(s, null, t.pos, c, [0, u, 200]);
-                n[a] = {
-                    type: e,
+                var soundId = maybePlaySound(spriteName, null, mobOrPlayer.pos, rateToUse, [0, finalVolume, 200]);
+                thrustersByPlayerId[a] = {
+                    type: zeroIfPlayerOneIfMob,
                     started: game.time,
                     last: game.time,
-                    sound: s,
-                    soundId: h,
-                    vol: u
+                    sound: spriteName,
+                    soundId: soundId,
+                    vol: finalVolume
                 },
-                0 == e ? r++ : i++
+                0 == zeroIfPlayerOneIfMob ? playerThrustersPlayingCount++ : missileThrustersPlayingCount++
             } else {
-                if (game.time - n[a].last < 100)
+                if (game.time - thrustersByPlayerId[a].last < 100)
                     return;
-                l = k(t.pos);
-                if (0 == e) {
-                    u = l * w[t.type] * d;
-                    t.boost && (u *= 3)
+                l = getVolumeForCameraDistance(mobOrPlayer.pos);
+                if (0 == zeroIfPlayerOneIfMob) {
+                    finalVolume = l * someKindOfThrusterVolumeByPlaneType[mobOrPlayer.type] * d;
+                    mobOrPlayer.boost && (finalVolume *= 3)
                 } else
-                    u = l * p;
-                if (u < .01)
+                    finalVolume = l * p;
+                if (finalVolume < .01)
                     return void Sound.clearThruster(a);
-                c = null;
-                if (0 == e && 3 == t.type && (c = x[t.type] + t.speed.length() / 20),
-                game.time - n[a].started < 250)
+                rateToUse = null;
+                if (0 == zeroIfPlayerOneIfMob && 3 == mobOrPlayer.type && (rateToUse = thrusterPlaybackRateByPlaneType[mobOrPlayer.type] + mobOrPlayer.speed.length() / 20),
+                game.time - thrustersByPlayerId[a].started < 250)
                     return;
-                R(n[a].soundId, n[a].sound, null, t.pos, c, [n[a].vol, u, 100, true]),
-                n[a].last = game.time,
-                n[a].vol = u
+                playIfSoundEnabled(thrustersByPlayerId[a].soundId, thrustersByPlayerId[a].sound, null, mobOrPlayer.pos, rateToUse, [thrustersByPlayerId[a].vol, finalVolume, 100, true]),
+                thrustersByPlayerId[a].last = game.time,
+                thrustersByPlayerId[a].vol = finalVolume
             }
         else
-            null != n[a] && Sound.clearThruster(a)
+            null != thrustersByPlayerId[a] && Sound.clearThruster(a)
     }
 };
 
-var k = function(e) {
+var getVolumeForCameraDistance = function(pos) {
     var t = Graphics.getCamera(),
-        n = Tools.length(e.x - t.x, e.y - t.y),
+        n = Tools.length(pos.x - t.x, pos.y - t.y),
         r = (game.halfScreenX / game.scale + game.halfScreenY / game.scale) / 2;
     return Tools.clamp(1.5 * (1 - n / r), 0, 1)
 };
 
-var L = function(e) {
+var getStereoDirection = function(pos) {
     var t = Graphics.getCamera(),
-        n = e.x - t.x,
+        n = pos.x - t.x,
         r = game.halfScreenX / game.scale;
     return Tools.clamp(.8 * n / r, -1, 1)
 };
