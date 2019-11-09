@@ -33,21 +33,21 @@ Mobs.destroy = function (t) {
         delete mobs[t.id])
 };
 
-Mobs.explosion = function (e, t) {
-    switch (t) {
+Mobs.explosion = function (pos, mobType) {
+    switch (mobType) {
         case 1:
         case 5:
         case 6:
         case 7:
-            Particles.explosion(e, Tools.rand(1, 1.2));
+            Particles.explosion(pos, Tools.rand(1, 1.2));
             break;
         case 2:
-            Particles.explosion(e, Tools.rand(1.3, 1.6));
+            Particles.explosion(pos, Tools.rand(1.3, 1.6));
             break;
         case 3:
-            Particles.explosion(e, Tools.rand(.8, 1))
+            Particles.explosion(pos, Tools.rand(.8, 1))
     }
-    Sound.mobExplosion(e, t)
+    Sound.mobExplosion(pos, mobType)
 };
 
 Mobs.count = function () {

@@ -8,6 +8,7 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
+
 module.exports = {
   entry: {
     'assets/engine.js': [
@@ -70,6 +71,7 @@ module.exports = {
     ],
   },
   optimization: {
+    minimize: process.env.DEBUG != '1',
     minimizer: [
       new TerserPlugin({
         extractComments: false,

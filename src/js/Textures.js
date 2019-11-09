@@ -1,4 +1,4 @@
-var e = {
+var imageUrlByName = {
         map_sea: "assets/map_sea.jpg",
         map_sea_mask: "assets/map_sea_mask.jpg",
         map_forest: "assets/map_forest.jpg",
@@ -14,7 +14,7 @@ var e = {
         items: "assets/items.png?2",
         gui: "assets/gui.png"
     },
-    t = {
+    spriteByName = {
         spirit: ["aircraft", [4, 4, 512, 256]],
         tornado: ["aircraft", [524, 4, 256, 256]],
         raptor: ["aircraft", [788, 4, 256, 256]],
@@ -125,7 +125,7 @@ var e = {
         chatbubbleright: ["gui", [438, 274, 16, 82]],
         chatbubblepoint: ["gui", [297, 352, 36, 22]]
     },
-    n = {
+    flagByName = {
         flag_1: ["flags", [2, 962, 80, 60]],
         flag_2: ["flags", [2, 898, 80, 60]],
         flag_3: ["flags", [2, 834, 80, 60]],
@@ -548,26 +548,26 @@ var e = {
             anchor: [0.5, 0.5]
         }
     },
-    i = {};
+    pixiImageByName = {};
 
 Textures.load = function() {
-    for (var r in e)
-        i[r] = new PIXI.Texture.fromImage(e[r]);
-    var o;
-    for (var s in t)
-        o = t[s],
-        i[s] = new PIXI.Texture(i[o[0]].baseTexture,new PIXI.Rectangle(o[1][0],o[1][1],o[1][2],o[1][3]));
-    for (var s in n)
-        o = n[s],
-        i[s] = new PIXI.Texture(i[o[0]].baseTexture,new PIXI.Rectangle(o[1][0],o[1][1],o[1][2],o[1][3]))
+    for (var name in imageUrlByName)
+        pixiImageByName[name] = new PIXI.Texture.fromImage(imageUrlByName[name]);
+    var sprite;
+    for (var name in spriteByName)
+        sprite = spriteByName[name],
+        pixiImageByName[name] = new PIXI.Texture(pixiImageByName[sprite[0]].baseTexture,new PIXI.Rectangle(sprite[1][0],sprite[1][1],sprite[1][2],sprite[1][3]));
+    for (var name in flagByName)
+        sprite = flagByName[name],
+        pixiImageByName[name] = new PIXI.Texture(pixiImageByName[sprite[0]].baseTexture,new PIXI.Rectangle(sprite[1][0],sprite[1][1],sprite[1][2],sprite[1][3]))
 };
 
-Textures.get = function(e) {
-    return i[e]
+Textures.get = function(name) {
+    return pixiImageByName[name]
 };
 
 Textures.getNamed = function(e) {
-    return i[r[e].texture]
+    return pixiImageByName[r[e].texture]
 };
 
 Textures.init = function(e, t) {
@@ -579,10 +579,10 @@ Textures.init = function(e, t) {
     return Graphics.initSprite(n.texture, game.graphics.layers[n.layer], n)
 };
 
-Textures.sprite = function(e) {
-    return new PIXI.Sprite(i[e])
+Textures.sprite = function(name) {
+    return new PIXI.Sprite(pixiImageByName[name])
 };
 
-Textures.tile = function(e, t, n) {
-    return new PIXI.extras.TilingSprite(i[e],t,n)
+Textures.tile = function(name, t, n) {
+    return new PIXI.extras.TilingSprite(pixiImageByName[name],t,n)
 };
