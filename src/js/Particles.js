@@ -1,5 +1,22 @@
 import Vector from './Vector';
 
+var particleTypeIdByName = {
+    MISSILE: 0,
+    MISSILE_FAT: 1,
+    MISSILE_SMALL: 2,
+    SHOCKWAVE_SMOKE: 3,
+    SHOCKWAVE_INNER: 4,
+    SHOCKWAVE_OUTER: 5,
+    EXPLOSION_FLASH: 6,
+    EXPLOSION_FLASH_BIG: 7,
+    EXPLOSION_SMOKE: 8,
+    EXPLOSION_HOT_SMOKE: 9,
+    EXPLOSION_SPARK: 10,
+    FRAGMENT_SMOKE: 11,
+    PLANE_DAMAGE: 12,
+    EMITTER_EXPLOSION_FRAGMENT: 100
+};
+
 class ParticleContainer {
     constructor(pixiContainer, maxParticles, blendMode, shadow) {
         this.maxParticles = maxParticles,
@@ -115,102 +132,128 @@ class ParticleContainer {
         }
     }
 
-    update(e) {
-        var t;
-        this.updateEmitters(e);
+    _updateMissile(time, particle) {
+        particle.type == particleTypeIdByName.MISSILE ? (particle.scale.add(.2 * time),
+        particle.scale.ceil(2 * particle.data),
+        particle.life += .05 * time) : particle.type == particleTypeIdByName.MISSILE_FAT ? (particle.scale.add(.3 * time),
+        particle.scale.ceil(3 * particle.data),
+        particle.life += .05 * time) : (particle.scale.add(.14 * time),
+        particle.scale.ceil(1.4 * particle.data),
+        particle.life += .08 * time),
+        particle.speed.multiply(1 - .05 * time),
+        particle.alpha = .7 * (1 - particle.life),
+        particle.sprite.tint = Tools.colorLerp(particle.tint, 16777215, 2 * (1 - particle.life));
+    }
+
+    _updateShockwaveSmoke(time, particle) {
+        particle.life += .05 * time,
+        particle.alpha = .7 * Tools.easing.custom(particle.life, "shockwave");
+    }
+
+    _updateShockwave(time, particle) {
+        particle.life += .05 * time;
+        var i = Tools.easing.custom(particle.life, "shockwave");
+        particle.alpha = .4 * i,
+        particle.type == particleTypeIdByName.SHOCKWAVE_OUTER ? particle.scale.both(4 * particle.life) : particle.scale.both(3 * particle.life);
+    }
+
+    _updateExplosionFlash(time, particle) {
+        particle.life += .1 * time,
+        particle.alpha = 1 - particle.life;
+    }
+
+    _updateExplosionFlashBig(time, particle) {
+        particle.life += .04 * time,
+        particle.alpha = 1 - particle.life;
+    }
+
+    _updateExplosionHotSmoke(time, particle) {
+        particle.life += .035 * time,
+        particle.alpha = 1 - particle.life,
+        particle.scale.add(.05 * time),
+        particle.speed.multiply(1 - .1 * time),
+        particle.rotationSpeed *= 1 - .05 * time;
+    }
+
+    _updateExplosionSmoke(time, particle) {
+        particle.life += .01 * time,
+        particle.alpha = Tools.easing.custom(particle.life, "explosionSmoke"),
+        particle.scale.add(.05 * time),
+        particle.speed.multiply(1 - .05 * time),
+        particle.rotationSpeed *= 1 - .05 * time;
+    }
+
+    _updateExplosionSpark(time, particle) {
+        particle.life += .02 * time,
+        particle.alpha = 2 * (1 - particle.life),
+        particle.speed.multiply(1 - .05 * time),
+        particle.rotationSpeed *= 1 - .05 * time;
+    }
+
+    _updateFragmentSmoke(time, particle) {
+        particle.life += .02 * time,
+        particle.scale.add(.075 * time * particle.data),
+        particle.scale.ceil(2 * particle.data),
+        particle.rotationSpeed *= 1 - .05 * time,
+        particle.alpha = .3 * (1 - particle.life);
+    }
+
+    _updatePlaneDamage(time, particle) {
+        particle.life += .02 * time,
+        particle.alpha = 2 * (1 - particle.life),
+        particle.speed.multiply(1 - .1 * time)
+    }
+
+    update(time) {
+        this.updateEmitters(time);
         for (var r = this.first; -1 != r; ) {
-            switch ((t = this.particles[r]).type) {
-            case particleTypeIdByName.MISSILE:
-            case particleTypeIdByName.MISSILE_FAT:
-            case particleTypeIdByName.MISSILE_SMALL:
-                t.type == particleTypeIdByName.MISSILE ? (t.scale.add(.2 * e),
-                t.scale.ceil(2 * t.data),
-                t.life += .05 * e) : t.type == particleTypeIdByName.MISSILE_FAT ? (t.scale.add(.3 * e),
-                t.scale.ceil(3 * t.data),
-                t.life += .05 * e) : (t.scale.add(.14 * e),
-                t.scale.ceil(1.4 * t.data),
-                t.life += .08 * e),
-                t.speed.multiply(1 - .05 * e),
-                t.alpha = .7 * (1 - t.life),
-                t.sprite.tint = Tools.colorLerp(t.tint, 16777215, 2 * (1 - t.life));
-                break;
-            case particleTypeIdByName.SHOCKWAVE_SMOKE:
-                t.life += .05 * e,
-                t.alpha = .7 * Tools.easing.custom(t.life, "shockwave");
-                break;
-            case particleTypeIdByName.SHOCKWAVE_INNER:
-            case particleTypeIdByName.SHOCKWAVE_OUTER:
-                t.life += .05 * e;
-                var i = Tools.easing.custom(t.life, "shockwave");
-                t.alpha = .4 * i,
-                t.type == particleTypeIdByName.SHOCKWAVE_OUTER ? t.scale.both(4 * t.life) : t.scale.both(3 * t.life);
-                break;
-            case particleTypeIdByName.EXPLOSION_FLASH:
-                t.life += .1 * e,
-                t.alpha = 1 - t.life;
-                break;
-            case particleTypeIdByName.EXPLOSION_FLASH_BIG:
-                t.life += .04 * e,
-                t.alpha = 1 - t.life;
-                break;
-            case particleTypeIdByName.EXPLOSION_HOT_SMOKE:
-                t.life += .035 * e,
-                t.alpha = 1 - t.life,
-                t.scale.add(.05 * e),
-                t.speed.multiply(1 - .1 * e),
-                t.rotationSpeed *= 1 - .05 * e;
-                break;
-            case particleTypeIdByName.EXPLOSION_SMOKE:
-                t.life += .01 * e,
-                t.alpha = Tools.easing.custom(t.life, "explosionSmoke"),
-                t.scale.add(.05 * e),
-                t.speed.multiply(1 - .05 * e),
-                t.rotationSpeed *= 1 - .05 * e;
-                break;
-            case particleTypeIdByName.EXPLOSION_SPARK:
-                t.life += .02 * e,
-                t.alpha = 2 * (1 - t.life),
-                t.speed.multiply(1 - .05 * e),
-                t.rotationSpeed *= 1 - .05 * e;
-                break;
-            case particleTypeIdByName.FRAGMENT_SMOKE:
-                t.life += .02 * e,
-                t.scale.add(.075 * e * t.data),
-                t.scale.ceil(2 * t.data),
-                t.rotationSpeed *= 1 - .05 * e,
-                t.alpha = .3 * (1 - t.life);
-                break;
-            case particleTypeIdByName.PLANE_DAMAGE:
-                t.life += .02 * e,
-                t.alpha = 2 * (1 - t.life),
-                t.speed.multiply(1 - .1 * e)
+            var particle = this.particles[r];
+            var update = this.updateFuncMap[particle.type];
+            if(update) {
+                update(time, particle);
             }
-            if (t.life > 1)
+            if (particle.life > 1)
                 r = this.destroy(r);
             else {
-                if (t.pos.x += t.speed.x * e,
-                t.pos.y += t.speed.y * e,
-                t.rotation += t.rotationSpeed * e,
+                if (particle.pos.x += particle.speed.x * time,
+                particle.pos.y += particle.speed.y * time,
+                particle.rotation += particle.rotationSpeed * time,
                 this.shadow) {
-                    var o = Graphics.shadowCoords(t.pos);
-                    t.sprite.position.x = o.x,
-                    t.sprite.position.y = o.y,
-                    t.sprite.scale.x = t.scale.x / config.shadowScaling,
-                    t.sprite.scale.y = t.scale.y / config.shadowScaling,
-                    t.sprite.alpha = Tools.clamp(2 * t.alpha, 0, 1)
+                    var o = Graphics.shadowCoords(particle.pos);
+                    particle.sprite.position.x = o.x,
+                    particle.sprite.position.y = o.y,
+                    particle.sprite.scale.x = particle.scale.x / config.shadowScaling,
+                    particle.sprite.scale.y = particle.scale.y / config.shadowScaling,
+                    particle.sprite.alpha = Tools.clamp(2 * particle.alpha, 0, 1)
                 } else
-                    t.sprite.position.x = t.pos.x,
-                    t.sprite.position.y = t.pos.y,
-                    t.sprite.scale.x = t.scale.x,
-                    t.sprite.scale.y = t.scale.y,
-                    t.sprite.alpha = Tools.clamp(t.alpha, 0, 1);
-                Math.abs(t.rotation - t.lastRotation) > .03 && (t.sprite.rotation = t.rotation,
-                t.lastRotation = t.rotation),
+                    particle.sprite.position.x = particle.pos.x,
+                    particle.sprite.position.y = particle.pos.y,
+                    particle.sprite.scale.x = particle.scale.x,
+                    particle.sprite.scale.y = particle.scale.y,
+                    particle.sprite.alpha = Tools.clamp(particle.alpha, 0, 1);
+                Math.abs(particle.rotation - particle.lastRotation) > .03 && (particle.sprite.rotation = particle.rotation,
+                particle.lastRotation = particle.rotation),
                 r = this.particles[r]._next
             }
         }
     }
 }
+
+ParticleContainer.prototype.updateFuncMap = {
+    [particleTypeIdByName.MISSILE]: ParticleContainer.prototype._updateMissile,
+    [particleTypeIdByName.MISSILE_FAT]: ParticleContainer.prototype._updateMissile,
+    [particleTypeIdByName.MISSILE_SMALL]: ParticleContainer.prototype._updateMissile,
+    [particleTypeIdByName.SHOCKWAVE_SMOKE]: ParticleContainer.prototype._updateShockwaveSmoke,
+    [particleTypeIdByName.SHOCKWAVE_INNER]: ParticleContainer.prototype._updateShockwave,
+    [particleTypeIdByName.SHOCKWAVE_OUTER]: ParticleContainer.prototype._updateShockwave,
+    [particleTypeIdByName.EXPLOSION_FLASH]: ParticleContainer.prototype._updateExplosionFlash,
+    [particleTypeIdByName.EXPLOSION_FLASH_BIG]: ParticleContainer.prototype._updateExplosionFlashBig,
+    [particleTypeIdByName.EXPLOSION_HOT_SMOKE]: ParticleContainer.prototype._updateExplosionHotSmoke,
+    [particleTypeIdByName.EXPLOSION_SMOKE]: ParticleContainer.prototype._updateExplosionSmoke,
+    [particleTypeIdByName.EXPLOSION_SPARK]: ParticleContainer.prototype._updateExplosionSpark,
+    [particleTypeIdByName.FRAGMENT_SMOKE]: ParticleContainer.prototype._updateFragmentSmoke,
+    [particleTypeIdByName.PLANE_DAMAGE]: ParticleContainer.prototype._updatePlaneDamage
+};
 
 var containersByName = {};
 
@@ -337,21 +380,5 @@ Particles.count = function() {
     return e
 };
 
-var particleTypeIdByName = {
-    MISSILE: 0,
-    MISSILE_FAT: 1,
-    MISSILE_SMALL: 2,
-    SHOCKWAVE_SMOKE: 3,
-    SHOCKWAVE_INNER: 4,
-    SHOCKWAVE_OUTER: 5,
-    EXPLOSION_FLASH: 6,
-    EXPLOSION_FLASH_BIG: 7,
-    EXPLOSION_SMOKE: 8,
-    EXPLOSION_HOT_SMOKE: 9,
-    EXPLOSION_SPARK: 10,
-    FRAGMENT_SMOKE: 11,
-    PLANE_DAMAGE: 12,
-    EMITTER_EXPLOSION_FRAGMENT: 100
-};
 
 Particles.PTYPE = particleTypeIdByName
