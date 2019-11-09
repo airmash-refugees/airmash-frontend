@@ -99,54 +99,54 @@ var minimapMobs = {},
     emoteById = ["tf", "pepe", "clap", "lol", "bro", "kappa", "cry", "rage"],
     powerupNameById = ["", "Shield", "Inferno"];
 
-UI.show = function(e, t) {
-    $(e).css({
-        display: t ? "inline-block" : "block"
+UI.show = function(selector, isInlineBlock) {
+    $(selector).css({
+        display: isInlineBlock ? "inline-block" : "block"
     })
 };
 
-UI.hide = function(e) {
-    $(e).css({
+UI.hide = function(selector) {
+    $(selector).css({
         display: "none"
     })
 };
 
-UI.isEmote = function(e, t) {
+UI.isEmote = function(word, addColons) {
     for (var n = 0; n < emoteById.length; n++)
-        if (t) {
-            if (e === ":" + emoteById[n] + ":")
+        if (addColons) {
+            if (word === ":" + emoteById[n] + ":")
                 return emoteById[n]
-        } else if (e === emoteById[n])
+        } else if (word === emoteById[n])
             return emoteById[n];
     return false
 };
 
-UI.serverMessage = function(e) {
+UI.serverMessage = function(serverMsg) {
     var t = "alert";
-    2 == e.type && (t = "information"),
-    UI.showMessage(t, e.text, e.duration)
+    2 == serverMsg.type && (t = "information"),
+    UI.showMessage(t, serverMsg.text, serverMsg.duration)
 };
 
-UI.showMessage = function(e, t, n) {
-    $("#msg-" + e).removeClass("hidemsg").removeClass("popmsg"),
-    $("#msg-" + e).html(t);
-    var r = $("#msg-" + e).height();
-    "default" != e && "destroyed" != e || $("#msg-" + e).css({
+UI.showMessage = function(msgType, htmlContents, timeoutMs) {
+    $("#msg-" + msgType).removeClass("hidemsg").removeClass("popmsg"),
+    $("#msg-" + msgType).html(htmlContents);
+    var r = $("#msg-" + msgType).height();
+    "default" != msgType && "destroyed" != msgType || $("#msg-" + msgType).css({
         "margin-top": "-" + Math.round(r / 2) + "px"
     }),
-    $("#msg-" + e).addClass("popmsg"),
-    noticeMessageVisibleByType[e] = true,
-    clearTimeout(noticeMessageTimerByType[e]),
-    noticeMessageTimerByType[e] = setTimeout(UI.hideMessage, n || 2e3, e)
+    $("#msg-" + msgType).addClass("popmsg"),
+    noticeMessageVisibleByType[msgType] = true,
+    clearTimeout(noticeMessageTimerByType[msgType]),
+    noticeMessageTimerByType[msgType] = setTimeout(UI.hideMessage, timeoutMs || 2e3, msgType)
 };
 
-UI.hideMessage = function(e) {
-    $("#msg-" + e).addClass("hidemsg"),
-    noticeMessageVisibleByType[e] = false,
-    noticeMessageTimerByType[e] = setTimeout(function(t) {
-        $("#msg-" + e).removeClass("popmsg").removeClass("hidemsg"),
+UI.hideMessage = function(msgType) {
+    $("#msg-" + msgType).addClass("hidemsg"),
+    noticeMessageVisibleByType[msgType] = false,
+    noticeMessageTimerByType[msgType] = setTimeout(function(t) {
+        $("#msg-" + msgType).removeClass("popmsg").removeClass("hidemsg"),
         $("#msg-" + t).html("")
-    }, 2500, e)
+    }, 2500, msgType)
 };
 
 UI.wipeAllMessages = function() {
@@ -154,10 +154,10 @@ UI.wipeAllMessages = function() {
         noticeMessageVisibleByType[e] && UI.showMessage(e, "", 100)
 };
 
-UI.updateMyLevel = function(e) {
-    game.myLevel = e,
-    $("#score-rank").html(e),
-    $("#lifetime-rank").html(e)
+UI.updateMyLevel = function(newLevel) {
+    game.myLevel = newLevel,
+    $("#score-rank").html(newLevel),
+    $("#lifetime-rank").html(newLevel)
 };
 
 UI.newScore = function(scoreUpdateMsg) {
@@ -515,17 +515,17 @@ var onWindowResize = function() {
     }, 250))
 };
 
-UI.controlKey = function(e, t, n) {
+UI.controlKey = function(keyCode, bindName, alwaysTrue) {
     if (game.state != Network.STATE.PLAYING)
         return true;
-    if (n)
-        if (13 != e) {
-            if (27 == e)
+    if (alwaysTrue)
+        if (13 != keyCode) {
+            if (27 == keyCode)
                 return isChatBoxVisible && UI.toggleChatBox(false),
                 void UI.closeAllPanels();
-            if (191 != e)
-                if (75 != e)
-                    switch (t) {
+            if (191 != keyCode)
+                if (75 != keyCode)
+                    switch (bindName) {
                     case "DROPUPGRADE":
                         UI.dropUpgrade();
                         break;
