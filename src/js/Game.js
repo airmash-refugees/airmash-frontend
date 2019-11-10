@@ -140,7 +140,7 @@ window.config = {
             exhaust: 30,
             thruster: [.3, .6]
         },
-        // MobType.MowhawkMissile (3)
+        // MobType.MohawkMissile (3)
         {
             exhaust: 18,
             thruster: [.14, .3]

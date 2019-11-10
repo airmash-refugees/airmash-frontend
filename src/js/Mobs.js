@@ -45,7 +45,7 @@ Mobs.explosion = function (pos, mobType) {
         case MobType.GoliathMissile:
             Particles.explosion(pos, Tools.rand(1.3, 1.6));
             break;
-        case MobType.MowhawkMissile:
+        case MobType.MohawkMissile:
         case MobType.CarrotMissile:
             Particles.explosion(pos, Tools.rand(.8, 1))
     }
