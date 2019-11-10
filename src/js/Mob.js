@@ -98,14 +98,19 @@ class Mob {
         }
     }
 
-    despawn(e) {
-        if (4 == this.type || 8 == this.type || 9 == this.type)
-            return this.state.inactive = true,
-            this.state.despawnTicker = 0,
-            this.state.despawnType = e,
-            void (1 == e && 4 != this.type && Sound.powerup(this.type, this.pos));
-        this.state.inactive = true,
-        this.state.despawnTicker = 0,
+    despawn(despawnType) {
+        this.state.inactive = true;
+        this.state.despawnTicker = 0;
+
+        if(CrateMobTypeSet[this.type]) {
+            this.state.despawnType = despawnType;
+            if(despawnType == MobDespawnType.Collided &&
+               this.type != MobType.Upgrade) {
+                Sound.powerup(this.type, this.pos);
+            }
+            return;
+        }
+
         this.sprites.thruster.renderable = false,
         this.sprites.thrusterGlow.renderable = false,
         this.sprites.smokeGlow.renderable = false,
