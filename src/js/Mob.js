@@ -148,15 +148,21 @@ class Mob {
         this.missile && Sound.updateThruster(1, this, false))
     }
 
-    network(e) {
-        this.lastPacket = game.timeNetwork,
-        e.c === Network.SERVERPACKET.MOB_UPDATE && (this.reducedFactor = Tools.reducedFactor()),
-        this.pos.x = e.posX,
-        this.pos.y = e.posY,
-        null != e.speedX && (this.speed.x = e.speedX,
-        this.speed.y = e.speedY),
-        null != e.accelX && (this.accel.x = e.accelX,
-        this.accel.y = e.accelY)
+    network(msg) {
+        this.lastPacket = game.timeNetwork;
+        if (msg.c === Network.SERVERPACKET.MOB_UPDATE) {
+            this.reducedFactor = Tools.reducedFactor();
+        }
+        this.pos.x = msg.posX;
+        this.pos.y = msg.posY;
+        if (null != msg.speedX) {
+            this.speed.x = msg.speedX;
+            this.speed.y = msg.speedY;
+        }
+        if (null != msg.accelX) {
+            this.accel.x = msg.accelX;
+            this.accel.y = msg.accelY;
+        }
     }
 
     visible(e) {
