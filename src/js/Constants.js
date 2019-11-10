@@ -53,7 +53,7 @@ window.MobDespawnType = {
 // Mapping from MobType to Textures.js name for the box image used to render a
 // crate from CrateMobTypeSet.
 window.CrateTextureNameByMobType = {
-    [MobType.Upgrade]: "createUpgrade",
+    [MobType.Upgrade]: "crateUpgrade",
     [MobType.Shield]: "crateShield",
     [MobType.Inferno]: "crateRampage",
     [MobType.MagicCrate]: "crateMagic"
