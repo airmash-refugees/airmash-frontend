@@ -22,9 +22,9 @@ Mobs.network = function (t) {
     null == n ? Mobs.add(t, true) : n.network(t)
 };
 
-Mobs.despawn = function (t) {
-    var n = mobs[t.id];
-    null != n && n.despawn(t.type)
+Mobs.despawn = function (despawnMsg) {
+    var mob = mobs[despawnMsg.id];
+    null != mob && mob.despawn(despawnMsg.type)
 };
 
 Mobs.destroy = function (t) {

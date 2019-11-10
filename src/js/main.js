@@ -1,5 +1,6 @@
 "use strict";
 
+import './Constants';
 import './Game';
 import './Games';
 import './Graphics';
@@ -23,4 +24,4 @@ import './UI';
             alreadyWarned = true;
         }
     }, 100);
-}();   
+}();

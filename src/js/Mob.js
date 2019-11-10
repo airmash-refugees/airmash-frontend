@@ -1,37 +1,41 @@
 import Vector from './Vector';
 
 class Mob {
-    constructor(e) {
-        this.id = e.id,
-        this.type = e.type,
-        this.pos = new Vector(e.posX,e.posY),
-        this.spriteRot = 0,
-        this.missile = 1 == this.type || 2 == this.type || 3 == this.type || 5 == this.type || 6 == this.type || 7 == this.type,
-        this.missile && e.c !== Network.SERVERPACKET.MOB_UPDATE_STATIONARY ? (this.speed = new Vector(e.speedX,e.speedY),
-        this.accel = new Vector(e.accelX,e.accelY),
-        this.maxSpeed = e.maxSpeed,
-        this.exhaust = config.mobs[this.type].exhaust,
-        this.lastAccelX = 0,
-        this.lastAccelY = 0,
-        this.stationary = false,
-        this.spriteRot = this.speed.angle() + Math.PI) : this.stationary = true,
-        this.sprites = {},
+    constructor(msg) {
+        this.id = msg.id;
+        this.type = msg.type;
+        this.pos = new Vector(msg.posX, msg.posY);
+        this.spriteRot = 0;
+        this.missile = MissileMobTypeSet[this.type];
+        if (this.missile && msg.c !== Network.SERVERPACKET.MOB_UPDATE_STATIONARY) {
+            this.speed = new Vector(msg.speedX, msg.speedY);
+            this.accel = new Vector(msg.accelX, msg.accelY);
+            this.maxSpeed = msg.maxSpeed;
+            this.exhaust = config.mobs[this.type].exhaust;
+            this.lastAccelX = 0;
+            this.lastAccelY = 0;
+            this.stationary = false;
+            this.spriteRot = this.speed.angle() + Math.PI;
+        } else {
+            this.stationary = true;
+        }
+        this.sprites = {};
         this.state = {
-            inactive: false,
-            despawnTicker: 0,
-            despawnType: 0,
-            baseScale: 1,
-            baseScaleShadow: 1,
-            luminosity: 1
-        },
-        this.randomness = Tools.rand(0, 1e5),
-        this.culled = false,
-        this.visibility = true,
-        this.reducedFactor = false,
-        this.forDeletion = false,
-        this.spawnTime = game.time,
-        this.lastPacket = game.timeNetwork,
-        this.setupSprite()
+            inactive : false,
+            despawnTicker : 0,
+            despawnType : 0,
+            baseScale : 1,
+            baseScaleShadow : 1,
+            luminosity : 1
+        };
+        this.randomness = Tools.rand(0, 1e5);
+        this.culled = false;
+        this.visibility = true;
+        this.reducedFactor = false;
+        this.forDeletion = false;
+        this.spawnTime = game.time;
+        this.lastPacket = game.timeNetwork;
+        this.setupSprite();
     }
 
     setupSprite() {
@@ -43,10 +47,10 @@ class Mob {
         }),
         this.sprites.thruster = Textures.init("missileThruster")),
         this.type) {
-        case 1:
-        case 5:
-        case 6:
-        case 7:
+        case MobType.PredatorMissile:
+        case MobType.TornadoSingleMissile:
+        case MobType.TornadoTripleMissile:
+        case MobType.ProwlerMissile:
             this.sprites.sprite = Textures.init("missile"),
             this.sprites.shadow = Textures.init("missileShadow", {
                 scale: [.25, .2]
@@ -56,17 +60,23 @@ class Mob {
             this.sprites.smokeGlow.scale.set(1.5, 3),
             this.sprites.smokeGlow.alpha = .75;
             break;
-        case 2:
-            this.sprites.sprite = Textures.init("missileFat"),
+        case MobType.GoliathMissile:
+        case MobType.CarrotMissile:
+            if(this.type == MobType.GoliathMissile) {
+                this.sprites.sprite = Textures.init("missileFat");
+            } else {
+                this.sprites.sprite = Textures.init("missileCarrot");
+            }
+
             this.sprites.shadow = Textures.init("missileShadow", {
                 scale: [.5, .25]
-            }),
-            this.sprites.thrusterGlow.scale.set(4, 3),
-            this.sprites.thrusterGlow.alpha = .25,
-            this.sprites.smokeGlow.scale.set(2.5, 3),
+            });
+            this.sprites.thrusterGlow.scale.set(4, 3);
+            this.sprites.thrusterGlow.alpha = .25;
+            this.sprites.smokeGlow.scale.set(2.5, 3);
             this.sprites.smokeGlow.alpha = .75;
             break;
-        case 3:
+        case MobType.MohawkMissile:
             this.sprites.sprite = Textures.init("missileSmall", {
                 scale: [.28, .2]
             }),
@@ -78,9 +88,9 @@ class Mob {
             this.sprites.smokeGlow.scale.set(1, 2),
             this.sprites.smokeGlow.alpha = .75;
             break;
-        case 4:
-        case 8:
-        case 9:
+        case MobType.Upgrade:
+        case MobType.Shield:
+        case MobType.Inferno:
             var e = "crateUpgrade";
             8 == this.type ? e = "crateShield" : 9 == this.type && (e = "crateRampage"),
             this.state.baseScale = .33,
@@ -94,14 +104,19 @@ class Mob {
         }
     }
 
-    despawn(e) {
-        if (4 == this.type || 8 == this.type || 9 == this.type)
-            return this.state.inactive = true,
-            this.state.despawnTicker = 0,
-            this.state.despawnType = e,
-            void (1 == e && 4 != this.type && Sound.powerup(this.type, this.pos));
-        this.state.inactive = true,
-        this.state.despawnTicker = 0,
+    despawn(despawnType) {
+        this.state.inactive = true;
+        this.state.despawnTicker = 0;
+
+        if(CrateMobTypeSet[this.type]) {
+            this.state.despawnType = despawnType;
+            if(despawnType == MobDespawnType.Collided &&
+               this.type != MobType.Upgrade) {
+                Sound.powerup(this.type, this.pos);
+            }
+            return;
+        }
+
         this.sprites.thruster.renderable = false,
         this.sprites.thrusterGlow.renderable = false,
         this.sprites.smokeGlow.renderable = false,
@@ -112,12 +127,13 @@ class Mob {
 
     destroy(e) {
         switch (this.type) {
-        case 1:
-        case 2:
-        case 3:
-        case 5:
-        case 6:
-        case 7:
+        case MobType.PredatorMissile:
+        case MobType.GoliathMissile:
+        case MobType.CarrotMissile:
+        case MobType.MohawkMissile:
+        case MobType.TornadoSingleMissile:
+        case MobType.TornadoTripleMissile:
+        case MobType.ProwlerMissile:
             game.graphics.layers.projectiles.removeChild(this.sprites.sprite),
             game.graphics.layers.shadows.removeChild(this.sprites.shadow),
             game.graphics.layers.thrusters.removeChild(this.sprites.thruster),
@@ -129,9 +145,9 @@ class Mob {
             this.sprites.thrusterGlow.destroy(),
             this.sprites.smokeGlow.destroy();
             break;
-        case 4:
-        case 8:
-        case 9:
+        case MobType.Upgrade:
+        case MobType.Shield:
+        case MobType.Inferno:
             game.graphics.layers.crates.removeChild(this.sprites.sprite),
             game.graphics.layers.shadows.removeChild(this.sprites.shadow)
         }
@@ -139,23 +155,33 @@ class Mob {
         this.missile && Sound.updateThruster(1, this, false))
     }
 
-    network(e) {
-        this.lastPacket = game.timeNetwork,
-        e.c === Network.SERVERPACKET.MOB_UPDATE && (this.reducedFactor = Tools.reducedFactor()),
-        this.pos.x = e.posX,
-        this.pos.y = e.posY,
-        null != e.speedX && (this.speed.x = e.speedX,
-        this.speed.y = e.speedY),
-        null != e.accelX && (this.accel.x = e.accelX,
-        this.accel.y = e.accelY)
+    network(msg) {
+        this.lastPacket = game.timeNetwork;
+        if (msg.c === Network.SERVERPACKET.MOB_UPDATE) {
+            this.reducedFactor = Tools.reducedFactor();
+        }
+        this.pos.x = msg.posX;
+        this.pos.y = msg.posY;
+        if (null != msg.speedX) {
+            this.speed.x = msg.speedX;
+            this.speed.y = msg.speedY;
+        }
+        if (null != msg.accelX) {
+            this.accel.x = msg.accelX;
+            this.accel.y = msg.accelY;
+        }
     }
 
-    visible(e) {
-        e == this.visibility && e != this.culled || (this.sprites.sprite.visible = e,
-        this.sprites.shadow.visible = e,
-        4 != this.type && 8 != this.type && 9 != this.type && (this.sprites.thruster.visible = e,
-        this.sprites.thrusterGlow.visible = e),
-        this.visibility = e)
+    visible(isVisible) {
+        if (!(isVisible == this.visibility && isVisible != this.culled)) {
+            this.sprites.sprite.visible = isVisible;
+            this.sprites.shadow.visible = isVisible;
+            if(! CrateMobTypeSet[this.type]) {
+                this.sprites.thruster.visible = isVisible;
+                this.sprites.thrusterGlow.visible = isVisible;
+            }
+            this.visibility = isVisible;
+        }
     }
 
     visibilityUpdate() {
@@ -197,12 +223,13 @@ class Mob {
             switch (this.state.luminosity -= .075 * e,
             this.state.luminosity < 0 && (this.state.luminosity = 0),
             this.type) {
-            case 1:
-            case 2:
-            case 3:
-            case 5:
-            case 6:
-            case 7:
+            case MobType.PredatorMissile:
+            case MobType.GoliathMissile:
+            case MobType.CarrotMissile:
+            case MobType.MohawkMissile:
+            case MobType.TornadoSingleMissile:
+            case MobType.TornadoTripleMissile:
+            case MobType.ProwlerMissile:
                 var t = 1;
                 if (this.state.inactive) {
                     if (this.state.despawnTicker += .01 * e,
@@ -222,9 +249,9 @@ class Mob {
                     Particles.missileSmoke(this, this.exhaust, t)
                 }
                 break;
-            case 4:
-            case 8:
-            case 9:
+            case MobType.Upgrade:
+            case MobType.Shield:
+            case MobType.Inferno:
                 if (this.state.inactive && (this.state.despawnTicker += .05 * e,
                 this.state.despawnTicker > 1))
                     return void (this.forDeletion = true)
@@ -233,12 +260,13 @@ class Mob {
 
     updateGraphics(e) {
         switch (this.type) {
-        case 1:
-        case 2:
-        case 3:
-        case 5:
-        case 6:
-        case 7:
+        case MobType.PredatorMissile:
+        case MobType.GoliathMissile:
+        case MobType.CarrotMissile:
+        case MobType.MohawkMissile:
+        case MobType.TornadoSingleMissile:
+        case MobType.TornadoTripleMissile:
+        case MobType.ProwlerMissile:
             var t = Graphics.shadowCoords(this.pos),
                 n = Tools.oscillator(.1, .5, this.randomness),
                 r = Tools.oscillator(.15, 10, this.randomness);
@@ -248,9 +276,9 @@ class Mob {
             Graphics.transform(this.sprites.smokeGlow, this.pos.x + Math.sin(-this.spriteRot) * (this.exhaust + 20), this.pos.y + Math.cos(-this.spriteRot) * (this.exhaust + 20), this.spriteRot),
             Graphics.transform(this.sprites.thruster, this.pos.x + Math.sin(-this.spriteRot) * this.exhaust, this.pos.y + Math.cos(-this.spriteRot) * this.exhaust, this.spriteRot, config.mobs[this.type].thruster[0] * n, config.mobs[this.type].thruster[1] * n);
             break;
-        case 4:
-        case 8:
-        case 9:
+        case MobType.Upgrade:
+        case MobType.Shield:
+        case MobType.Inferno:
             var i;
             t = Graphics.shadowCoords(this.pos);
             i = 0 == this.state.despawnType ? 1 - this.state.despawnTicker : 1 + 2 * this.state.despawnTicker,
