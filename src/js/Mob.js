@@ -165,12 +165,16 @@ class Mob {
         }
     }
 
-    visible(e) {
-        e == this.visibility && e != this.culled || (this.sprites.sprite.visible = e,
-        this.sprites.shadow.visible = e,
-        4 != this.type && 8 != this.type && 9 != this.type && (this.sprites.thruster.visible = e,
-        this.sprites.thrusterGlow.visible = e),
-        this.visibility = e)
+    visible(isVisible) {
+        if (!(isVisible == this.visibility && isVisible != this.culled)) {
+            this.sprites.sprite.visible = isVisible;
+            this.sprites.shadow.visible = isVisible;
+            if(! CrateMobTypeSet[this.type]) {
+                this.sprites.thruster.visible = isVisible;
+                this.sprites.thrusterGlow.visible = isVisible;
+            }
+            this.visibility = isVisible;
+        }
     }
 
     visibilityUpdate() {
