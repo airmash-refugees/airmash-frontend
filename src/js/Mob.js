@@ -61,13 +61,19 @@ class Mob {
             this.sprites.smokeGlow.alpha = .75;
             break;
         case MobType.GoliathMissile:
-            this.sprites.sprite = Textures.init("missileFat"),
+        case MobType.CarrotMissile:
+            if(this.type == MobType.GoliathMissile) {
+                this.sprites.sprite = Textures.init("missileFat");
+            } else {
+                this.sprites.sprite = Textures.init("missileCarrot");
+            }
+
             this.sprites.shadow = Textures.init("missileShadow", {
                 scale: [.5, .25]
-            }),
-            this.sprites.thrusterGlow.scale.set(4, 3),
-            this.sprites.thrusterGlow.alpha = .25,
-            this.sprites.smokeGlow.scale.set(2.5, 3),
+            });
+            this.sprites.thrusterGlow.scale.set(4, 3);
+            this.sprites.thrusterGlow.alpha = .25;
+            this.sprites.smokeGlow.scale.set(2.5, 3);
             this.sprites.smokeGlow.alpha = .75;
             break;
         case MobType.MohawkMissile:
@@ -123,6 +129,7 @@ class Mob {
         switch (this.type) {
         case MobType.PredatorMissile:
         case MobType.GoliathMissile:
+        case MobType.CarrotMissile:
         case MobType.MohawkMissile:
         case MobType.TornadoSingleMissile:
         case MobType.TornadoTripleMissile:
@@ -218,6 +225,7 @@ class Mob {
             this.type) {
             case MobType.PredatorMissile:
             case MobType.GoliathMissile:
+            case MobType.CarrotMissile:
             case MobType.MohawkMissile:
             case MobType.TornadoSingleMissile:
             case MobType.TornadoTripleMissile:
@@ -254,6 +262,7 @@ class Mob {
         switch (this.type) {
         case MobType.PredatorMissile:
         case MobType.GoliathMissile:
+        case MobType.CarrotMissile:
         case MobType.MohawkMissile:
         case MobType.TornadoSingleMissile:
         case MobType.TornadoTripleMissile:

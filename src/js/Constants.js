@@ -13,7 +13,10 @@ window.MobType = {
     TornadoTripleMissile: 6,
     ProwlerMissile: 7,
     Shield: 8,
-    Inferno: 9
+    Inferno: 9,
+
+    // Frivolity
+    CarrotMissile: 12
 };
 
 // IDs in this set have 'missile' behaviour in Mob.js, i.e. they get a thruster
@@ -24,7 +27,10 @@ window.MissileMobTypeSet = {
     [MobType.MohawkMissile]: true,
     [MobType.TornadoSingleMissile]: true,
     [MobType.TornadoTripleMissile]: true,
-    [MobType.ProwlerMissile]: true
+    [MobType.ProwlerMissile]: true,
+
+    // Frivolity
+    [MobType.CarrotMissile]: true
 };
 
 // IDs in this set have 'crate' behaviour in Mob.js. They have no thruster and
