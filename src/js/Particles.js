@@ -49,38 +49,52 @@ class ParticleContainer {
 
     addParticle(type, spriteName, speed, pos, scale, alpha, rotationSpeed, rotation, tint, anchorPos, blendMode, life, data, emitter) {
         if (!(game.timeFactorUncapped > 20 || this.particles.length >= this.maxParticles)) {
-            var sprite = Textures.sprite(spriteName),
-                particle = {
-                    type: type,
-                    sprite: sprite,
-                    speed: speed,
-                    pos: pos,
-                    scale: scale,
-                    alpha: alpha,
-                    rotationSpeed: rotationSpeed,
-                    rotation: rotation,
-                    lastRotation: 0,
-                    time: game.time,
-                    tint: tint,
-                    life: 0,
-                    data: null != data ? data : 0,
-                    emitter: null != emitter ? emitter : null,
-                    _prev: -1,
-                    _next: -1
-                };
-            null != tint && (sprite.tint = tint),
-            null != blendMode && (sprite.blendMode = blendMode),
-            null != life && (particle.life = life),
-            null != anchorPos ? sprite.anchor.set(anchorPos.x, anchorPos.y) : sprite.anchor.set(.5, .5),
-            this.container.addChild(sprite);
-            var particleId = this.particles.length;
-            particleId > 0 ? (this.particles[this.last]._next = particleId,
-            particle._prev = this.last,
-            this.last = particleId) : (this.first = particleId,
-            this.last = particleId),
-            this.particles.push(particle)
+          var sprite = Textures.sprite(spriteName);
+          var particle = {
+            type: type,
+            sprite: sprite,
+            speed: speed,
+            pos: pos,
+            scale: scale,
+            alpha: alpha,
+            rotationSpeed: rotationSpeed,
+            rotation: rotation,
+            lastRotation: 0,
+            time: game.time,
+            tint: tint,
+            life: 0,
+            data: null != data ? data : 0,
+            emitter: null != emitter ? emitter : null,
+            _prev: -1,
+            _next: -1
+          };
+          if (null != tint) {
+            sprite.tint = tint;
+          }
+          if (null != blendMode) {
+            sprite.blendMode = blendMode;
+          }
+          if (null != life) {
+            particle.life = life;
+          }
+          if (null != anchorPos) {
+            sprite.anchor.set(anchorPos.x, anchorPos.y);
+          } else {
+            sprite.anchor.set(.5, .5);
+          }
+          this.container.addChild(sprite);
+          var particleId = this.particles.length;
+          if (particleId > 0) {
+            this.particles[this.last]._next = particleId;
+            particle._prev = this.last;
+            this.last = particleId;
+          } else {
+            this.first = particleId;
+            this.last = particleId;
+          }
+          this.particles.push(particle);
         }
-    }
+      }
 
     wipe() {
         this.emitters = {},
