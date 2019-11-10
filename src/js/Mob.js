@@ -2,6 +2,9 @@ import Vector from './Vector';
 
 class Mob {
     constructor(msg) {
+        if(msg.type == MobType.PredatorMissile && window.forceCarrot) {
+            msg.type = MobType.CarrotMissile;
+        }
         this.id = msg.id;
         this.type = msg.type;
         this.pos = new Vector(msg.posX, msg.posY);
