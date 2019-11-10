@@ -1,37 +1,41 @@
 import Vector from './Vector';
 
 class Mob {
-    constructor(e) {
-        this.id = e.id,
-        this.type = e.type,
-        this.pos = new Vector(e.posX,e.posY),
-        this.spriteRot = 0,
-        this.missile = 1 == this.type || 2 == this.type || 3 == this.type || 5 == this.type || 6 == this.type || 7 == this.type,
-        this.missile && e.c !== Network.SERVERPACKET.MOB_UPDATE_STATIONARY ? (this.speed = new Vector(e.speedX,e.speedY),
-        this.accel = new Vector(e.accelX,e.accelY),
-        this.maxSpeed = e.maxSpeed,
-        this.exhaust = config.mobs[this.type].exhaust,
-        this.lastAccelX = 0,
-        this.lastAccelY = 0,
-        this.stationary = false,
-        this.spriteRot = this.speed.angle() + Math.PI) : this.stationary = true,
-        this.sprites = {},
+    constructor(msg) {
+        this.id = msg.id;
+        this.type = msg.type;
+        this.pos = new Vector(msg.posX, msg.posY);
+        this.spriteRot = 0;
+        this.missile = MissileMobTypeSet[this.type];
+        if (this.missile && msg.c !== Network.SERVERPACKET.MOB_UPDATE_STATIONARY) {
+            this.speed = new Vector(msg.speedX, msg.speedY);
+            this.accel = new Vector(msg.accelX, msg.accelY);
+            this.maxSpeed = msg.maxSpeed;
+            this.exhaust = config.mobs[this.type].exhaust;
+            this.lastAccelX = 0;
+            this.lastAccelY = 0;
+            this.stationary = false;
+            this.spriteRot = this.speed.angle() + Math.PI;
+        } else {
+            this.stationary = true;
+        }
+        this.sprites = {};
         this.state = {
-            inactive: false,
-            despawnTicker: 0,
-            despawnType: 0,
-            baseScale: 1,
-            baseScaleShadow: 1,
-            luminosity: 1
-        },
-        this.randomness = Tools.rand(0, 1e5),
-        this.culled = false,
-        this.visibility = true,
-        this.reducedFactor = false,
-        this.forDeletion = false,
-        this.spawnTime = game.time,
-        this.lastPacket = game.timeNetwork,
-        this.setupSprite()
+            inactive : false,
+            despawnTicker : 0,
+            despawnType : 0,
+            baseScale : 1,
+            baseScaleShadow : 1,
+            luminosity : 1
+        };
+        this.randomness = Tools.rand(0, 1e5);
+        this.culled = false;
+        this.visibility = true;
+        this.reducedFactor = false;
+        this.forDeletion = false;
+        this.spawnTime = game.time;
+        this.lastPacket = game.timeNetwork;
+        this.setupSprite();
     }
 
     setupSprite() {
