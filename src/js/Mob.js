@@ -264,6 +264,8 @@ class Mob {
     }
 
     updateGraphics(e) {
+        var mobConfig = config.mobs[this.type];
+
         switch (this.type) {
         case MobType.PredatorMissile:
         case MobType.GoliathMissile:
@@ -294,21 +296,26 @@ class Mob {
                 null,
                 null,
                 null,
-                (.5 * this.state.luminosity + .2) * r
+                (((mobConfig.thrusterGlowAlpha || 1.0) * .5)
+                    * this.state.luminosity + .2) * r
             );
             Graphics.transform(
                 this.sprites.smokeGlow,
                 this.pos.x + Math.sin(-this.spriteRot) * (this.exhaust + 20),
                 this.pos.y + Math.cos(-this.spriteRot) * (this.exhaust + 20),
-                this.spriteRot
+                this.spriteRot,
+                undefined,
+                undefined,
+                mobConfig.smokeGlowAlpha
             );
             Graphics.transform(
                 this.sprites.thruster,
                 this.pos.x + Math.sin(-this.spriteRot) * this.exhaust,
                 this.pos.y + Math.cos(-this.spriteRot) * this.exhaust,
                 this.spriteRot,
-                config.mobs[this.type].thruster[0] * n,
-                config.mobs[this.type].thruster[1] * n
+                mobConfig.thruster[0] * n,
+                mobConfig.thruster[1] * n,
+                mobConfig.thrusterAlpha
             );
             break;
         case MobType.Upgrade:
