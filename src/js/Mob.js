@@ -275,11 +275,41 @@ class Mob {
             var t = Graphics.shadowCoords(this.pos),
                 n = Tools.oscillator(.1, .5, this.randomness),
                 r = Tools.oscillator(.15, 10, this.randomness);
-            Graphics.transform(this.sprites.sprite, this.pos.x, this.pos.y, this.spriteRot),
-            Graphics.transform(this.sprites.shadow, t.x, t.y, this.spriteRot),
-            Graphics.transform(this.sprites.thrusterGlow, this.pos.x + Math.sin(-this.spriteRot) * (this.exhaust + 20), this.pos.y + Math.cos(-this.spriteRot) * (this.exhaust + 20), null, null, null, (.5 * this.state.luminosity + .2) * r),
-            Graphics.transform(this.sprites.smokeGlow, this.pos.x + Math.sin(-this.spriteRot) * (this.exhaust + 20), this.pos.y + Math.cos(-this.spriteRot) * (this.exhaust + 20), this.spriteRot),
-            Graphics.transform(this.sprites.thruster, this.pos.x + Math.sin(-this.spriteRot) * this.exhaust, this.pos.y + Math.cos(-this.spriteRot) * this.exhaust, this.spriteRot, config.mobs[this.type].thruster[0] * n, config.mobs[this.type].thruster[1] * n);
+            Graphics.transform(
+                this.sprites.sprite,
+                this.pos.x,
+                this.pos.y,
+                this.spriteRot
+            );
+            Graphics.transform(
+                this.sprites.shadow,
+                t.x,
+                t.y,
+                this.spriteRot
+            );
+            Graphics.transform(
+                this.sprites.thrusterGlow,
+                this.pos.x + Math.sin(-this.spriteRot) * (this.exhaust + 20),
+                this.pos.y + Math.cos(-this.spriteRot) * (this.exhaust + 20),
+                null,
+                null,
+                null,
+                (.5 * this.state.luminosity + .2) * r
+            );
+            Graphics.transform(
+                this.sprites.smokeGlow,
+                this.pos.x + Math.sin(-this.spriteRot) * (this.exhaust + 20),
+                this.pos.y + Math.cos(-this.spriteRot) * (this.exhaust + 20),
+                this.spriteRot
+            );
+            Graphics.transform(
+                this.sprites.thruster,
+                this.pos.x + Math.sin(-this.spriteRot) * this.exhaust,
+                this.pos.y + Math.cos(-this.spriteRot) * this.exhaust,
+                this.spriteRot,
+                config.mobs[this.type].thruster[0] * n,
+                config.mobs[this.type].thruster[1] * n
+            );
             break;
         case MobType.Upgrade:
         case MobType.Shield:
