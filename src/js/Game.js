@@ -117,25 +117,55 @@ window.config = {
         energyLight: .75,
         collisions: [[0, 11, 25], [0, -8, 18], [19, 20, 10], [-19, 20, 10], [0, -20, 14]]
     }],
-    mobs: [{}, {
-        exhaust: 20,
-        thruster: [.2, .4]
-    }, {
-        exhaust: 30,
-        thruster: [.3, .6]
-    }, {
-        exhaust: 18,
-        thruster: [.14, .3]
-    }, {}, {
-        exhaust: 20,
-        thruster: [.2, .4]
-    }, {
-        exhaust: 20,
-        thruster: [.2, .4]
-    }, {
-        exhaust: 20,
-        thruster: [.2, .4]
-    }],
+    mobs: [
+        // Unused (0)
+        {},
+        // MobType.PredatorMissile (1)
+        {
+            exhaust: 20,
+            thruster: [.2, .4]
+        },
+        // MobType.GoliathMissile (2)
+        {
+            exhaust: 30,
+            thruster: [.3, .6]
+        },
+        // MobType.MowhawkMissile (3)
+        {
+            exhaust: 18,
+            thruster: [.14, .3]
+        },
+        // MobType.Upgrade (4)
+        {},
+        // MobType.TornadoSingleMissile (5)
+        {
+            exhaust: 20,
+            thruster: [.2, .4]
+        },
+        // MobType.TornadoTripleMissile (6)
+        {
+            exhaust: 20,
+            thruster: [.2, .4]
+        },
+        // MobType.ProwlerMssile (7)
+        {
+            exhaust: 20,
+            thruster: [.2, .4]
+        },
+        // Unused (8)
+        {},
+        // Unused (9)
+        {},
+        // Unused (10)
+        {},
+        // Unused (11)
+        {},
+        // MobType.CarrotMissile (12)
+        {
+            exhaust: 18,
+            thruster: [.3, .6]
+        }
+    ],
     upgrades: {
         speed: {
             cost: [0, 1, 1, 1, 1, 1],
