@@ -83,6 +83,7 @@ var imageUrlByName = {
         spark_1: ["particles", [872, 120, 8, 8]],
         flash_2: ["particles", [848, 0, 120, 120]],
         crate_upgrade: ["items", [4, 268, 128, 128]],
+        crate_magic: ["items", [4, 409, 128, 128]],
         crate_shield: ["items", [140, 268, 128, 128]],
         crate_rampage: ["items", [276, 268, 128, 128]],
         afterburner: ["items", [412, 268, 128, 128]],
@@ -404,6 +405,11 @@ var imageUrlByName = {
         },
         crateUpgrade: {
             texture: "crate_upgrade",
+            layer: "crates",
+            anchor: [0.5, 0.5]
+        },
+        crateMagic: {
+            texture: "crate_magic",
             layer: "crates",
             anchor: [0.5, 0.5]
         },
