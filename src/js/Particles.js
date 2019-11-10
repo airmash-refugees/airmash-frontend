@@ -17,6 +17,22 @@ var particleTypeIdByName = {
     EMITTER_EXPLOSION_FRAGMENT: 100
 };
 
+var particleTypeByMobType = [
+    null,                                   // 0 Unused
+    particleTypeIdByName.MISSILE,           // 1 PredatorMissile
+    particleTypeIdByName.MISSILE_FAT,       // 2 GoliathMissile
+    particleTypeIdByName.MISSILE_SMALL,     // 3 MohawkMissile
+    null,                                   // 4 Upgrade
+    particleTypeIdByName.MISSILE,           // 5 TornadoSingleMissile
+    particleTypeIdByName.MISSILE,           // 6 TornodaTripleMissile
+    particleTypeIdByName.MISSILE,           // 7 ProwlerMissile
+    null,                                   // 8 Shield
+    null,                                   // 9 Inferno
+    null,                                   // 10 Unused
+    null,                                   // 11 Unused
+    particleTypeIdByName.MISSILE_SMALL      // 12 CarrotMissile
+];
+
 class ParticleContainer {
     constructor(pixiContainer, maxParticles, blendMode, shadow) {
         this.maxParticles = maxParticles,
@@ -329,16 +345,7 @@ Particles.explosion = function(e, r, i) {
 };
 
 Particles.missileSmoke = function(mob, exhaust, i) {
-    var o = [
-        null,
-        particleTypeIdByName.MISSILE,
-        particleTypeIdByName.MISSILE_FAT,
-        particleTypeIdByName.MISSILE_SMALL,
-        null,
-        particleTypeIdByName.MISSILE,
-        particleTypeIdByName.MISSILE,
-        particleTypeIdByName.MISSILE
-    ][mob.type];
+    var particleType = particleTypeByMobType[mob.type];
     var s = mob.spriteRot + Math.PI,
         a = Vector.createOff(mob.pos, s, exhaust),
         l = 0.2 * (i = i || 1),
@@ -347,8 +354,8 @@ Particles.missileSmoke = function(mob, exhaust, i) {
         h = Tools.randInt(1, 16),
         d = Tools.rand(-0.1, 0.1);
     Tools.randCircle();
-    containersByName.smoke.addParticle(o, "smoke_" + h, c.clone(), a.clone(), new Vector(1.25 * l,4 * l), 1, d, s, 16775590, null, null, null, i),
-    containersByName.shadows.addParticle(o, "smokeshadow_" + h, c.clone(), a.clone(), new Vector(1.25 * l,4 * l), 1, d, s, null, null, null, null, i)
+    containersByName.smoke.addParticle(particleType, "smoke_" + h, c.clone(), a.clone(), new Vector(1.25 * l,4 * l), 1, d, s, 16775590, null, null, null, i),
+    containersByName.shadows.addParticle(particleType, "smokeshadow_" + h, c.clone(), a.clone(), new Vector(1.25 * l,4 * l), 1, d, s, null, null, null, null, i)
 };
 
 Particles.planeBoost = function(e, r) {
