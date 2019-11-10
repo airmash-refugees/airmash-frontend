@@ -39,14 +39,17 @@ class Mob {
     }
 
     setupSprite() {
-        switch (4 != this.type && 8 != this.type && 9 != this.type && (this.sprites.thrusterGlow = Textures.init("thrusterGlowSmall", {
-            layer: "projectiles"
-        }),
-        this.sprites.smokeGlow = Textures.init("smokeGlow", {
-            layer: "projectiles"
-        }),
-        this.sprites.thruster = Textures.init("missileThruster")),
-        this.type) {
+        if(MissileMobTypeSet[this.type]) {
+            this.sprites.thrusterGlow = Textures.init("thrusterGlowSmall", {
+                layer: "projectiles"
+            });
+            this.sprites.smokeGlow = Textures.init("smokeGlow", {
+                layer: "projectiles"
+            });
+            this.sprites.thruster = Textures.init("missileThruster");
+        }
+
+        switch (this.type) {
         case MobType.PredatorMissile:
         case MobType.TornadoSingleMissile:
         case MobType.TornadoTripleMissile:
@@ -177,7 +180,7 @@ class Mob {
         if (!(isVisible == this.visibility && isVisible != this.culled)) {
             this.sprites.sprite.visible = isVisible;
             this.sprites.shadow.visible = isVisible;
-            if(! CrateMobTypeSet[this.type]) {
+            if(MissileMobTypeSet[this.type]) {
                 this.sprites.thruster.visible = isVisible;
                 this.sprites.thrusterGlow.visible = isVisible;
             }
