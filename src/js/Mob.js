@@ -91,16 +91,16 @@ class Mob {
         case MobType.Upgrade:
         case MobType.Shield:
         case MobType.Inferno:
-            var e = "crateUpgrade";
-            8 == this.type ? e = "crateShield" : 9 == this.type && (e = "crateRampage"),
-            this.state.baseScale = .33,
-            this.state.baseScaleShadow = 2.4 / config.shadowScaling * .33,
-            this.sprites.sprite = Textures.init(e, {
+        case MobType.MagicCrate:
+            var textureName = CrateTextureNameByMobType[this.type];
+            this.state.baseScale = .33;
+            this.state.baseScaleShadow = 2.4 / config.shadowScaling * .33;
+            this.sprites.sprite = Textures.init(textureName, {
                 scale: this.state.baseScale
-            }),
+            });
             this.sprites.shadow = Textures.init("crateShadow", {
                 scale: this.state.baseScaleShadow
-            })
+            });
         }
     }
 
@@ -148,6 +148,7 @@ class Mob {
         case MobType.Upgrade:
         case MobType.Shield:
         case MobType.Inferno:
+        case MobType.MagicCrate:
             game.graphics.layers.crates.removeChild(this.sprites.sprite),
             game.graphics.layers.shadows.removeChild(this.sprites.shadow)
         }
@@ -252,6 +253,7 @@ class Mob {
             case MobType.Upgrade:
             case MobType.Shield:
             case MobType.Inferno:
+            case MobType.MagicCrate:
                 if (this.state.inactive && (this.state.despawnTicker += .05 * e,
                 this.state.despawnTicker > 1))
                     return void (this.forDeletion = true)
@@ -279,6 +281,7 @@ class Mob {
         case MobType.Upgrade:
         case MobType.Shield:
         case MobType.Inferno:
+        case MobType.MagicCrate:
             var i;
             t = Graphics.shadowCoords(this.pos);
             i = 0 == this.state.despawnType ? 1 - this.state.despawnTicker : 1 + 2 * this.state.despawnTicker,

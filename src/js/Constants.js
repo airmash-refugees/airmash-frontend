@@ -16,7 +16,8 @@ window.MobType = {
     Inferno: 9,
 
     // Frivolity
-    CarrotMissile: 12
+    CarrotMissile: 12,
+    MagicCrate: 13
 };
 
 // IDs in this set have 'missile' behaviour in Mob.js, i.e. they get a thruster
@@ -38,7 +39,10 @@ window.MissileMobTypeSet = {
 window.CrateMobTypeSet = {
     [MobType.Upgrade]: true,
     [MobType.Shield]: true,
-    [MobType.Inferno]: true
+    [MobType.Inferno]: true,
+
+    // Frivolity
+    [MobType.MagicCrate]: true
 };
 
 window.MobDespawnType = {
@@ -46,3 +50,11 @@ window.MobDespawnType = {
     Collided: 1
 };
 
+// Mapping from MobType to Textures.js name for the box image used to render a
+// crate from CrateMobTypeSet.
+window.CrateTextureNameByMobType = {
+    [MobType.Upgrade]: "createUpgrade",
+    [MobType.Shield]: "crateShield",
+    [MobType.Inferno]: "crateRampage",
+    [MobType.MagicCrate]: "crateMagic"
+};
