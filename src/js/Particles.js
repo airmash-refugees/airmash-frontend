@@ -161,21 +161,21 @@ class ParticleContainer {
         }
       }
 
-    destroy(e) {
-        var t = this.particles.length;
-        if (0 != t && !(e >= t)) {
-            this.container.removeChild(this.particles[e].sprite),
-            this.particles[e].sprite.destroy();
-            var n = this.particles[e]._prev,
-                r = this.particles[e]._next;
-            return t--,
+    destroy(particleId) {
+        var maxParticles = this.particles.length;
+        if (0 != maxParticles && !(particleId >= maxParticles)) {
+            this.container.removeChild(this.particles[particleId].sprite),
+            this.particles[particleId].sprite.destroy();
+            var n = this.particles[particleId]._prev,
+                r = this.particles[particleId]._next;
+            return maxParticles--,
             -1 != n ? this.particles[n]._next = r : this.first = r,
             -1 != r ? this.particles[r]._prev = n : this.last = n,
-            e != t && (this.particles[e] = this.particles[t],
-            -1 != this.particles[e]._prev ? this.particles[this.particles[e]._prev]._next = e : this.first = e,
-            -1 != this.particles[e]._next ? this.particles[this.particles[e]._next]._prev = e : this.last = e),
-            this.particles.splice(t, 1),
-            r == t ? e : r
+            particleId != maxParticles && (this.particles[particleId] = this.particles[maxParticles],
+            -1 != this.particles[particleId]._prev ? this.particles[this.particles[particleId]._prev]._next = particleId : this.first = particleId,
+            -1 != this.particles[particleId]._next ? this.particles[this.particles[particleId]._next]._prev = particleId : this.last = particleId),
+            this.particles.splice(maxParticles, 1),
+            r == maxParticles ? particleId : r
         }
     }
 
