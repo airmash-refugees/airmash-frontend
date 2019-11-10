@@ -254,7 +254,7 @@ var imageUrlByName = {
         flag_124: ["flags", [506, 2, 80, 60]],
         flag_125: ["flags", [590, 2, 80, 60]]
     },
-    r = {
+    textureByName = {
         hudHealth_shadow: {
             texture: "hud_shadow",
             layer: "ui0",
@@ -580,16 +580,16 @@ Textures.get = function(name) {
 };
 
 Textures.getNamed = function(e) {
-    return pixiImageByName[r[e].texture]
+    return pixiImageByName[textureByName[e].texture]
 };
 
-Textures.init = function(e, t) {
-    var n = JSON.parse(JSON.stringify(r[e]));
-    if ("screencenter" === n.position && (n.position = [game.halfScreenX, game.halfScreenY]),
+Textures.init = function(textureName, t) {
+    var cloned = JSON.parse(JSON.stringify(textureByName[textureName]));
+    if ("screencenter" === cloned.position && (cloned.position = [game.halfScreenX, game.halfScreenY]),
     t)
         for (var i in t)
-            n[i] = t[i];
-    return Graphics.initSprite(n.texture, game.graphics.layers[n.layer], n)
+            cloned[i] = t[i];
+    return Graphics.initSprite(cloned.texture, game.graphics.layers[cloned.layer], cloned)
 };
 
 Textures.sprite = function(name) {
