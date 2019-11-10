@@ -30,7 +30,7 @@ var particleTypeByMobType = [
     null,                                   // 9 Inferno
     null,                                   // 10 Unused
     null,                                   // 11 Unused
-    particleTypeIdByName.MISSILE_SMALL      // 12 CarrotMissile
+    particleTypeIdByName.PLANE_DAMAGE       // 12 CarrotMissile
 ];
 
 class ParticleContainer {
