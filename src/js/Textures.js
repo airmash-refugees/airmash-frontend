@@ -87,6 +87,7 @@ var imageUrlByName = {
         crate_rampage: ["items", [276, 268, 128, 128]],
         afterburner: ["items", [412, 268, 128, 128]],
         missile_fat: ["items", [548, 268, 64, 128]],
+        missile_carrot: ["items", [694, 268, 64, 128]],
         missile: ["items", [620, 268, 32, 128]],
         doodad_field: ["items", [4, 4, 256, 256]],
         badge_bronze: ["items", [268, 140, 64, 64]],
@@ -366,6 +367,12 @@ var imageUrlByName = {
             layer: "projectiles",
             anchor: [0.5, 0],
             scale: [0.2, 0.2]
+        },
+        missileCarrot: {
+            texture: "missile_carrot",
+            layer: "projectiles",
+            anchor: [0.5, 0],
+            scale: [0.3, 0.3]
         },
         missileShadow: {
             texture: "missile_shadow",
