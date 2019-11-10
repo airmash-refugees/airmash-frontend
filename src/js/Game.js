@@ -117,6 +117,16 @@ window.config = {
         energyLight: .75,
         collisions: [[0, 11, 25], [0, -8, 18], [19, 20, 10], [-19, 20, 10], [0, -20, 14]]
     }],
+    /*
+     * This array contains elements whose index is a missile MobType and whose
+     * value is an object with keys:
+     *      * thruster: [xScale, yScale] to size the exhaust
+     *      * exhaust: offset from top(?) of missile texture where exhaust appears
+     * Optional:
+     *      * thrusterGlowAlpha: 0..1.0, cannot be 0.0, default 1.0
+     *      * smokeGlowAlpha: 0..1.0, default 1.0
+     *      * thrusterAlpha: 0..1.0, default 1.0
+     */
     mobs: [
         // Unused (0)
         {},
@@ -163,7 +173,10 @@ window.config = {
         // MobType.CarrotMissile (12)
         {
             exhaust: 18,
-            thruster: [.3, .6]
+            thruster: [.15, .3],
+            thrusterGlowAlpha: 0.5,
+            smokeGlowAlpha: 0.5,
+            thrusterAlpha: 0.5
         }
     ],
     upgrades: {
