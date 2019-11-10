@@ -118,31 +118,48 @@ class ParticleContainer {
         this.emitterId++)
     }
 
-    updateEmitters(e) {
-        var t, r;
-        for (t in this.emitters) {
-            switch ((r = this.emitters[t]).type) {
+    updateEmitters(time) {
+        for (var emitterId in this.emitters) {
+          var emitter = this.emitters[emitterId];
+          switch(emitter.type) {
             case particleTypeIdByName.EMITTER_EXPLOSION_FRAGMENT:
-                r.life += .02 * e,
-                r.speed.multiply(1 - .02 * e)
-            }
-            if (r.life > 1)
-                delete this.emitters[t];
-            else
-                switch (r.pos.x += r.speed.x * e,
-                r.pos.y += r.speed.y * e,
-                r.type) {
-                case particleTypeIdByName.EMITTER_EXPLOSION_FRAGMENT:
-                    var i = Tools.randInt(1, 16),
-                        o = 0.5 * (1 - r.life),
-                        s = 1 - r.life,
-                        a = Tools.rand(-0.1, 0.1),
-                        l = Tools.randCircle();
-                    this.addParticle(particleTypeIdByName.FRAGMENT_SMOKE, "smoke_" + i, Vector.zero(), r.pos.clone(), Vector.diag(o), 1, a, l, null, null, null, null, s + .2),
-                    r.shadowLayer && r.shadowLayer.addParticle(particleTypeIdByName.FRAGMENT_SMOKE, "smokeshadow_" + i, Vector.zero(), r.pos.clone(), Vector.diag(o), 1, a, l, null, null, null, null, s + .2)
+              emitter.life += .02 * time;
+              emitter.speed.multiply(1 - .02 * time);
+          }
+          if (emitter.life > 1) {
+            delete this.emitters[emitterId];
+          } else {
+            emitter.pos.x += emitter.speed.x * time;
+            emitter.pos.y += emitter.speed.y * time; 
+            switch(emitter.type) {
+              case particleTypeIdByName.EMITTER_EXPLOSION_FRAGMENT:
+                var sequence = Tools.randInt(1, 16);
+                var o = 0.5 * (1 - emitter.life);
+                var lifeRemaining = 1 - emitter.life;
+                var a = Tools.rand(-0.1, 0.1);
+                var l = Tools.randCircle();
+                this.addParticle(
+                    particleTypeIdByName.FRAGMENT_SMOKE,
+                    "smoke_" + sequence,
+                    Vector.zero(),
+                    emitter.pos.clone(),
+                    Vector.diag(o),
+                    1,
+                    a,
+                    l,
+                    null,
+                    null,
+                    null,
+                    null,
+                    lifeRemaining + .2
+                );
+                if (emitter.shadowLayer) {
+                  emitter.shadowLayer.addParticle(particleTypeIdByName.FRAGMENT_SMOKE, "smokeshadow_" + sequence, Vector.zero(), emitter.pos.clone(), Vector.diag(o), 1, a, l, null, null, null, null, lifeRemaining + .2);
                 }
+            }
+          }
         }
-    }
+      }
 
     destroy(e) {
         var t = this.particles.length;
