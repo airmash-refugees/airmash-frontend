@@ -375,18 +375,46 @@ Particles.explosion = function(e, r, i) {
         containersByName.explosions.addParticle(particleTypeIdByName.EXPLOSION_HOT_SMOKE, "hotsmoke_" + l, Vector.create(u, h), e.clone(), Vector.diag(p), 0, d, Tools.randCircle(), 16739073, null, PIXI.BLEND_MODES.ADD)
 };
 
-Particles.missileSmoke = function(mob, exhaust, i) {
+Particles.missileSmoke = function(mob, exhaust, data, tint) {
     var particleType = particleTypeByMobType[mob.type];
-    var s = mob.spriteRot + Math.PI,
-        a = Vector.createOff(mob.pos, s, exhaust),
-        l = 0.2 * (i = i || 1),
+    var rotation = mob.spriteRot + Math.PI,
+        pos = Vector.createOff(mob.pos, rotation, exhaust),
+        scale = 0.2 * (data = data || 1),
         u = Tools.rand(-0.1, 0.1),
-        c = Vector.create(s + u, 5 * i),
-        h = Tools.randInt(1, 16),
-        d = Tools.rand(-0.1, 0.1);
+        speed = Vector.create(rotation + u, 5 * data),
+        index = Tools.randInt(1, 16),
+        rotSpeed = Tools.rand(-0.1, 0.1);
     Tools.randCircle();
-    containersByName.smoke.addParticle(particleType, "smoke_" + h, c.clone(), a.clone(), new Vector(1.25 * l,4 * l), 1, d, s, 16775590, null, null, null, i),
-    containersByName.shadows.addParticle(particleType, "smokeshadow_" + h, c.clone(), a.clone(), new Vector(1.25 * l,4 * l), 1, d, s, null, null, null, null, i)
+    containersByName.smoke.addParticle(
+        particleType,                           // type
+        "smoke_" + index,                       // spriteName
+        speed.clone(),                          // speed
+        pos.clone(),                            // pos
+        new Vector(1.25 * scale,4 * scale),     // scale
+        1,                                      // alpha
+        rotSpeed,                               // rotationSpeed
+        rotation,                               // rotation
+        tint || 0xfff9a6,                       // tint
+        null,                                   // anchorPos
+        null,                                   // blendMode
+        null,                                   // life
+        data                                    // data
+    );
+    containersByName.shadows.addParticle(
+        particleType,
+        "smokeshadow_" + index,
+        speed.clone(),
+        pos.clone(),
+        new Vector(1.25 * scale,4 * scale),
+        1,
+        rotSpeed,
+        rotation,
+        null,
+        null,
+        null,
+        null,
+        data
+    );
 };
 
 Particles.planeBoost = function(e, r) {
