@@ -128,7 +128,7 @@ class Mob {
         this.missile && Sound.updateThruster(1, this, false)
     }
 
-    destroy(e) {
+    destroy(destroyMsg) {
         switch (this.type) {
         case MobType.PredatorMissile:
         case MobType.GoliathMissile:
@@ -155,7 +155,7 @@ class Mob {
             game.graphics.layers.crates.removeChild(this.sprites.sprite),
             game.graphics.layers.shadows.removeChild(this.sprites.shadow)
         }
-        e.c === Network.SERVERPACKET.MOB_DESPAWN_COORDS && (Mobs.explosion(this.pos, e.type),
+        destroyMsg.c === Network.SERVERPACKET.MOB_DESPAWN_COORDS && (Mobs.explosion(this.pos, destroyMsg.type),
         this.missile && Sound.updateThruster(1, this, false))
     }
 

@@ -1,3 +1,4 @@
+import './Constants';
 import Vector from './Vector';
 import Mob from './Mob';
 
@@ -35,16 +36,17 @@ Mobs.destroy = function (t) {
 
 Mobs.explosion = function (pos, mobType) {
     switch (mobType) {
-        case 1:
-        case 5:
-        case 6:
-        case 7:
+        case MobType.PredatorMissile:
+        case MobType.TornadoSingleMissile:
+        case MobType.TornadoTripleMissile:
+        case MobType.ProwlerMissile:
             Particles.explosion(pos, Tools.rand(1, 1.2));
             break;
-        case 2:
+        case MobType.GoliathMissile:
             Particles.explosion(pos, Tools.rand(1.3, 1.6));
             break;
-        case 3:
+        case MobType.MowhawkMissile:
+        case MobType.CarrotMissile:
             Particles.explosion(pos, Tools.rand(.8, 1))
     }
     Sound.mobExplosion(pos, mobType)
