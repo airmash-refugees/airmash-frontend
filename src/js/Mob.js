@@ -247,10 +247,15 @@ class Mob {
                     t = Tools.clamp(1 - this.state.despawnTicker, .3, 1)
                 }
                 if (!this.culled && t > .3) {
+                    var tint;
+                    if(this.type == MobType.CarrotMissile) {
+                        // Green missile smoke for carrot.
+                        tint = 0x009f00;
+                    }
                     var r = this.speed.angle() + Math.PI;
                     r - this.spriteRot >= Math.PI ? this.spriteRot += 2 * Math.PI : this.spriteRot - r > Math.PI && (this.spriteRot -= 2 * Math.PI),
                     this.spriteRot = Tools.converge(this.spriteRot, r, .1 * e),
-                    Particles.missileSmoke(this, this.exhaust, t)
+                    Particles.missileSmoke(this, this.exhaust, t, tint)
                 }
                 break;
             case MobType.Upgrade:
