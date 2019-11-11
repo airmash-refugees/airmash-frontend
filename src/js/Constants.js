@@ -3,6 +3,16 @@
 
 // TOOD: make this work with modules
 
+
+// airmash-protocol-rs/blob/master/src/enums/plane_type.rs
+window.PlaneType = {
+    Predator: 1,
+    Goliath: 2,
+    Mohawk: 3,
+    Tornado: 4,
+    Prowler: 5
+};
+
 // airmash-protocol-rs/blob/master/src/enums/mob_type.rs
 window.MobType = {
     PredatorMissile: 1,
