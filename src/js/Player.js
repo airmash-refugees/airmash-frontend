@@ -88,7 +88,7 @@ class Player {
             alpha: .75
         }),
         this.type) {
-        case 1:
+        case PlaneType.Predator:
             this.state.baseScale = .25,
             this.state.nameplateDist = 60,
             this.sprites.sprite = Textures.init("shipRaptor", t),
@@ -99,7 +99,7 @@ class Player {
             this.sprites.thrusterGlow = Textures.init("thrusterGlowSmall"),
             this.sprites.thrusterShadow = Textures.init("thrusterShadow");
             break;
-        case 2:
+        case PlaneType.Goliath:
             this.state.baseScale = .35,
             this.state.nameplateDist = 60,
             this.sprites.sprite = Textures.init("shipSpirit", t),
@@ -113,7 +113,7 @@ class Player {
             this.sprites.thruster1Shadow = Textures.init("thrusterShadow"),
             this.sprites.thruster2Shadow = Textures.init("thrusterShadow");
             break;
-        case 3:
+        case PlaneType.Mohawk:
             this.state.baseScale = .25,
             this.state.nameplateDist = 60,
             this.sprites.sprite = Textures.init("shipComanche", t),
@@ -125,7 +125,7 @@ class Player {
                 scale: 2 * this.state.baseScale * (2.4 / config.shadowScaling)
             });
             break;
-        case 4:
+        case PlaneType.Tornado:
             this.state.baseScale = .28,
             this.state.nameplateDist = 60,
             this.sprites.sprite = Textures.init("shipTornado", t),
@@ -139,7 +139,7 @@ class Player {
             this.sprites.thruster1Shadow = Textures.init("thrusterShadow"),
             this.sprites.thruster2Shadow = Textures.init("thrusterShadow");
             break;
-        case 5:
+        case PlaneType.Prowler:
             this.state.baseScale = .28,
             this.state.nameplateDist = 60,
             this.sprites.sprite = Textures.init("shipProwler", t),
@@ -247,14 +247,14 @@ class Player {
             this.sprites.powerup.visible = this.powerupActive && t,
             this.sprites.powerupCircle.visible = this.powerupActive && t,
             this.type) {
-            case 1:
+            case PlaneType.Predator:
                 this.sprites.thruster.visible = t,
                 this.sprites.thrusterGlow.visible = t,
                 this.sprites.thrusterShadow.visible = t;
                 break;
-            case 2:
-            case 4:
-            case 5:
+            case PlaneType.Goliath:
+            case PlaneType.Tornado:
+            case PlaneType.Prowler:
                 this.sprites.thruster1.visible = t,
                 this.sprites.thruster1Glow.visible = t,
                 this.sprites.thruster1Shadow.visible = t,
@@ -262,7 +262,7 @@ class Player {
                 this.sprites.thruster2Glow.visible = t,
                 this.sprites.thruster2Shadow.visible = t;
                 break;
-            case 3:
+            case PlaneType.Mohawk:
                 this.sprites.rotor.visible = t,
                 this.sprites.rotorShadow.visible = t
             }
@@ -298,7 +298,7 @@ class Player {
         this.sprites.powerupCircle.alpha = .75 * e,
         null != this.sprites.level && (this.sprites.level.alpha = e,
         this.sprites.levelBorder.alpha = .4 * e),
-        5 == this.type && (this.sprites.thruster1.alpha = e,
+        PlaneType.Prowler == this.type && (this.sprites.thruster1.alpha = e,
         this.sprites.thruster1Glow.alpha = e,
         this.sprites.thruster2.alpha = e,
         this.sprites.thruster2Glow.alpha = e)
@@ -322,15 +322,15 @@ class Player {
 
         if (!this.culled && !ev.spectate) {
             switch (this.type) {
-                case 1:
+                case PlaneType.Predator:
                     Particles.explosion(this.pos.clone(), Tools.rand(1.5, 2), Tools.randInt(2, 3));
                     break;
-                case 2:
+                case PlaneType.Goliath:
                     Particles.explosion(this.pos.clone(), Tools.rand(2, 2.5), Tools.randInt(4, 7));
                     break;
-                case 3:
-                case 4:
-                case 5:
+                case PlaneType.Mohawk:
+                case PlaneType.Tornado:
+                case PlaneType.Prowler:
                     Particles.explosion(this.pos.clone(), Tools.rand(1.5, 2), Tools.randInt(2, 3));
                     break;
             }
@@ -353,16 +353,16 @@ class Player {
         this.sprites.powerup.destroy(),
         this.sprites.powerupCircle.destroy(),
         this.type) {
-        case 1:
+        case PlaneType.Predator:
             game.graphics.layers.thrusters.removeChild(this.sprites.thruster),
             game.graphics.layers.thrusters.removeChild(this.sprites.thrusterGlow),
             this.sprites.thruster.destroy(),
             this.sprites.thrusterGlow.destroy(),
             this.sprites.thrusterShadow.destroy();
             break;
-        case 2:
-        case 4:
-        case 5:
+        case PlaneType.Goliath:
+        case PlaneType.Tornado:
+        case PlaneType.Prowler:
             game.graphics.layers.thrusters.removeChild(this.sprites.thruster1, this.sprites.thruster2),
             game.graphics.layers.thrusters.removeChild(this.sprites.thruster1Glow, this.sprites.thruster2Glow),
             this.sprites.thruster1.destroy(),
@@ -372,7 +372,7 @@ class Player {
             this.sprites.thruster1Shadow.destroy(),
             this.sprites.thruster2Shadow.destroy();
             break;
-        case 3:
+        case PlaneType.Mohawk:
             t.removeChild(this.sprites.rotor),
             this.sprites.rotor.destroy(),
             game.graphics.layers.shadows.removeChild(this.sprites.rotorShadow),
@@ -464,7 +464,7 @@ class Player {
     }
 
     updateLevel(e) {
-        this.me() && (1 == e.type && Games.showLevelUP(e.level),
+        this.me() && (PlaneType.Predator == e.type && Games.showLevelUP(e.level),
         UI.updateMyLevel(e.level)),
         this.level = e.level,
         this.setupLevelPlate()
@@ -786,10 +786,10 @@ class Player {
 
     clientCalcs(timeFrac) {
         switch(this.type) {
-            case 1:
-            case 2:
-            case 4:
-            case 5:
+            case PlaneType.Predator:
+            case PlaneType.Goliath:
+            case PlaneType.Tornado:
+            case PlaneType.Prowler:
                 var scrollviewTransform = false;
                 var angleToDraw = false;
                 var t = this.boost ? 1.5 : 1;
@@ -800,7 +800,7 @@ class Player {
                     this.state.thrustLevel = Tools.converge(this.state.thrustLevel, angleToDraw * t, .2 * timeFrac);
                 }
                 break;
-            case 3:
+            case PlaneType.Mohawk:
                 this.state.thrustDir += (.2 + this.speed.length() / 50) * timeFrac;
         }
         if (!this.culled) {
@@ -814,7 +814,7 @@ class Player {
                 if (this.boost) {
                     Particles.planeBoost(this, angleToDraw >= 0);
                 }
-                if (5 == this.type && this.stealthed) {
+                if (PlaneType.Prowler == this.type && this.stealthed) {
                     this.state.stealthLevel += .03 * timeFrac;
                     this.state.stealthLevel = Tools.clamp(this.state.stealthLevel, 0, this.team == game.myTeam ? .5 : 1);
                     this.opacity(1 - this.state.stealthLevel);
@@ -863,12 +863,12 @@ class Player {
             l = Math.abs(this.state.thrustLevel) < .01 ? 0 : this.state.thrustLevel / 2 + (this.state.thrustLevel > 0 ? .5 : -.5),
             u = Tools.clamp(2 * Math.abs(this.state.thrustLevel) - .1, 0, 1);
         switch (this.type) {
-        case 1:
+        case PlaneType.Predator:
             Graphics.transform(this.sprites.thruster, this.pos.x + Math.sin(-r) * (20 * t), this.pos.y + Math.cos(-r) * (20 * t), r + (this.state.thrustLevel > 0 ? this.state.thrustDir : 0), .3 * a * l * this.scale, .5 * a * l * this.scale, u),
             Graphics.transform(this.sprites.thrusterShadow, i.x + Math.sin(-r) * (20 * t) / config.shadowScaling, i.y + Math.cos(-r) * (20 * t) / config.shadowScaling, r + (this.state.thrustLevel > 0 ? this.state.thrustDir : 0), .4 * a * l * this.scale * (4 / config.shadowScaling), .5 * a * l * this.scale * (4 / config.shadowScaling), u / 2.5),
             Graphics.transform(this.sprites.thrusterGlow, this.pos.x + Math.sin(-r - .5 * this.state.thrustDir) * (40 * t), this.pos.y + Math.cos(-r - .5 * this.state.thrustDir) * (40 * t), null, 1.5 * n * this.scale, 1 * n * this.scale, .3 * this.state.thrustLevel);
             break;
-        case 2:
+        case PlaneType.Goliath:
             this.state.thrustLevel < 0 && (a *= .7),
             Graphics.transform(this.sprites.thruster1, this.pos.x + Math.sin(-r - .5) * (32 * t), this.pos.y + Math.cos(-r - .5) * (32 * t), r + .5 * (this.state.thrustLevel > 0 ? this.state.thrustDir : 0), .4 * a * l * this.scale, .6 * a * l * this.scale, u),
             Graphics.transform(this.sprites.thruster2, this.pos.x + Math.sin(.5 - r) * (32 * t), this.pos.y + Math.cos(.5 - r) * (32 * t), r + .5 * (this.state.thrustLevel > 0 ? this.state.thrustDir : 0), .4 * a * l * this.scale, .6 * a * l * this.scale, u),
@@ -877,11 +877,11 @@ class Player {
             Graphics.transform(this.sprites.thruster1Glow, this.pos.x + Math.sin(-r - .3) * (50 * t), this.pos.y + Math.cos(-r - .3) * (50 * t), null, 2.5 * this.scale, 1.5 * this.scale, .3 * this.state.thrustLevel),
             Graphics.transform(this.sprites.thruster2Glow, this.pos.x + Math.sin(.3 - r) * (50 * t), this.pos.y + Math.cos(.3 - r) * (50 * t), null, 2.5 * this.scale, 1.5 * this.scale, .3 * this.state.thrustLevel);
             break;
-        case 3:
+        case PlaneType.Mohawk:
             Graphics.transform(this.sprites.rotor, this.pos.x, this.pos.y, this.state.thrustDir, t * this.state.baseScale * 2, t * this.state.baseScale * 2, .8),
             Graphics.transform(this.sprites.rotorShadow, i.x, i.y, this.state.thrustDir, this.state.baseScale * (2.4 / config.shadowScaling) * this.scale * 2, this.state.baseScale * (2.4 / config.shadowScaling) * this.scale * 2);
             break;
-        case 4:
+        case PlaneType.Tornado:
             this.state.thrustLevel < 0 && (a *= .7),
             Graphics.transform(this.sprites.thruster1, this.pos.x + Math.sin(-r - .15) * (28 * t), this.pos.y + Math.cos(-r - .15) * (28 * t), r + .5 * (this.state.thrustLevel > 0 ? this.state.thrustDir : 0), .3 * a * l * this.scale, .5 * a * l * this.scale, u),
             Graphics.transform(this.sprites.thruster2, this.pos.x + Math.sin(.15 - r) * (28 * t), this.pos.y + Math.cos(.15 - r) * (28 * t), r + .5 * (this.state.thrustLevel > 0 ? this.state.thrustDir : 0), .3 * a * l * this.scale, .5 * a * l * this.scale, u),
@@ -890,7 +890,7 @@ class Player {
             Graphics.transform(this.sprites.thruster1Glow, this.pos.x + Math.sin(-r - .2) * (45 * t), this.pos.y + Math.cos(-r - .2) * (45 * t), null, 2.5 * this.scale, 1.5 * this.scale, .25 * this.state.thrustLevel),
             Graphics.transform(this.sprites.thruster2Glow, this.pos.x + Math.sin(.2 - r) * (45 * t), this.pos.y + Math.cos(.2 - r) * (45 * t), null, 2.5 * this.scale, 1.5 * this.scale, .25 * this.state.thrustLevel);
             break;
-        case 5:
+        case PlaneType.Prowler:
             this.state.thrustLevel < 0 && (a *= .7),
             Graphics.transform(this.sprites.thruster1, this.pos.x + Math.sin(-r - .35) * (20 * t), this.pos.y + Math.cos(-r - .35) * (20 * t), r + .5 * (this.state.thrustLevel > 0 ? this.state.thrustDir : 0), .3 * a * l * this.scale, .4 * a * l * this.scale, u * this.alpha),
             Graphics.transform(this.sprites.thruster2, this.pos.x + Math.sin(.35 - r) * (20 * t), this.pos.y + Math.cos(.35 - r) * (20 * t), r + .5 * (this.state.thrustLevel > 0 ? this.state.thrustDir : 0), .3 * a * l * this.scale, .4 * a * l * this.scale, u * this.alpha),
