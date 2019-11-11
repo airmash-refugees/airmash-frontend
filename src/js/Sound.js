@@ -1,7 +1,7 @@
 import { Howl } from './howler';
 
 var mainHowlInstance = {},
-    howlsBySpriteName = {},
+    howlsByUncompressedAssetName = {},
     thrustersByName = {},
     playerThrustersPlayingCount = 0,
     missileThrustersPlayingCount = 0,
@@ -33,7 +33,10 @@ var mainHowlInstance = {},
         respawn: 0.05,
         click: 0.5
     },
-    I = {},
+    // Usage: {"foo": {"volume": .., "sprite": [..]}} looks for "assets/sounds/foo.wav",
+    // but only used if usedUncompressedAsset param is true which isn't true for any of
+    // the code in the last Airmash release. Looks like a dev-only feature
+    uncompressedAssetsByName = {},
     mainHowlConfig = {
         src: ["assets/sounds.mp3?4"],
         volume: 0,
@@ -64,15 +67,15 @@ var mainHowlInstance = {},
 
 
 Sound.setup = function() {
-    var n = {};
-    for (var r in I) {
-        if (n = {
-            src: ["/assets/sounds/" + r + ".wav"]
+    var config = {};
+    for (var name in uncompressedAssetsByName) {
+        if (config = {
+            src: ["/assets/sounds/" + name + ".wav"]
         },
-        Object.keys(I[r]).length > 0)
-            for (var i in I[r])
-                n[i] = I[r][i];
-        howlsBySpriteName[r] = new Howl(n)
+        Object.keys(uncompressedAssetsByName[name]).length > 0)
+            for (var configKey in uncompressedAssetsByName[name])
+                config[configKey] = uncompressedAssetsByName[name][configKey];
+        howlsByUncompressedAssetName[name] = new Howl(config)
     }
     mainHowlInstance = new Howl(mainHowlConfig)
 };
@@ -212,32 +215,32 @@ var isTooMuchSoundPlaying = function(kind, max, ms) {
     }
 };
 
-var maybePlaySound = function(spriteName, volume, pos, rate, fade, useSpecificHowlerInstance) {
+var maybePlaySound = function(spriteName, volume, pos, rate, fade, useUncompressedAsset) {
     if (config.settings.sound) {
-        if (useSpecificHowlerInstance) {
-            if (null == howlsBySpriteName[spriteName])
+        if (useUncompressedAsset) {
+            if (null == howlsByUncompressedAssetName[spriteName])
                 return;
-            var howl = howlsBySpriteName[spriteName]
+            var howl = howlsByUncompressedAssetName[spriteName]
         } else
             howl = mainHowlInstance;
         if (!(null != volume && volume < .01)) {
-            var soundId = howl.play(useSpecificHowlerInstance ? void 0 : spriteName);
+            var soundId = howl.play(useUncompressedAsset ? void 0 : spriteName);
             if ("thruster" === spriteName || "missile" === spriteName || "chopper" === spriteName) {
                 var c = howl.seek(null, soundId);
                 howl.seek(c + Tools.rand(0, 1), soundId)
             }
-            return playIfSoundEnabled(soundId, spriteName, volume, pos, rate, fade, useSpecificHowlerInstance),
+            return playIfSoundEnabled(soundId, spriteName, volume, pos, rate, fade, useUncompressedAsset),
             soundId
         }
     }
 };
 
-var playIfSoundEnabled = function(soundId, howlerInstanceName, volume, pos, rate, fade, useSpecificHowlerInstance) {
+var playIfSoundEnabled = function(soundId, howlerInstanceName, volume, pos, rate, fade, useUncompressedAsset) {
     if (config.settings.sound) {
-        if (useSpecificHowlerInstance) {
-            if (null == howlsBySpriteName[howlerInstanceName])
+        if (useUncompressedAsset) {
+            if (null == howlsByUncompressedAssetName[howlerInstanceName])
                 return;
-            var howl = howlsBySpriteName[howlerInstanceName]
+            var howl = howlsByUncompressedAssetName[howlerInstanceName]
         } else
             howl = mainHowlInstance;
         null != volume && howl.volume(volume, soundId),
@@ -247,11 +250,11 @@ var playIfSoundEnabled = function(soundId, howlerInstanceName, volume, pos, rate
     }
 };
 
-var stopPlayingAParticularInstance = function(soundId, spriteName, useSpecificHowlerInstance) {
-    if (useSpecificHowlerInstance) {
-        if (null == howlsBySpriteName[spriteName])
+var stopPlayingAParticularInstance = function(soundId, spriteName, useUncompressedAsset) {
+    if (useUncompressedAsset) {
+        if (null == howlsByUncompressedAssetName[spriteName])
             return;
-        var howl = howlsBySpriteName[spriteName]
+        var howl = howlsByUncompressedAssetName[spriteName]
     } else
         howl = mainHowlInstance;
     howl.stop(soundId)
