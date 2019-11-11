@@ -472,10 +472,10 @@ UI.addChatLine = function(msg, text, msgType) {
     }
 };
 
-UI.addChatMessage = function(e, t) {
+UI.addChatMessage = function(text, isNotWarning) {
     a = 0,
     s = -1;
-    var n = '<div id="chat-' + ++i + '" class="line">' + (t ? "" : '<span class="nick">⚠</span>') + '<span class="text">' + e + "</span></div>",
+    var n = '<div id="chat-' + ++i + '" class="line">' + (isNotWarning ? "" : '<span class="nick">⚠</span>') + '<span class="text">' + text + "</span></div>",
         r = "#chat-" + (i - config.maxChatLines);
     $(r).length && $(r).remove(),
     $("#chatlines").append(n);
