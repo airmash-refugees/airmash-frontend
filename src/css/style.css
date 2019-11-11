@@ -926,6 +926,10 @@ input:focus {
     font-weight: bold
 }
 
+#chatbox .line a {
+    color: #bfbfff;
+}
+
 #chatbox .line .hidden {
     opacity: 0
 }

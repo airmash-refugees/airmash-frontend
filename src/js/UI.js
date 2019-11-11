@@ -512,8 +512,12 @@ UI.escapeHTML = function(s) {
         .replace(/'/g, "&#x27;")
         .replace(/\//g, "&#x2F;")
         .replace(/`/g, "&#x60;")
-        .replace(/https?:[^\s]+/g, function(s) {
-            return '<a target="_blank" href="' + s + '">' + s + '</a>';
+        .replace(/\b(https?:|www\.|[\w.]+\.com)[^\s]*/gi, function(s) {
+            var link = s;
+            if(link.toLowerCase().indexOf('http') != 0) {
+                link = 'http://' + link;
+            }
+            return '<a target="_blank" href="' + link + '">' + s + '</a>';
         })
     );
 };
