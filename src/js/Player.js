@@ -1,78 +1,92 @@
 import Vector from './Vector';
 
 class Player {
-    constructor(e, t) {
-        this.id = e.id,
-        this.status = e.status,
-        this.level = null == e.level || 0 == e.level ? null : e.level,
-        this.reel = 1 == e.reel,
-        this.name = e.name,
-        this.type = e.type,
-        this.team = e.team,
-        this.pos = new Vector(e.posX,e.posY),
-        this.lowResPos = new Vector(e.posX,e.posY),
-        this.speed = Vector.zero(),
-        this.speedupgrade = 0,
-        this.rot = e.rot,
-        this.flag = e.flag,
-        this.speedLength = 0,
-        this.sprites = {},
-        this.randomness = Tools.rand(0, 1e5),
-        this.keystate = {},
-        this.lastTick = 0,
-        this.health = 1,
-        this.energy = 1,
-        this.healthRegen = 1,
-        this.energyRegen = 1,
-        this.boost = false,
-        this.strafe = false,
-        this.flagspeed = false,
-        this.stealthed = false,
-        this.alpha = 1,
-        this.scale = 1,
+    constructor(playerNewMsg, isFromLoginPacket) {
+        this.id = playerNewMsg.id;
+        this.status = playerNewMsg.status;
+        this.level = null == playerNewMsg.level || 0 == playerNewMsg.level ? null : playerNewMsg.level;
+        this.reel = 1 == playerNewMsg.reel;
+        this.name = playerNewMsg.name;
+        this.type = playerNewMsg.type;
+        this.team = playerNewMsg.team;
+        this.pos = new Vector(playerNewMsg.posX, playerNewMsg.posY);
+        this.lowResPos = new Vector(playerNewMsg.posX, playerNewMsg.posY);
+        this.speed = Vector.zero();
+        this.speedupgrade = 0;
+        this.rot = playerNewMsg.rot;
+        this.flag = playerNewMsg.flag;
+        this.speedLength = 0;
+        this.sprites = {};
+        this.randomness = Tools.rand(0, 1e5);
+        this.keystate = {};
+        this.lastTick = 0;
+        this.health = 1;
+        this.energy = 1;
+        this.healthRegen = 1;
+        this.energyRegen = 1;
+        this.boost = false;
+        this.strafe = false;
+        this.flagspeed = false;
+        this.stealthed = false;
+        this.alpha = 1;
+        this.scale = 1;
         this.powerups = {
-            shield: false,
-            rampage: false
-        },
+          shield : false,
+          rampage : false
+        };
         this.powerupsShown = {
-            shield: false,
-            rampage: false
-        },
-        this.powerupActive = false,
-        this.render = true,
-        this.hidden = false,
-        this.culled = false,
-        this.timedout = false,
-        this.reducedFactor = false,
-        this.lastPacket = game.timeNetwork,
+          shield : false,
+          rampage : false
+        };
+        this.powerupActive = false;
+        this.render = true;
+        this.hidden = false;
+        this.culled = false;
+        this.timedout = false;
+        this.reducedFactor = false;
+        this.lastPacket = game.timeNetwork;
         this.state = {
-            thrustLevel: 0,
-            thrustDir: 0,
-            bubble: false,
-            bubbleProgress: 0,
-            bubbleFade: 0,
-            bubbleTime: 0,
-            bubbleTextWidth: 0,
-            hasBadge: false,
-            badge: 0,
-            stealthLevel: 0,
-            scaleLevel: 1,
-            powerupAngle: 0,
-            powerupFade: 0,
-            powerupFadeState: 0,
-            lastBounceSound: 0
-        },
-        this.setupGraphics(),
-        0 == this.status ? (Tools.decodeUpgrades(this, e.upgrades),
-        this.updatePowerups()) : (this.hidden = true,
-        this.me() && UI.visibilityHUD(false)),
-        this.reel ? (this._prevPos = null,
-        this._offset = null) : this.visibilityUpdate(),
-        (!t && this.render || this.me()) && (this.scale = 0,
-        this.state.scaleLevel = 0),
-        this.me() && (game.myType = e.type,
-        UI.aircraftSelected(e.type))
-    }
+          thrustLevel : 0,
+          thrustDir : 0,
+          bubble : false,
+          bubbleProgress : 0,
+          bubbleFade : 0,
+          bubbleTime : 0,
+          bubbleTextWidth : 0,
+          hasBadge : false,
+          badge : 0,
+          stealthLevel : 0,
+          scaleLevel : 1,
+          powerupAngle : 0,
+          powerupFade : 0,
+          powerupFadeState : 0,
+          lastBounceSound : 0
+        };
+        this.setupGraphics();
+        if (0 == this.status) {
+          Tools.decodeUpgrades(this, playerNewMsg.upgrades);
+          this.updatePowerups();
+        } else {
+          this.hidden = true;
+          if (this.me()) {
+            UI.visibilityHUD(false);
+          }
+        }
+        if (this.reel) {
+          this._prevPos = null;
+          this._offset = null;
+        } else {
+          this.visibilityUpdate();
+        }
+        if (!isFromLoginPacket && this.render || this.me()) {
+          this.scale = 0;
+          this.state.scaleLevel = 0;
+        }
+        if (this.me()) {
+          game.myType = playerNewMsg.type;
+          UI.aircraftSelected(playerNewMsg.type);
+        }
+      }
 
     setupGraphics(e) {
         var t = null;
