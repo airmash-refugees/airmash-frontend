@@ -502,8 +502,20 @@ UI.sayLine = function(e) {
     Players.say(e)
 };
 
-UI.escapeHTML = function(e) {
-    return ("" + e).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#x27;").replace(/\//g, "&#x2F;").replace(/`/g, "&#x60;")
+UI.escapeHTML = function(s) {
+    return (
+        ("" + s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#x27;")
+        .replace(/\//g, "&#x2F;")
+        .replace(/`/g, "&#x60;")
+        .replace(/https?:[^\s]+/g, function(s) {
+            return '<a target="_blank" href="' + s + '">' + s + '</a>';
+        })
+    );
 };
 
 var onWindowResize = function() {
