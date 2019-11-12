@@ -189,9 +189,9 @@ class Player {
     }
 
     reteam(e) {
-        this.team = e,
-        this.sprites.name.style = new PIXI.TextStyle(this.nameplateTextStyle()),
-        UI.changeMinimapTeam(this.id, this.team)
+        this.team = e;
+        this.sprites.name.style = new PIXI.TextStyle(this.nameplateTextStyle());
+        UI.changeMinimapTeam(this.id, this.team);
     }
 
     nameplateTextStyle() {
@@ -227,103 +227,129 @@ class Player {
     }
 
     setupChatBubbles() {
-        this.sprites.bubble = new PIXI.Container,
+        this.sprites.bubble = new PIXI.Container;
         this.sprites.bubbleLeft = Graphics.initSprite("chatbubbleleft", this.sprites.bubble, {
             scale: .5
-        }),
+        });
         this.sprites.bubbleRight = Graphics.initSprite("chatbubbleright", this.sprites.bubble, {
             scale: .5
-        }),
+        });
         this.sprites.bubbleCenter = Graphics.initSprite("chatbubblecenter", this.sprites.bubble, {
             scale: .5
-        }),
+        });
         this.sprites.bubblePoint = Graphics.initSprite("chatbubblepoint", this.sprites.bubble, {
             scale: .5
-        }),
+        });
         this.sprites.emote = Graphics.initSprite("emote_tf", this.sprites.bubble, {
             scale: .6,
             anchor: [.5, .5]
-        }),
+        });
         this.sprites.bubbleText = new PIXI.Text("a",{
             fontFamily: "MontserratWeb, Helvetica, sans-serif",
             fontSize: "12px",
             fill: "white"
-        }),
-        this.sprites.bubble.addChild(this.sprites.bubbleText),
-        this.sprites.bubble.visible = false,
-        this.sprites.bubble.pivot.set(.5, 34),
-        game.graphics.layers.bubbles.addChild(this.sprites.bubble)
+        });
+        this.sprites.bubble.addChild(this.sprites.bubbleText);
+        this.sprites.bubble.visible = false;
+        this.sprites.bubble.pivot.set(.5, 34);
+        game.graphics.layers.bubbles.addChild(this.sprites.bubble);
     }
 
-    visibilityUpdate(e) {
+    visibilityUpdate(force) {
         this.culled = !Graphics.inScreen(this.pos, 128);
-        var t = !(this.hidden || this.culled || this.timedout);
-        if (e || this.render != t) {
-            switch (this.sprites.sprite.visible = t,
-            this.sprites.shadow.visible = t,
-            this.sprites.flag.visible = t,
-            this.sprites.name.visible = t,
-            null != this.sprites.level && (this.sprites.level.visible = t,
-            this.sprites.levelBorder.visible = t),
-            this.sprites.badge.visible = this.state.hasBadge && t,
-            this.sprites.powerup.visible = this.powerupActive && t,
-            this.sprites.powerupCircle.visible = this.powerupActive && t,
-            this.type) {
+        var isVisible = !(this.hidden || this.culled || this.timedout);
+
+        if (force || this.render != isVisible) {
+            this.sprites.sprite.visible = isVisible;
+            this.sprites.shadow.visible = isVisible;
+            this.sprites.flag.visible = isVisible;
+            this.sprites.name.visible = isVisible;
+
+            if(null != this.sprites.level) {
+                this.sprites.level.visible = isVisible;
+                this.sprites.levelBorder.visible = isVisible;
+            }
+
+            this.sprites.badge.visible = this.state.hasBadge && isVisible;
+            this.sprites.powerup.visible = this.powerupActive && isVisible;
+            this.sprites.powerupCircle.visible = this.powerupActive && isVisible;
+
+            switch (this.type) {
             case PlaneType.Predator:
-                this.sprites.thruster.visible = t,
-                this.sprites.thrusterGlow.visible = t,
-                this.sprites.thrusterShadow.visible = t;
+                this.sprites.thruster.visible = isVisible;
+                this.sprites.thrusterGlow.visible = isVisible;
+                this.sprites.thrusterShadow.visible = isVisible;
                 break;
             case PlaneType.Goliath:
             case PlaneType.Tornado:
             case PlaneType.Prowler:
-                this.sprites.thruster1.visible = t,
-                this.sprites.thruster1Glow.visible = t,
-                this.sprites.thruster1Shadow.visible = t,
-                this.sprites.thruster2.visible = t,
-                this.sprites.thruster2Glow.visible = t,
-                this.sprites.thruster2Shadow.visible = t;
+                this.sprites.thruster1.visible = isVisible;
+                this.sprites.thruster1Glow.visible = isVisible;
+                this.sprites.thruster1Shadow.visible = isVisible;
+                this.sprites.thruster2.visible = isVisible;
+                this.sprites.thruster2Glow.visible = isVisible;
+                this.sprites.thruster2Shadow.visible = isVisible;
                 break;
             case PlaneType.Mohawk:
-                this.sprites.rotor.visible = t,
-                this.sprites.rotorShadow.visible = t
+                this.sprites.rotor.visible = isVisible;
+                this.sprites.rotorShadow.visible = isVisible;
             }
-            this.render = t,
-            t || Sound.clearThruster(this.id)
+
+            this.render = isVisible;
+            if(! isVisible) {
+                Sound.clearThruster(this.id);
+            }
         }
     }
 
-    stealth(e) {
-        this.lastPacket = game.timeNetwork,
-        this.energy = e.energy,
-        this.energyRegen = e.energyRegen,
-        e.state ? (this.stealthed = true,
-        this.state.stealthLevel = 0,
-        this.team != game.myTeam && (this.keystate.LEFT && delete this.keystate.LEFT,
-        this.keystate.RIGHT && delete this.keystate.RIGHT)) : this.unstealth()
+    stealth(eventStealthMsg) {
+        this.lastPacket = game.timeNetwork;
+        this.energy = eventStealthMsg.energy;
+        this.energyRegen = eventStealthMsg.energyRegen;
+
+        if(eventStealthMsg.state) {
+            this.stealthed = true;
+            this.state.stealthLevel = 0;
+            if(this.team != game.myTeam) {
+                if(this.keystate.LEFT) {
+                    delete this.keystate.LEFT;
+                }
+                if(this.keystate.RIGHT) {
+                    delete this.keystate.RIGHT;
+                }
+            }
+        } else {
+            this.unstealth();
+        }
     }
 
     unstealth() {
-        this.stealthed = false,
-        this.state.stealthLevel = 0,
-        this.opacity(1)
+        this.stealthed = false;
+        this.state.stealthLevel = 0;
+        this.opacity(1);
     }
 
-    opacity(e) {
-        this.alpha = e,
-        this.sprites.sprite.alpha = e,
-        this.sprites.shadow.alpha = e,
-        this.sprites.flag.alpha = e,
-        this.sprites.name.alpha = e,
-        this.sprites.badge.alpha = e,
-        this.sprites.powerup.alpha = .75 * e,
-        this.sprites.powerupCircle.alpha = .75 * e,
-        null != this.sprites.level && (this.sprites.level.alpha = e,
-        this.sprites.levelBorder.alpha = .4 * e),
-        PlaneType.Prowler == this.type && (this.sprites.thruster1.alpha = e,
-        this.sprites.thruster1Glow.alpha = e,
-        this.sprites.thruster2.alpha = e,
-        this.sprites.thruster2Glow.alpha = e)
+    opacity(alpha) {
+        this.alpha = alpha;
+        this.sprites.sprite.alpha = alpha;
+        this.sprites.shadow.alpha = alpha;
+        this.sprites.flag.alpha = alpha;
+        this.sprites.name.alpha = alpha;
+        this.sprites.badge.alpha = alpha;
+        this.sprites.powerup.alpha = .75 * alpha;
+        this.sprites.powerupCircle.alpha = .75 * alpha;
+
+        if(null != this.sprites.level) {
+            this.sprites.level.alpha = alpha;
+            this.sprites.levelBorder.alpha = .4 * alpha;
+        }
+
+        if(PlaneType.Prowler == this.type) {
+            this.sprites.thruster1.alpha = alpha;
+            this.sprites.thruster1Glow.alpha = alpha;
+            this.sprites.thruster2.alpha = alpha;
+            this.sprites.thruster2Glow.alpha = alpha;
+        }
     }
 
     kill(ev) {
@@ -366,15 +392,17 @@ class Player {
         return game.myID == this.id
     }
 
-    destroy(e) {
-        var t = this.me() ? game.graphics.layers.aircraftme : game.graphics.layers.aircraft;
-        switch (t.removeChild(this.sprites.sprite),
-        game.graphics.layers.shadows.removeChild(this.sprites.shadow),
-        this.sprites.sprite.destroy(),
-        this.sprites.shadow.destroy(),
-        this.sprites.powerup.destroy(),
-        this.sprites.powerupCircle.destroy(),
-        this.type) {
+    destroy(maybeFullDestroy) {
+        var layer = this.me() ? game.graphics.layers.aircraftme : game.graphics.layers.aircraft;
+
+        layer.removeChild(this.sprites.sprite);
+        game.graphics.layers.shadows.removeChild(this.sprites.shadow);
+        this.sprites.sprite.destroy();
+        this.sprites.shadow.destroy();
+        this.sprites.powerup.destroy();
+        this.sprites.powerupCircle.destroy();
+
+        switch (this.type) {
         case PlaneType.Predator:
             game.graphics.layers.thrusters.removeChild(this.sprites.thruster),
             game.graphics.layers.thrusters.removeChild(this.sprites.thrusterGlow),
@@ -395,22 +423,27 @@ class Player {
             this.sprites.thruster2Shadow.destroy();
             break;
         case PlaneType.Mohawk:
-            t.removeChild(this.sprites.rotor),
+            layer.removeChild(this.sprites.rotor),
             this.sprites.rotor.destroy(),
             game.graphics.layers.shadows.removeChild(this.sprites.rotorShadow),
             this.sprites.rotorShadow.destroy()
         }
-        e && !this.reel && (game.graphics.layers.playernames.removeChild(this.sprites.badge, this.sprites.name, this.sprites.flag),
-        null != this.sprites.level && (game.graphics.layers.playernames.removeChild(this.sprites.level, this.sprites.levelBorder),
-        this.sprites.level.destroy(),
-        this.sprites.levelBorder.destroy()),
-        game.graphics.layers.bubbles.removeChild(this.sprites.bubble),
-        this.sprites.badge.destroy(),
-        this.sprites.name.destroy(),
-        this.sprites.flag.destroy(),
-        this.sprites.bubble.destroy({
-            children: true
-        }))
+
+        if(maybeFullDestroy && !this.reel) {
+            game.graphics.layers.playernames.removeChild(this.sprites.badge, this.sprites.name, this.sprites.flag);
+            if(null != this.sprites.level) {
+                game.graphics.layers.playernames.removeChild(this.sprites.level, this.sprites.levelBorder);
+                this.sprites.level.destroy();
+                this.sprites.levelBorder.destroy();
+            }
+            game.graphics.layers.bubbles.removeChild(this.sprites.bubble);
+            this.sprites.badge.destroy();
+            this.sprites.name.destroy();
+            this.sprites.flag.destroy();
+            this.sprites.bubble.destroy({
+                children: true
+            });
+        }
     }
 
     sayBubble(e) {
