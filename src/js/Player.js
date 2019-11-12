@@ -720,122 +720,131 @@ class Player {
     }
 
     update(timeFrac) {
-        if (this.reel) {
+        if(this.reel) {
             this.clientCalcs(timeFrac);
-        } else {
-            if (this.detectTimeout(), this.visibilityUpdate(), !this.render) {
-                return this.health += timeFrac * this.healthRegen, void(this.health >= 1 && (this.health = 1));
+            return;
+        }
+
+        this.detectTimeout();
+        this.visibilityUpdate();
+
+        if(! this.render) {
+            this.health += timeFrac * this.healthRegen;
+            if(this.health >= 1) {
+                this.health = 1;
             }
-            if (!(false !== this.reducedFactor && (timeFrac = timeFrac - this.reducedFactor, this.reducedFactor = false, timeFrac <= 0))) {
-                var I;
-                var drawOffsetX;
-                var h;
-                var i;
-                var limit = timeFrac > .51 ? Math.round(timeFrac) : 1;
-                var m = timeFrac / limit;
-                var d = 2 * Math.PI;
-                var delta = this.boost ? 1.5 : 1;
-                I = 0;
-                for (; I < limit; I++) {
-                    this.energy += m * this.energyRegen;
-                    if (this.energy >= 1) {
-                        this.energy = 1;
-                    }
-                    this.health += m * this.healthRegen;
-                    if (this.health >= 1) {
-                        this.health = 1;
-                    }
-                    i = -999;
-                    if (this.strafe) {
-                        if (this.keystate.LEFT) {
-                            i = this.rot - .5 * Math.PI;
-                        }
-                        if (this.keystate.RIGHT) {
-                            i = this.rot + .5 * Math.PI;
-                        }
-                    } else {
-                        if (this.keystate.LEFT) {
-                            this.rot += -m * config.ships[this.type].turnFactor;
-                        }
-                        if (this.keystate.RIGHT) {
-                            this.rot += m * config.ships[this.type].turnFactor;
-                        }
-                    }
-                    drawOffsetX = this.speed.x;
-                    h = this.speed.y;
-                    if (this.keystate.UP) {
-                        if (-999 == i) {
-                            i = this.rot;
-                        } else {
-                            i = i + Math.PI * (this.keystate.RIGHT ? -.25 : .25);
-                        }
-                    } else {
-                        if (this.keystate.DOWN) {
-                            if (-999 == i) {
-                                i = this.rot + Math.PI;
-                            } else {
-                                i = i + Math.PI * (this.keystate.RIGHT ? .25 : -.25);
-                            }
-                        }
-                    }
-                    if (-999 !== i) {
-                        this.speed.x += Math.sin(i) * config.ships[this.type].accelFactor * m * delta;
-                        this.speed.y -= Math.cos(i) * config.ships[this.type].accelFactor * m * delta;
-                    }
-                    var range = this.speed.length();
-                    var pathWidth = config.ships[this.type].maxSpeed * delta * config.upgrades.speed.factor[this.speedupgrade];
-                    var maxX = config.ships[this.type].minSpeed;
-                    if (this.powerups.rampage) {
-                        pathWidth = pathWidth * .75;
-                    }
-                    if (this.flagspeed) {
-                        pathWidth = 5;
-                    }
-                    if (range > pathWidth) {
-                        this.speed.multiply(pathWidth / range);
-                    } else {
-                        if (this.speed.x > maxX || this.speed.x < -maxX || this.speed.y > maxX || this.speed.y < -maxX) {
-                            this.speed.x *= 1 - config.ships[this.type].brakeFactor * m;
-                            this.speed.y *= 1 - config.ships[this.type].brakeFactor * m;
-                        } else {
-                            this.speed.x = 0;
-                            this.speed.y = 0;
-                        }
-                    }
-                    this.pos.x += m * drawOffsetX + .5 * (this.speed.x - drawOffsetX) * m * m;
-                    this.pos.y += m * h + .5 * (this.speed.y - h) * m * m;
-                    this.clientCalcs(m);
+            return;
+        }
+
+        if (!(false !== this.reducedFactor && (timeFrac = timeFrac - this.reducedFactor, this.reducedFactor = false, timeFrac <= 0))) {
+            var roundedFrames = timeFrac > .51 ? Math.round(timeFrac) : 1;
+            var perLoopEffect = timeFrac / roundedFrames;
+            var twoPi = 2 * Math.PI;
+            var boostMul = this.boost ? 1.5 : 1;
+            for (var i = 0; i < roundedFrames; i++) {
+                this.energy += perLoopEffect * this.energyRegen;
+                if (this.energy >= 1) {
+                    this.energy = 1;
                 }
-                this.rot = (this.rot % d + d) % d;
-                if (-1 != game.gameType) {
-                    if (this.pos.x < -16352) {
-                        this.pos.x = -16352;
+            
+                this.health += perLoopEffect * this.healthRegen;
+                if (this.health >= 1) {
+                    this.health = 1;
+                }
+
+                var speedDeltaAngle = -999;
+                if (this.strafe) {
+                    if (this.keystate.LEFT) {
+                        speedDeltaAngle = this.rot - .5 * Math.PI;
                     }
-                    if (this.pos.x > 16352) {
-                        this.pos.x = 16352;
-                    }
-                    if (this.pos.y < -8160) {
-                        this.pos.y = -8160;
-                    }
-                    if (this.pos.y > 8160) {
-                        this.pos.y = 8160;
+                    if (this.keystate.RIGHT) {
+                        speedDeltaAngle = this.rot + .5 * Math.PI;
                     }
                 } else {
-                    if (this.pos.x < -16384) {
-                        this.pos.x += 32768;
+                    if (this.keystate.LEFT) {
+                        this.rot += -perLoopEffect * config.ships[this.type].turnFactor;
                     }
-                    if (this.pos.x > 16384) {
-                        this.pos.x -= 32768;
-                    }
-                    if (this.pos.y < -8192) {
-                        this.pos.y += 16384;
-                    }
-                    if (this.pos.y > 8192) {
-                        this.pos.y -= 16384;
+                    if (this.keystate.RIGHT) {
+                        this.rot += perLoopEffect * config.ships[this.type].turnFactor;
                     }
                 }
-                Sound.updateThruster(0, this);
+
+                var prevSpeedX = this.speed.x;
+                var prevSpeedY = this.speed.y;
+
+                if (this.keystate.UP) {
+                    if (-999 == speedDeltaAngle) {
+                        speedDeltaAngle = this.rot;
+                    } else {
+                        speedDeltaAngle = speedDeltaAngle + Math.PI * (this.keystate.RIGHT ? -.25 : .25);
+                    }
+                } else {
+                    if (this.keystate.DOWN) {
+                        if (-999 == speedDeltaAngle) {
+                            speedDeltaAngle = this.rot + Math.PI;
+                        } else {
+                            speedDeltaAngle = speedDeltaAngle + Math.PI * (this.keystate.RIGHT ? .25 : -.25);
+                        }
+                    }
+                }
+                if (-999 !== speedDeltaAngle) {
+                    this.speed.x += Math.sin(speedDeltaAngle) * config.ships[this.type].accelFactor * perLoopEffect * boostMul;
+                    this.speed.y -= Math.cos(speedDeltaAngle) * config.ships[this.type].accelFactor * perLoopEffect * boostMul;
+                }
+                var curSpeed = this.speed.length();
+                var maxSpeed = config.ships[this.type].maxSpeed * boostMul * config.upgrades.speed.factor[this.speedupgrade];
+                var minSpeed = config.ships[this.type].minSpeed;
+                if (this.powerups.rampage) {
+                    maxSpeed = maxSpeed * .75;
+                }
+                if (this.flagspeed) {
+                    maxSpeed = 5;
+                }
+                if (curSpeed > maxSpeed) {
+                    this.speed.multiply(maxSpeed / curSpeed);
+                } else {
+                    if (this.speed.x > minSpeed || this.speed.x < -minSpeed || this.speed.y > minSpeed || this.speed.y < -minSpeed) {
+                        this.speed.x *= 1 - config.ships[this.type].brakeFactor * perLoopEffect;
+                        this.speed.y *= 1 - config.ships[this.type].brakeFactor * perLoopEffect;
+                    } else {
+                        this.speed.x = 0;
+                        this.speed.y = 0;
+                    }
+                }
+                this.pos.x += perLoopEffect * prevSpeedX + .5 * (this.speed.x - prevSpeedX) * perLoopEffect * perLoopEffect;
+                this.pos.y += perLoopEffect * prevSpeedY + .5 * (this.speed.y - prevSpeedY) * perLoopEffect * perLoopEffect;
+                this.clientCalcs(perLoopEffect);
             }
+
+            this.rot = (this.rot % twoPi + twoPi) % twoPi;
+            if (-1 != game.gameType) {
+                if (this.pos.x < -16352) {
+                    this.pos.x = -16352;
+                }
+                if (this.pos.x > 16352) {
+                    this.pos.x = 16352;
+                }
+                if (this.pos.y < -8160) {
+                    this.pos.y = -8160;
+                }
+                if (this.pos.y > 8160) {
+                    this.pos.y = 8160;
+                }
+            } else {
+                if (this.pos.x < -16384) {
+                    this.pos.x += 32768;
+                }
+                if (this.pos.x > 16384) {
+                    this.pos.x -= 32768;
+                }
+                if (this.pos.y < -8192) {
+                    this.pos.y += 16384;
+                }
+                if (this.pos.y > 8192) {
+                    this.pos.y -= 16384;
+                }
+            }
+            Sound.updateThruster(0, this);
         }
     }
 
