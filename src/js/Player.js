@@ -88,95 +88,103 @@ class Player {
         }
       }
 
-    setupGraphics(e) {
-        var t = null;
-        switch (this.me() && (t = {
-            layer: "aircraftme"
-        }),
+    setupGraphics(isPlaneTypeChange) {
+        var propOverrides = null;
+        if(this.me()) {
+            propOverrides = {
+                layer: "aircraftme"
+            };
+        }
         this.sprites.powerup = Textures.init("powerupShield", {
             visible: false,
             alpha: .75
-        }),
+        });
         this.sprites.powerupCircle = Textures.init("powerupCircle", {
             visible: false,
             alpha: .75
-        }),
-        this.type) {
+        });
+
+        switch(this.type) {
         case PlaneType.Predator:
-            this.state.baseScale = .25,
-            this.state.nameplateDist = 60,
-            this.sprites.sprite = Textures.init("shipRaptor", t),
+            this.state.baseScale = .25;
+            this.state.nameplateDist = 60;
+            this.sprites.sprite = Textures.init("shipRaptor", propOverrides);
             this.sprites.shadow = Textures.init("shipRaptorShadow", {
                 scale: this.state.baseScale * (2.4 / config.shadowScaling)
-            }),
-            this.sprites.thruster = Textures.init("shipRaptorThruster"),
-            this.sprites.thrusterGlow = Textures.init("thrusterGlowSmall"),
+            });
+            this.sprites.thruster = Textures.init("shipRaptorThruster");
+            this.sprites.thrusterGlow = Textures.init("thrusterGlowSmall");
             this.sprites.thrusterShadow = Textures.init("thrusterShadow");
             break;
         case PlaneType.Goliath:
-            this.state.baseScale = .35,
-            this.state.nameplateDist = 60,
-            this.sprites.sprite = Textures.init("shipSpirit", t),
+            this.state.baseScale = .35;
+            this.state.nameplateDist = 60;
+            this.sprites.sprite = Textures.init("shipSpirit", propOverrides);
             this.sprites.shadow = Textures.init("shipSpiritShadow", {
                 scale: this.state.baseScale * (2.4 / config.shadowScaling)
-            }),
-            this.sprites.thruster1 = Textures.init("shipRaptorThruster"),
-            this.sprites.thruster2 = Textures.init("shipRaptorThruster"),
-            this.sprites.thruster1Glow = Textures.init("thrusterGlowSmall"),
-            this.sprites.thruster2Glow = Textures.init("thrusterGlowSmall"),
-            this.sprites.thruster1Shadow = Textures.init("thrusterShadow"),
+            });
+            this.sprites.thruster1 = Textures.init("shipRaptorThruster");
+            this.sprites.thruster2 = Textures.init("shipRaptorThruster");
+            this.sprites.thruster1Glow = Textures.init("thrusterGlowSmall");
+            this.sprites.thruster2Glow = Textures.init("thrusterGlowSmall");
+            this.sprites.thruster1Shadow = Textures.init("thrusterShadow");
             this.sprites.thruster2Shadow = Textures.init("thrusterShadow");
             break;
         case PlaneType.Mohawk:
-            this.state.baseScale = .25,
-            this.state.nameplateDist = 60,
-            this.sprites.sprite = Textures.init("shipComanche", t),
-            this.sprites.rotor = Textures.init("shipComancheRotor", t),
+            this.state.baseScale = .25;
+            this.state.nameplateDist = 60;
+            this.sprites.sprite = Textures.init("shipComanche", propOverrides);
+            this.sprites.rotor = Textures.init("shipComancheRotor", propOverrides);
             this.sprites.shadow = Textures.init("shipComancheShadow", {
                 scale: this.state.baseScale * (2.4 / config.shadowScaling)
-            }),
+            });
             this.sprites.rotorShadow = Textures.init("shipComancheRotorShadow", {
                 scale: 2 * this.state.baseScale * (2.4 / config.shadowScaling)
             });
             break;
         case PlaneType.Tornado:
-            this.state.baseScale = .28,
-            this.state.nameplateDist = 60,
-            this.sprites.sprite = Textures.init("shipTornado", t),
+            this.state.baseScale = .28;
+            this.state.nameplateDist = 60;
+            this.sprites.sprite = Textures.init("shipTornado", propOverrides);
             this.sprites.shadow = Textures.init("shipTornadoShadow", {
                 scale: this.state.baseScale * (2.4 / config.shadowScaling)
-            }),
-            this.sprites.thruster1 = Textures.init("shipRaptorThruster"),
-            this.sprites.thruster2 = Textures.init("shipRaptorThruster"),
-            this.sprites.thruster1Glow = Textures.init("thrusterGlowSmall"),
-            this.sprites.thruster2Glow = Textures.init("thrusterGlowSmall"),
-            this.sprites.thruster1Shadow = Textures.init("thrusterShadow"),
+            });
+            this.sprites.thruster1 = Textures.init("shipRaptorThruster");
+            this.sprites.thruster2 = Textures.init("shipRaptorThruster");
+            this.sprites.thruster1Glow = Textures.init("thrusterGlowSmall");
+            this.sprites.thruster2Glow = Textures.init("thrusterGlowSmall");
+            this.sprites.thruster1Shadow = Textures.init("thrusterShadow");
             this.sprites.thruster2Shadow = Textures.init("thrusterShadow");
             break;
         case PlaneType.Prowler:
-            this.state.baseScale = .28,
-            this.state.nameplateDist = 60,
-            this.sprites.sprite = Textures.init("shipProwler", t),
+            this.state.baseScale = .28;
+            this.state.nameplateDist = 60;
+            this.sprites.sprite = Textures.init("shipProwler", propOverrides);
             this.sprites.shadow = Textures.init("shipProwlerShadow", {
                 scale: this.state.baseScale * (2.4 / config.shadowScaling)
-            }),
-            this.sprites.thruster1 = Textures.init("shipRaptorThruster"),
-            this.sprites.thruster2 = Textures.init("shipRaptorThruster"),
-            this.sprites.thruster1Glow = Textures.init("thrusterGlowSmall"),
-            this.sprites.thruster2Glow = Textures.init("thrusterGlowSmall"),
-            this.sprites.thruster1Shadow = Textures.init("thrusterShadow"),
-            this.sprites.thruster2Shadow = Textures.init("thrusterShadow")
+            });
+            this.sprites.thruster1 = Textures.init("shipRaptorThruster");
+            this.sprites.thruster2 = Textures.init("shipRaptorThruster");
+            this.sprites.thruster1Glow = Textures.init("thrusterGlowSmall");
+            this.sprites.thruster2Glow = Textures.init("thrusterGlowSmall");
+            this.sprites.thruster1Shadow = Textures.init("thrusterShadow");
+            this.sprites.thruster2Shadow = Textures.init("thrusterShadow");
         }
-        if (this.reel || e || (this.setupNameplate(),
-        this.setupChatBubbles(),
-        null != this.level && this.setupLevelPlate()),
-        config.debug.collisions) {
+        if(! (this.reel || isPlaneTypeChange)) {
+            this.setupNameplate();
+            this.setupChatBubbles();
+            if(null != this.level) {
+                this.setupLevelPlate();
+            }
+        }
+        if(config.debug.collisions) {
             this.col = new PIXI.Graphics;
-            for (var n of config.ships[this.type].collisions)
-                this.col.beginFill(16777215, .2),
-                this.col.drawCircle(n[0], n[1], n[2]),
+            for (var n of config.ships[this.type].collisions) {
+                this.col.beginFill(0xffffff, .2);
+                this.col.drawCircle(n[0], n[1], n[2]);
                 this.col.endFill();
-            game.graphics.layers.explosions.addChild(this.col)
+            }
+            game.graphics.layers.explosions.addChild(this.col);
         }
     }
 
