@@ -583,12 +583,12 @@ Textures.getNamed = function(e) {
     return pixiImageByName[textureByName[e].texture]
 };
 
-Textures.init = function(textureName, t) {
+Textures.init = function(textureName, propOverrides) {
     var cloned = JSON.parse(JSON.stringify(textureByName[textureName]));
     if ("screencenter" === cloned.position && (cloned.position = [game.halfScreenX, game.halfScreenY]),
-    t)
-        for (var i in t)
-            cloned[i] = t[i];
+    propOverrides)
+        for (var i in propOverrides)
+            cloned[i] = propOverrides[i];
     return Graphics.initSprite(cloned.texture, game.graphics.layers[cloned.layer], cloned)
 };
 
