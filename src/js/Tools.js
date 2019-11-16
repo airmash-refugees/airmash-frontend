@@ -261,7 +261,7 @@ Tools.reducedFactor = function() {
     e
 };
 
-var a = {
+var easingByName = {
     shockwave: [.1, .1, .11, .12, .12, .13, .14, .14, .15, .16, .17, .18, .2, .21, .22, .24, .26, .29, .31, .35, .38, .42, .47, .52, .58, .64, .71, .78, .84, .9, .95, .98, 1, 1, 1, .98, .97, .94, .9, .85, .78, .7, .62, .52, .43, .34, .26, .18, .11, .05, 0],
     explosionSmoke: [0, 0, .02, .06, .13, .26, .45, .71, .91, .99, .99, .97, .94, .92, .89, .86, .83, .8, .77, .74, .71, .68, .65, .63, .6, .57, .54, .51, .48, .45, .42, .4, .37, .34, .31, .29, .26, .24, .21, .19, .16, .14, .12, .1, .08, .06, .04, .02, .01, 0, 0]
 };
@@ -275,8 +275,8 @@ Tools.easing = {
         var i = n / (2 * Math.PI) * Math.asin(1);
         return Math.pow(2, -10 * r) * Math.sin((r - i) * (2 * Math.PI) / n) + 1
     },
-    custom: function(e, t) {
-        var n = a[t],
+    custom: function(e, name) {
+        var n = easingByName[name],
             r = n.length,
             i = Math.floor(e * (r - 1)),
             o = n[i];
@@ -387,12 +387,12 @@ Tools.decodeRegen = function(e) {
     return (e - 32768) / 1e6
 };
 
-var l = function(t) {
-    return Tools.clamp(Math.floor(t / bucketState.size) + bucketState.bucketsHalfX, 0, bucketState.bucketsMaxX)
+var xCoordToBucket = function(x) {
+    return Tools.clamp(Math.floor(x / bucketState.size) + bucketState.bucketsHalfX, 0, bucketState.bucketsMaxX)
 };
 
-var u = function(t) {
-    return Tools.clamp(Math.floor(t / bucketState.size) + bucketState.bucketsHalfY, 0, bucketState.bucketsMaxY)
+var yCoordToBucket = function(y) {
+    return Tools.clamp(Math.floor(y / bucketState.size) + bucketState.bucketsHalfY, 0, bucketState.bucketsMaxY)
 };
 
 Tools.initBuckets = function() {
@@ -404,23 +404,28 @@ Tools.initBuckets = function() {
         bucketsHalfX: parseInt(config.mapWidth / config.bucketSize / 2),
         bucketsHalfY: parseInt(config.mapHeight / config.bucketSize / 2)
     };
-    for (var t = 0; t <= bucketState.bucketsMaxX; t++) {
+    for (var xBucket = 0; xBucket <= bucketState.bucketsMaxX; xBucket++) {
         game.buckets.push([]);
-        for (var n = 0; n <= bucketState.bucketsMaxY; n++)
-            game.buckets[t].push([[]])
+        for (var yBucket = 0; yBucket <= bucketState.bucketsMaxY; yBucket++)
+            game.buckets[xBucket].push([[]])
     }
-    for (var r = 0; r < config.doodads.length; r++)
-        t = l(config.doodads[r][0]),
-        n = u(config.doodads[r][1]),
-        game.buckets[t][n][0].push(r)
+    for (var doodadId = 0; doodadId < config.doodads.length; doodadId++)
+        xBucket = xCoordToBucket(config.doodads[doodadId][0]),
+        yBucket = yCoordToBucket(config.doodads[doodadId][1]),
+        game.buckets[xBucket][yBucket][0].push(doodadId)
 };
 
-Tools.getBucketBounds = function(t, n, r) {
-    return [Tools.clamp(Math.floor((t.x - n) / bucketState.size) + bucketState.bucketsHalfX, 0, bucketState.bucketsMaxX), Tools.clamp(Math.floor((t.x + n) / bucketState.size) + bucketState.bucketsHalfX, 0, bucketState.bucketsMaxX), Tools.clamp(Math.floor((t.y - r) / bucketState.size) + bucketState.bucketsHalfY, 0, bucketState.bucketsMaxY), Tools.clamp(Math.floor((t.y + r) / bucketState.size) + bucketState.bucketsHalfY, 0, bucketState.bucketsMaxY)]
+Tools.getBucketBounds = function(centre, width, height) {
+    return [
+        Tools.clamp(Math.floor((centre.x - width) / bucketState.size) + bucketState.bucketsHalfX, 0, bucketState.bucketsMaxX),
+        Tools.clamp(Math.floor((centre.x + width) / bucketState.size) + bucketState.bucketsHalfX, 0, bucketState.bucketsMaxX),
+        Tools.clamp(Math.floor((centre.y - height) / bucketState.size) + bucketState.bucketsHalfY, 0, bucketState.bucketsMaxY),
+        Tools.clamp(Math.floor((centre.y + height) / bucketState.size) + bucketState.bucketsHalfY, 0, bucketState.bucketsMaxY)
+    ];
 };
 
-Tools.deferUpdate = function(e) {
-    setTimeout(e, 1)
+Tools.deferUpdate = function(func) {
+    setTimeout(func, 1)
 };
 
 var jsonErrorReplacer = function(key, obj) {
