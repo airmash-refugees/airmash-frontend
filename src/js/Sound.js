@@ -280,7 +280,7 @@ Sound.clearThruster = function(playerId) {
 Sound.updateThruster = function(zeroIfPlayerOneIfMob, mobOrPlayer, isVisible) {
     if (config.settings.sound) {
         if (0 == zeroIfPlayerOneIfMob) {
-            if (3 == mobOrPlayer.type) {
+            if (PlaneType.Mohawk == mobOrPlayer.type) {
                 isVisible = mobOrPlayer.render;
                 var spriteName = "chopper"
             } else {
