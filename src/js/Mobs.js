@@ -80,22 +80,28 @@ Mobs.countDoodads = function () {
 
 Mobs.setupDoodads = function () {
     config.doodads = config.doodads.concat(config.groundDoodads);
-    for (var e = 0; e < config.doodads.length; e++)
-        Mobs.addDoodad(config.doodads[e])
+    for (var id = 0; id < config.doodads.length; id++)
+        Mobs.addDoodad(config.doodads[id])
 };
 
-Mobs.addDoodad = function (e) {
-    var t = Number.isInteger(e[2]),
-        n = Textures.init((t ? "mountain" : "") + e[2]);
-    n.scale.set(e[3]),
-        n.position.set(e[0], e[1]),
-        n.visible = false,
-        e[4] && (n.rotation = e[4]),
-        e[5] && (n.alpha = e[5]),
-        e[6] && (n.tint = e[6]),
-        e[7] = false,
-        e[8] = n,
-        e[9] = t ? 0 : 1
+Mobs.addDoodad = function (doodad) {
+    var isInteger = Number.isInteger(doodad[2]);
+    var texture = Textures.init((isInteger ? "mountain" : "") + doodad[2]);
+    texture.scale.set(doodad[3]);
+    texture.position.set(doodad[0], doodad[1]);
+    texture.visible = false;
+    if(doodad[4]) {
+        texture.rotation = doodad[4];
+    }
+    if(doodad[5]) {
+        texture.alpha = doodad[5];
+    }
+    if(doodad[6]) {
+        texture.tint = doodad[6];
+    }
+    doodad[7] = false;
+    doodad[8] = texture;
+    doodad[9] = isInteger ? 0 : 1;
 };
 
 Mobs.getClosestDoodad = function (e) {
