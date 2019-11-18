@@ -263,57 +263,140 @@ UI.changeMinimapTeam = function(playerId, team) {
     }
 };
 
-UI.scoreboardUpdate = function(msgData, msgRankings, maxScoreboard) {
-    for (var i, o, s, a, l, u = 0, c = "", h = {}, d = false, p = 0, f = {}, g = "", m = "", v = "", y = 0; y < msgRankings.length; y++)
-        null != (i = Players.get(msgRankings[y].id)) && (f = Tools.decodeMinimapCoords(msgRankings[y].x, msgRankings[y].y),
-        i.lowResPos.x = f.x,
-        i.lowResPos.y = f.y,
-        msgRankings[y].id != game.myID ? 0 == msgRankings[y].x && 0 == msgRankings[y].y || (h[i.id] = true,
-        null == minimapMobs[msgRankings[y].id] ? (v = "minimapMob",
-        2 == game.gameType && 1 == i.team && (v = "minimapBlue"),
-        minimapMobs[msgRankings[y].id] = {
-            sprite: Textures.init(v),
-            x: f.x,
-            y: f.y
-        }) : (minimapMobs[msgRankings[y].id].x = f.x,
-        minimapMobs[msgRankings[y].id].y = f.y),
-        updateMinimapMob(minimapMobs[msgRankings[y].id])) : p = y + 1);
-    for (var b in minimapMobs)
-        null == h[b] && (game.graphics.layers.ui1.removeChild(minimapMobs[b].sprite),
-        minimapMobs[b].sprite.destroy(),
-        delete minimapMobs[b]);
-    if (0 != p) {
-        maxScoreboard = maxScoreboard ? Tools.clamp(maxScoreboard, 1, msgData.length) : msgData.length;
-        for (y = 0; y < maxScoreboard && (null == (i = Players.get(msgData[y].id)) || (u++,
-        o = 1 == u ? '<span class="badge scoreboard gold"></span>' : 2 == u ? '<span class="badge scoreboard silver"></span>' : 3 == u ? '<span class="badge scoreboard bronze"></span>' : u + ".",
-        s = i.me() ? " sel" : "",
-        a = msgData[y].score,
-        l = msgData[y].level,
-        p > maxScoreboard && u == maxScoreboard - 1 && (c += '<div class="line dottedline">&middot; &middot; &middot;</div>',
-        true,
-        i = Players.get(game.myID),
-        o = p + ".",
-        a = game.myScore,
-        l = game.myLevel,
-        s = " sel",
-        d = true),
-        g = "",
-        2 == game.gameType && (g = " team-" + i.team),
-        m = "",
-        4 == (o + "").length && (m = " bigger"),
-        c += '<div class="line' + s + '"><span class="place' + m + '">' + o + '</span><span class="flag small flag-' + i.flag + '"></span><span class="nick' + g + '">' + UI.escapeHTML(i.name) + "</span>" + (0 == l ? "" : '<span class="holder">&nbsp;<span class="rank">' + l + "</span></span>") + '<span class="score">' + N(a) + "</span></div>",
-        !d)); y++)
-            ;
-        $("#scoreboard").html(c)
+UI.scoreboardUpdate = function (msgData, msgRankings, maxScoreboard) {
+    var player;
+    var livePlayerIdSet = {};
+    var somethingLikeHighestPlayerId = 0;
+
+    for (var i = 0; i < msgRankings.length; i++) {
+        if (null != (player = Players.get(msgRankings[i].id))) {
+            var miniMapPos = Tools.decodeMinimapCoords(msgRankings[i].x, msgRankings[i].y);
+            player.lowResPos.x = miniMapPos.x;
+            player.lowResPos.y = miniMapPos.y;
+            if (msgRankings[i].id != game.myID) {
+                if (!(0 == msgRankings[i].x && 0 == msgRankings[i].y)) {
+                    livePlayerIdSet[player.id] = true;
+                    if (null == minimapMobs[msgRankings[i].id]) {
+                        var mobTextureName = "minimapMob";
+                        if (GameType.CTF == game.gameType && 1 == player.team) {
+                            mobTextureName = "minimapBlue";
+                        }
+                        minimapMobs[msgRankings[i].id] = {
+                            sprite: Textures.init(mobTextureName),
+                            x: miniMapPos.x,
+                            y: miniMapPos.y
+                        };
+                    } else {
+                        minimapMobs[msgRankings[i].id].x = miniMapPos.x;
+                        minimapMobs[msgRankings[i].id].y = miniMapPos.y;
+                    }
+                    updateMinimapMob(minimapMobs[msgRankings[i].id]);
+                }
+            } else {
+                somethingLikeHighestPlayerId = i + 1;
+            }
+        }
     }
+
+    for (var id in minimapMobs) {
+        if (null == livePlayerIdSet[id]) {
+            game.graphics.layers.ui1.removeChild(minimapMobs[id].sprite);
+            minimapMobs[id].sprite.destroy();
+            delete minimapMobs[id];
+        }
+    }
+
+    if (!somethingLikeHighestPlayerId) {
+        return;
+    }
+
+    if (maxScoreboard) {
+        maxScoreboard = Tools.clamp(maxScoreboard, 1, msgData.length);
+    } else {
+        maxScoreboard = msgData.length;
+    }
+
+    var playerRank = 0;
+    var isEndOfScoreboard = false;
+    var html = "";
+
+    for (var i = 0; i < maxScoreboard && !isEndOfScoreboard; i++) {
+        if (!(player = Players.get(msgData[i].id))) {
+            continue;
+        }
+
+        playerRank++;
+        var badgeHtml;
+        if (playerRank == 1) {
+            badgeHtml = '<span class="badge scoreboard gold"></span>';
+        } else if (playerRank == 2) {
+            badgeHtml = '<span class="badge scoreboard silver"></span>';
+        } else if (playerRank == 3) {
+            badgeHtml = '<span class="badge scoreboard bronze"></span>';
+        } else {
+            badgeHtml = playerRank + ".";
+        }
+
+        var isCurPlayerClass = player.me() ? " sel" : "";
+        var curPlayerScore = msgData[i].score;
+        var curPlayerLevel = msgData[i].level;
+
+        if (somethingLikeHighestPlayerId > maxScoreboard && playerRank == maxScoreboard - 1) {
+            html += '<div class="line dottedline">&middot; &middot; &middot;</div>';
+            player = Players.get(game.myID);
+            badgeHtml = somethingLikeHighestPlayerId + ".";
+            curPlayerScore = game.myScore;
+            curPlayerLevel = game.myLevel;
+            isCurPlayerClass = " sel";
+            isEndOfScoreboard = true;
+        }
+
+        var currentTeamClass = "";
+        if (GameType.CTF == game.gameType) {
+            currentTeamClass = " team-" + player.team
+        }
+
+        var placeCssClass = "";
+        if (4 == (badgeHtml + "").length) {
+            placeCssClass = " bigger"
+        }
+
+        html += (
+            '<div class="line ' + isCurPlayerClass + '">' +
+                '<span class="place ' + placeCssClass + '">' +
+                    badgeHtml +
+                '</span>' +
+                '<span class="flag small flag-' + player.flag +
+                    'title="' + FlagCodeById[player.flag] + '"></span>' +
+                '<span class="nick ' + currentTeamClass + '">' +
+                    UI.escapeHTML(player.name) +
+                '</span>'
+        );
+        if (curPlayerLevel) {
+            html += (
+                '<span class="holder">' +
+                    '&nbsp;' +
+                    '<span class="rank">' + curPlayerLevel + '</span>' +
+                '</span>'
+            );
+        }
+        html += (
+                '<span class="score">' +
+                    wrapCharsInSpans(curPlayerScore) +
+                '</span>' +
+            '</div>'
+        );
+    }
+
+    $("#scoreboard").html(html);
 };
 
-var N = function(e) {
-    var t = "";
-    e += "";
-    for (var n = 0; n < e.length; n++)
-        t += "<span>" + e[n] + "</span>";
-    return t
+var wrapCharsInSpans = function (str) {
+    var s = "";
+    str += "";
+    for (var n = 0; n < str.length; n++)
+        s += "<span>" + str[n] + "</span>";
+    return s
 };
 
 UI.toggleChatBox = function(e) {
