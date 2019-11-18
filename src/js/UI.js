@@ -351,95 +351,77 @@ var removeChatHint = function() {
  * @return {?}
  */
 UI.parseCommand = function(chatInput) {
-  if ("/" !== chatInput[0]) {
-    return false;
-  }
-  var words = chatInput.split(" ");
-  var command = words[0].substr(1).toLowerCase();
-  if (0 == command.length) {
-    return false;
-  }
-  if ("s" === command) {
-    var eIndex = chatInput.indexOf(" ");
-    var value = chatInput.substr(eIndex + 1);
-    if (value.length > 0) {
-      Network.sendSay(value);
+    if("/" !== chatInput[0]) {
+        return false;
     }
-  } else {
-    if ("t" === command) {
-      eIndex = chatInput.indexOf(" ");
-      var value = chatInput.substr(eIndex + 1);
-      if (value.length > 0) {
-        Network.sendTeam(value);
-      }
-    } else {
-      if ("ignore" === command) {
-        if (null == (e = Players.getByName(unescapePlayerName(words[1])))) {
-          UI.addChatMessage("Unknown player");
-        } else {
-          UI.chatIgnore(e.id);
+
+    var words = chatInput.split(" ");
+    var command = words[0].substr(1).toLowerCase();
+    if(0 == command.length) {
+        return false;
+    }
+
+    var player;
+    if("s" === command) {
+        var eIndex = chatInput.indexOf(" ");
+        var value = chatInput.substr(eIndex + 1);
+        if(value.length > 0) {
+            Network.sendSay(value);
         }
-      } else {
-        if ("unignore" === command) {
-          if (null == (e = Players.getByName(unescapePlayerName(words[1])))) {
+    } else if("t" === command) {
+        eIndex = chatInput.indexOf(" ");
+        var value = chatInput.substr(eIndex + 1);
+        if(value.length > 0) {
+            Network.sendTeam(value);
+        }
+    } else if("ignore" === command) {
+        if(null == (player = Players.getByName(unescapePlayerName(words[1])))) {
             UI.addChatMessage("Unknown player");
-          } else {
-            UI.chatUnignore(e);
-          }
         } else {
-          if ("votemute" === command) {
-            if (null == (e = Players.getByName(unescapePlayerName(words[1])))) {
-              UI.addChatMessage("Unknown player");
-            } else {
-              UI.chatVotemute(e);
-            }
-          } else {
-            if ("w" === command) {
-              if (words.length >= 3) {
-                UI.chatWhisper(words[1], chatInput.substr(4 + words[1].length));
-              } else {
-                UI.addChatMessage("Usage: /w player message");
-              }
-            } else {
-              if ("spectate" === command) {
-                var e;
-                if (null == (e = Players.getByName(unescapePlayerName(words[1])))) {
-                  UI.addChatMessage("Unknown player");
-                } else {
-                  Network.sendCommand("spectate", e.id + "");
-                }
-              } else {
-                if ("flag" === command || "flags" === command) {
-                  if (2 == words.length) {
-                    Network.sendCommand("flag", chatInput.substr(command.length + 2));
-                  } else {
-                    UI.addChatMessage("Type /flag XX where XX is the 2-letter ISO code of a country", true);
-                  }
-                } else {
-                  if ("emotes" === command) {
-                    UI.addChatMessage("Emotes available: /tf /pepe /clap /lol /bro /kappa /cry /rage", true);
-                  } else {
-                    if ("help" === command) {
-                      UI.toggleHelp();
-                    } else {
-                      if (!("debug" === command)) {
-                        if (UI.isEmote(command)) {
-                          Network.sendSay(":" + command + ":");
-                        } else {
-                          Network.sendCommand(command, chatInput.substr(command.length + 2));
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+            UI.chatIgnore(player.id);
         }
-      }
+    } else if("unignore" === command) {
+        if(null == (player = Players.getByName(unescapePlayerName(words[1])))) {
+            UI.addChatMessage("Unknown player");
+        } else {
+            UI.chatUnignore(player);
+        }
+    } else if("votemute" === command) {
+        if(null == (player = Players.getByName(unescapePlayerName(words[1])))) {
+            UI.addChatMessage("Unknown player");
+        } else {
+            UI.chatVotemute(player);
+        }
+    } else if("w" === command) {
+        if(words.length >= 3) {
+            UI.chatWhisper(words[1], chatInput.substr(4 + words[1].length));
+        } else {
+            UI.addChatMessage("Usage: /w player message");
+        }
+    } else if("spectate" === command) {
+        if(null == (player = Players.getByName(unescapePlayerName(words[1])))) {
+            UI.addChatMessage("Unknown player");
+        } else {
+            Network.sendCommand("spectate", player.id + "");
+        }
+    } else if("flag" === command || "flags" === command) {
+        if(2 == words.length) {
+            Network.sendCommand("flag", chatInput.substr(command.length + 2));
+        } else {
+            UI.addChatMessage("Type /flag XX where XX is the 2-letter ISO code of a country", true);
+        }
+    } else if("emotes" === command) {
+        UI.addChatMessage("Emotes available: /tf /pepe /clap /lol /bro /kappa /cry /rage", true);
+    } else if("help" === command) {
+        UI.toggleHelp();
+    } else if(!("debug" === command)) {
+        if(UI.isEmote(command)) {
+            Network.sendSay(":" + command + ":");
+        } else {
+            Network.sendCommand(command, chatInput.substr(command.length + 2));
+        }
     }
-  }
-  return true;
+    return true;
 };
 
 
