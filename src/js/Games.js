@@ -106,15 +106,15 @@ Games.setup = function() {
 };
 
 Games.popupLogin = function(e) {
-    x("/auth_" + ["", "facebook", "google", "twitter", "reddit", "twitch"][e], "Login", 4 == e ? 900 : 500, 500)
+    openLoginWindow("/auth_" + ["", "facebook", "google", "twitter", "reddit", "twitch"][e], "Login", 4 == e ? 900 : 500, 500)
 };
 
-var x = function(e, t, n, r) {
+var openLoginWindow = function(url, windowTitle, width, height) {
     var i = void 0 != window.screenLeft ? window.screenLeft : window.screenX,
         o = void 0 != window.screenTop ? window.screenTop : window.screenY,
-        s = (window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width) / 2 - n / 2 + i,
-        a = (window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height) / 2 - r / 2 + o;
-    window.open(e, t, "width=" + n + ", height=" + r + ", top=" + a + ", left=" + s)
+        s = (window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width) / 2 - width / 2 + i,
+        a = (window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height) / 2 - height / 2 + o;
+    window.open(url, windowTitle, "width=" + width + ", height=" + height + ", top=" + a + ", left=" + s)
 };
 
 window.loginSuccess = function(e) {
