@@ -921,60 +921,196 @@ UI.closeAllPanels = function(e) {
     $("#custom-msg").length && UI.hidePanel("#custom-msg", false, true)
 };
 
-var B = function(e) {
+var formatMostAwesomeMetric = function (e) {
     return (e = Math.round(e)) < 1e3 ? e : e < 1e5 ? (e / 1e3).toFixed(1) + " K" : e < 1e6 ? Math.round(e / 1e3) + " K" : (e / 1e6).toFixed(1) + " M"
 };
 
-UI.updateScore = function(e) {
-    if (isScoreVisible) {
-        var t = e.scores,
-            n = ["gold", "silver", "bronze"];
-        t.sort(function(e, t) {
-            return t.score - e.score
-        });
-        var r = [["name", "&nbsp;"], ["kills", "Kills"], ["deaths", "Deaths"], ["damage", "Damage"], ["bounty", "Bounty"], ["rank", "Level"], ["ping", "Ping"]];
-        e.c == Network.SERVERPACKET.SCORE_DETAILED_BTR ? r = [["name", "&nbsp;"], ["wins", "&nbsp;"], ["kills", "Kills"], ["deaths", "Deaths"], ["bounty", "Bounty"], ["rank", "Level"], ["ping", "Ping"]] : e.c == Network.SERVERPACKET.SCORE_DETAILED_CTF && (r = [["name", "&nbsp;"], ["captures", "&nbsp;"], ["kills", "Kills"], ["deaths", "Deaths"], ["bounty", "Bounty"], ["rank", "Level"], ["ping", "Ping"]]);
-        for (var i = "", o = 0; o < r.length; o++)
-            i += '<div class="' + r[o][0] + '">' + r[o][1] + "</div>";
-        for (var s, a, l, u = "", h = "", d = -1, p = -1, f = 0; f < t.length; f++)
-            null != (s = Players.get(t[f].id)) && (a = f <= 2 ? '&nbsp;<div class="badge detail ' + n[f] + '"></div>' : f + 1 + ".",
-            l = s.me() ? " sel" : "",
-            u = e.c == Network.SERVERPACKET.SCORE_DETAILED_CTF ? " team-" + s.team : e.c != Network.SERVERPACKET.SCORE_DETAILED_BTR || t[f].alive ? "" : " inactive",
-            h += '<div class="item' + l + '"><div class="name"><div class="position">',
-            h += a + '</div><div class="flag small flag-' + s.flag + '"></div>',
-            h += '<div class="player' + u + '">' + UI.escapeHTML(s.name) + "</div></div>",
-            e.c == Network.SERVERPACKET.SCORE_DETAILED_BTR && (0 == t[f].wins ? h += '<div class="wins">&nbsp;</div>' : h += '<div class="wins">' + t[f].wins + '<div class="wins-container">&nbsp;<div class="wins-icon"></div></div></div>'),
-            e.c == Network.SERVERPACKET.SCORE_DETAILED_CTF && (0 == t[f].captures ? h += '<div class="captures">&nbsp;</div>' : h += '<div class="captures">' + t[f].captures + '<div class="captures-container">&nbsp;<div class="captures-icon"></div></div></div>'),
-            h += '<div class="kills">' + t[f].kills + "</div>",
-            h += '<div class="deaths">' + t[f].deaths + "</div>",
-            e.c == Network.SERVERPACKET.SCORE_DETAILED && (h += '<div class="damage">' + B(t[f].damage) + "</div>"),
-            h += '<div class="bounty">' + t[f].score + "</div>",
-            h += '<div class="rank">' + (0 == t[f].level ? "&nbsp;" : t[f].level) + "</div>",
-            h += '<div class="ping">' + t[f].ping + '<span class="ms">ms</span></div>',
-            h += "</div>",
-            e.c == Network.SERVERPACKET.SCORE_DETAILED ? t[f].damage > d && (d = t[f].damage,
-            p = s) : e.c == Network.SERVERPACKET.SCORE_DETAILED_CTF ? t[f].captures > d && (d = t[f].captures,
-            p = s) : t[f].kills > d && (d = t[f].kills,
-            p = s));
-        var g = "",
-            m = "";
-        if (t.length > 1 && (g = "&bull;&nbsp;&nbsp;" + t.length + " players",
-        d > 0)) {
-            if (e.c == Network.SERVERPACKET.SCORE_DETAILED)
-                var v = B(d),
-                    y = " damage";
-            else {
-                v = d + "",
-                y = e.c == Network.SERVERPACKET.SCORE_DETAILED_CTF ? " capture" : " kill";
-                d > 1 && (y += "s")
-            }
-            m = '<div class="mvpbadge">MVP</div><div class="flag flag-' + p.flag + '"></div><div class="name">' + UI.escapeHTML(p.name) + '</div><div class="damage">&nbsp;&nbsp;&bull;&nbsp;&nbsp;' + v + y + "</div>"
-        }
-        $("#scoreplayers").html(g),
-        $("#scoretable").html(i),
-        $("#scorecontainer").html(h),
-        $("#scoremvp").html(m)
+var normalScoreColumnMap = [
+    ["name", "&nbsp;"],
+    ["kills", "Kills"],
+    ["deaths", "Deaths"],
+    ["damage", "Damage"],
+    ["bounty", "Bounty"],
+    ["rank", "Level"],
+    ["ping", "Ping"]
+];
+
+var btrScoreColumnMap = [
+    ["name", "&nbsp;"],
+    ["wins", "&nbsp;"],
+    ["kills", "Kills"],
+    ["deaths", "Deaths"],
+    ["bounty", "Bounty"],
+    ["rank", "Level"],
+    ["ping", "Ping"]
+];
+
+var ctfScoreColumnMap = [
+    ["name", "&nbsp;"],
+    ["captures", "&nbsp;"],
+    ["kills", "Kills"],
+    ["deaths", "Deaths"],
+    ["bounty", "Bounty"],
+    ["rank", "Level"],
+    ["ping", "Ping"]
+];
+
+UI.updateScore = function (scoreDetailedMsg) {
+    if (! isScoreVisible) {
+        return;
     }
+
+    var rankNames = ["gold", "silver", "bronze"];
+    var scores = scoreDetailedMsg.scores;
+
+    scores.sort(function (e, t) {
+        return t.score - e.score;
+    });
+
+    var columnMap;
+    if (scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED_BTR) {
+        columnMap = btrScoreColumnMap;
+    } else if (scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED_CTF) {
+        columnMap = ctfScoreColumnMap;
+    } else {
+        columnMap = normalScoreColumnMap;
+    }
+
+    var tableHtml = "";
+    for (var o = 0; o < columnMap.length; o++) {
+        tableHtml += (
+            '<div class="' + columnMap[o][0] + '">' +
+                columnMap[o][1] +
+            '</div>'
+        );
+    }
+
+    var containerHtml = "";
+    var mostAwesomeMetric = -1;
+    var mostAwesomePlayer = -1;
+
+    for (var f = 0; f < scores.length; f++) {
+        var player = Players.get(scores[f].id);
+        if (!player) {
+            continue;
+        }
+
+        var badgeHtml = f <= 2 ? '&nbsp;<div class="badge detail ' + rankNames[f] + '"></div>' : f + 1 + ".";
+        var curPlayerIsMeClass = player.me() ? " sel" : "";
+
+        var u = scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED_CTF ? " team-" + player.team : scoreDetailedMsg.c != Network.SERVERPACKET.SCORE_DETAILED_BTR || scores[f].alive ? "" : " inactive";
+
+        containerHtml += (
+            '<div class="item ' + curPlayerIsMeClass + '">' +
+                '<div class="name">' +
+                    '<div class="position">' +
+                        badgeHtml +
+                    '</div>' +
+                    '<div class="flag small flag-' + player.flag + '" ' +
+                        'title="' + FlagCodeById[player.flag] + '"></div>' +
+                    '<div class="player' + u + '">' +
+                        UI.escapeHTML(player.name) +
+                    '</div>' +
+                '</div>'
+        );
+
+        if (scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED_BTR) {
+            if (0 == scores[f].wins) {
+                containerHtml += '<div class="wins">&nbsp;</div>';
+            } else {
+                containerHtml += (
+                    '<div class="wins">' +
+                        scores[f].wins +
+                        '<div class="wins-container">' +
+                            '&nbsp;' +
+                            '<div class="wins-icon"></div>' +
+                        '</div>' +
+                    '</div>'
+                );
+            }
+        }
+
+        if (scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED_CTF) {
+            if (0 == scores[f].captures) {
+                containerHtml += '<div class="captures">&nbsp;</div>'
+            } else {
+                containerHtml += (
+                    '<div class="captures">' +
+                        scores[f].captures +
+                        '<div class="captures-container">&nbsp;<div class="captures-icon"></div></div>' +
+                    '</div>'
+                );
+            }
+        }
+
+        containerHtml += (
+            '<div class="kills">' + scores[f].kills + '</div>' +
+            '<div class="deaths">' + scores[f].deaths + '</div>'
+        );
+
+        if (scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED) {
+            containerHtml += '<div class="damage">' + formatMostAwesomeMetric(scores[f].damage) + "</div>";
+        }
+
+        containerHtml += (
+                '<div class="bounty">' + scores[f].score + '</div>' +
+                '<div class="rank">' +
+                    ((0 == scores[f].level) ? "&nbsp;" : scores[f].level) +
+                '</div>' +
+                '<div class="ping">' +
+                    scores[f].ping +
+                    '<span class="ms">ms</span>' +
+                '</div>' +
+            '</div>'
+        );
+
+        if (scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED) {
+            if (scores[f].damage > mostAwesomeMetric) {
+                mostAwesomeMetric = scores[f].damage;
+                mostAwesomePlayer = player;
+            }
+        } else if (scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED_CTF) {
+            if (scores[f].captures > mostAwesomeMetric) {
+                mostAwesomeMetric = scores[f].captures;
+                mostAwesomePlayer = player;
+            }
+        } else {
+            if (scores[f].kills > mostAwesomeMetric) {
+                mostAwesomeMetric = scores[f].kills;
+                mostAwesomePlayer = player;
+            }
+        }
+    }
+
+    var playerHtml = "";
+    if (scores.length > 1) {
+        playerHtml = "&bull;&nbsp;&nbsp;" + scores.length + " players";
+    }
+
+    var mvpHtml = "";
+    if (mostAwesomeMetric > 0) {
+        if (scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED) {
+            var formattedAwesomeMetric = formatMostAwesomeMetric(mostAwesomeMetric);
+            var formattedAwesomeUnit = " damage";
+        } else {
+            formattedAwesomeMetric = mostAwesomeMetric + "";
+            formattedAwesomeUnit = scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED_CTF ? " capture" : " kill";
+            if (mostAwesomeMetric > 1) {
+                formattedAwesomeUnit += "s";
+            }
+        }
+        mvpHtml = `
+            <div class="mvpbadge">MVP</div>
+            <div class="flag flag-${ mostAwesomePlayer.flag}"></div>
+            <div class="name">${ UI.escapeHTML(mostAwesomePlayer.name)}</div>
+            <div class="damage">&nbsp;&nbsp;&bull;&nbsp;&nbsp;${ formattedAwesomeMetric}${formattedAwesomeUnit}</div>
+        `;
+    }
+    $("#scoreplayers").html(playerHtml);
+    $("#scoretable").html(tableHtml);
+    console.log(containerHtml);
+    $("#scorecontainer").html(containerHtml);
+    $("#scoremvp").html(mvpHtml);
 };
 
 UI.popMenu = function(e, n) {
