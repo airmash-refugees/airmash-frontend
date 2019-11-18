@@ -659,8 +659,8 @@ function getPlayRoom() {
 }
 
 Games.prep = function() {
-    if (Games.wipe(),
-    2 == game.gameType) {
+    Games.wipe();
+    if (GameType.CTF == game.gameType) {
         $("#gamespecific").html('<div class="blueflag"></div><div id="blueflag-name" class="blueflag-player">&nbsp;</div><div class="redflag"></div><div id="redflag-name" class="redflag-player">&nbsp;</div>'),
         UI.show("#gamespecific"),
         ctfGameState = {
@@ -706,8 +706,10 @@ Games.prep = function() {
         Graphics.minimapMob(ctfGameState.flagBlue.minimapBase, ctfGameState.flagBlue.basePos.x, ctfGameState.flagBlue.basePos.y),
         Graphics.minimapMob(ctfGameState.flagRed.minimapBase, ctfGameState.flagRed.basePos.x, ctfGameState.flagRed.basePos.y)
     } else
-        3 == game.gameType && ($("#gamespecific").html(""),
-        UI.show("#gamespecific"))
+        GameType.BTR == game.gameType && (
+            $("#gamespecific").html(""),
+            UI.show("#gamespecific")
+        )
 };
 
 Games.wipe = function() {
