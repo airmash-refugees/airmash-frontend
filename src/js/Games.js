@@ -762,39 +762,55 @@ Games.networkFlag = function(flagMsg) {
     updateCtfFlagState(flagState, false)
 };
 
-var updateCtfFlagState = function(e, t) {
-    if (t && (Graphics.minimapMob(e.minimapSprite, e.position.x, e.position.y),
-    Graphics.minimapMob(e.minimapBase, e.basePos.x, e.basePos.y)),
-    null != e.playerId) {
-        var n = Players.get(e.playerId);
-        if (null != n && (n.render != e.visible && (e.visible = n.render,
-        e.sprite.visible = n.render,
-        e.spriteShadow.visible = n.render,
-        n.render && (e.momentum = 0,
-        e.direction = 1,
-        e.diffX = n.pos.x)),
-        n.render ? Graphics.minimapMob(e.minimapSprite, n.pos.x, n.pos.y) : Graphics.minimapMob(e.minimapSprite, n.lowResPos.x, n.lowResPos.y),
-        e.visible)) {
-            e.position.x = n.pos.x,
-            e.position.y = n.pos.y,
-            e.sprite.position.set(n.pos.x, n.pos.y);
-            var r = Graphics.shadowCoords(n.pos);
-            e.spriteShadow.position.set(r.x, r.y),
-            e.momentum = Tools.clamp(e.momentum + (n.pos.x - e.diffX) * game.timeFactor, -40, 40);
-            var i = e.momentum > 0 ? .1 : -.1;
-            e.direction = Tools.clamp(e.direction - i * game.timeFactor, -.4, .4),
-            e.sprite.scale.x = e.direction,
-            e.spriteShadow.scale.x = 1.1 * e.direction;
-            var o = .04 * -(n.pos.x - e.diffX) * game.timeFactor;
-            e.sprite.rotation = o,
-            e.spriteShadow.rotation = o,
-            e.diffX = n.pos.x
+var updateCtfFlagState = function(flagState, isResize) {
+    if(isResize) {
+        Graphics.minimapMob(flagState.minimapSprite, flagState.position.x, flagState.position.y);
+        Graphics.minimapMob(flagState.minimapBase, flagState.basePos.x, flagState.basePos.y);
+    }
+
+    if(null != flagState.playerId) {
+        var player = Players.get(flagState.playerId);
+        if (null != player) {
+            if(player.render != flagState.visible) {
+                flagState.visible = player.render;
+                flagState.sprite.visible = player.render;
+                flagState.spriteShadow.visible = player.render;
+                if(player.render) {
+                    flagState.momentum = 0;
+                    flagState.direction = 1;
+                    flagState.diffX = player.pos.x;
+                }
+            }
+            if(player.render) {
+                Graphics.minimapMob(flagState.minimapSprite, player.pos.x, player.pos.y);
+            } else {
+                Graphics.minimapMob(flagState.minimapSprite, player.lowResPos.x, player.lowResPos.y);
+            }
+        }
+
+        if(flagState.visible) {
+            flagState.position.x = player.pos.x;
+            flagState.position.y = player.pos.y;
+            flagState.sprite.position.set(player.pos.x, player.pos.y);
+            var shadowPos = Graphics.shadowCoords(player.pos);
+            flagState.spriteShadow.position.set(shadowPos.x, shadowPos.y),
+            flagState.momentum = Tools.clamp(flagState.momentum + (player.pos.x - flagState.diffX) * game.timeFactor, -40, 40);
+            var i = flagState.momentum > 0 ? .1 : -.1;
+            flagState.direction = Tools.clamp(flagState.direction - i * game.timeFactor, -.4, .4);
+            flagState.sprite.scale.x = flagState.direction;
+            flagState.spriteShadow.scale.x = 1.1 * flagState.direction;
+            var o = .04 * -(player.pos.x - flagState.diffX) * game.timeFactor;
+            flagState.sprite.rotation = o;
+            flagState.spriteShadow.rotation = o;
+            flagState.diffX = player.pos.x;
         }
     } else {
-        var s = Graphics.inScreen(e.position, 128);
-        s != e.visible && (e.visible = s,
-        e.sprite.visible = s,
-        e.spriteShadow.visible = s)
+        var isVisible = Graphics.inScreen(flagState.position, 128);
+        if(isVisible != flagState.visible) {
+            flagState.visible = isVisible;
+            flagState.sprite.visible = isVisible;
+            flagState.spriteShadow.visible = isVisible;
+        }
     }
 };
 
