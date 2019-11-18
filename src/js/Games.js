@@ -955,9 +955,13 @@ Games.handleFirewall = function(firewallMsg) {
     Games.popFirewall(firewallStatus.pos, firewallStatus.radius))
 };
 
-Games.update = function(e) {
-    2 == game.gameType && ctfGameState.flagBlue && (updateCtfFlagState(ctfGameState.flagBlue, e),
-    updateCtfFlagState(ctfGameState.flagRed, e)),
-    3 == game.gameType && minimapIsInitialized && (firewallStatus.radius += firewallStatus.speed / 60 * game.timeFactor,
-    Games.popFirewall(firewallStatus.pos, firewallStatus.radius))
+Games.update = function(isResize) {
+    if(GameType.CTF == game.gameType && ctfGameState.flagBlue) {
+        updateCtfFlagState(ctfGameState.flagBlue, isResize);
+        updateCtfFlagState(ctfGameState.flagRed, isResize);
+    }
+    if(GameType.BTR == game.gameType && minimapIsInitialized) {
+        firewallStatus.radius += firewallStatus.speed / 60 * game.timeFactor;
+        Games.popFirewall(firewallStatus.pos, firewallStatus.radius);
+    }
 };
