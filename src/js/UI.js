@@ -366,8 +366,8 @@ UI.scoreboardUpdate = function (msgData, msgRankings, maxScoreboard) {
                 '<span class="place ' + placeCssClass + '">' +
                     badgeHtml +
                 '</span>' +
-                '<span class="flag small flag-' + player.flag +
-                    'title="' + FlagCodeById[player.flag] + '"></span>' +
+                '<span class="flag small flag-' + player.flag + '" ' +
+                    'title="' + getFlagLabel(player.flag) + '"></span>' +
                 '<span class="nick ' + currentTeamClass + '">' +
                     UI.escapeHTML(player.name) +
                 '</span>'
@@ -512,7 +512,7 @@ UI.addChatLine = function(msg, text, msgType) {
     if (!ignoredPlayerIdSet[msg.id]) {
         i++;
         if (0 == msgType)
-            var o = '<div id="chat-' + i + '" class="line"><span class="playersel" data-playerid="' + msg.id + '"><span class="flag small flag-' + msg.flag + '" title="' + FlagCodeById[msg.flag] + '"></span><span class="nick">' + UI.escapeHTML(msg.name) + '</span></span><span class="text">' + UI.escapeHTML(text) + "</span></div>";
+            var o = '<div id="chat-' + i + '" class="line"><span class="playersel" data-playerid="' + msg.id + '"><span class="flag small flag-' + msg.flag + '" title="' + getFlagLabel(msg.flag) + '"></span><span class="nick">' + UI.escapeHTML(msg.name) + '</span></span><span class="text">' + UI.escapeHTML(text) + "</span></div>";
         else if (1 == msgType || 2 == msgType) {
             var a = 1 == msgType ? "TO" : "FROM";
             2 == msgType && (lastPrivateMessage = escapePlayerName(msg.name));
@@ -1038,6 +1038,21 @@ var ctfScoreColumnMap = [
     ["ping", "Ping"]
 ];
 
+var getFlagLabel = function(flagId) {
+    var code = FlagCodeById[flagId];
+    if(! code) {
+        return '';
+    }
+
+    var name = CountryNames[code];
+    if(name) {
+        return name + ' (' + code + ')';
+    }
+
+    return code;
+};
+
+
 UI.updateScore = function (scoreDetailedMsg) {
     if (! isScoreVisible) {
         return;
@@ -1090,7 +1105,7 @@ UI.updateScore = function (scoreDetailedMsg) {
                         badgeHtml +
                     '</div>' +
                     '<div class="flag small flag-' + player.flag + '" ' +
-                        'title="' + FlagCodeById[player.flag] + '"></div>' +
+                        'title="' + getFlagLabel(player.flag) + '"></div>' +
                     '<div class="player' + u + '">' +
                         UI.escapeHTML(player.name) +
                     '</div>' +
