@@ -447,7 +447,7 @@ UI.addChatLine = function(msg, text, msgType) {
     if (!ignoredPlayerIdSet[msg.id]) {
         i++;
         if (0 == msgType)
-            var o = '<div id="chat-' + i + '" class="line"><span class="playersel" data-playerid="' + msg.id + '"><span class="flag small flag-' + msg.flag + '"></span><span class="nick">' + UI.escapeHTML(msg.name) + '</span></span><span class="text">' + UI.escapeHTML(text) + "</span></div>";
+            var o = '<div id="chat-' + i + '" class="line"><span class="playersel" data-playerid="' + msg.id + '"><span class="flag small flag-' + msg.flag + '" title="' + FlagCodeById[msg.flag] + '"></span><span class="nick">' + UI.escapeHTML(msg.name) + '</span></span><span class="text">' + UI.escapeHTML(text) + "</span></div>";
         else if (1 == msgType || 2 == msgType) {
             var a = 1 == msgType ? "TO" : "FROM";
             2 == msgType && (lastPrivateMessage = escapePlayerName(msg.name));
