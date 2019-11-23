@@ -610,6 +610,9 @@ UI.controlKey = function(keyCode, bindName, alwaysTrue) {
                     case "DROPUPGRADE":
                         UI.dropUpgrade();
                         break;
+                    case "DROPFLAG":
+                        UI.dropFlag();
+                        break;
                     case "SHOWSCORE":
                         UI.toggleScore();
                         break;
@@ -1322,6 +1325,10 @@ UI.nameEntered = function() {
 
 UI.dropUpgrade = function(e) {
     Network.sendCommand("upgrades", "drop");
+};
+
+UI.dropFlag = function(e) {
+    Network.sendCommand("drop", "");
 };
 
 UI.selectUpgrade = function(e) {
