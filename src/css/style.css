@@ -590,16 +590,16 @@ input:focus {
     border-right: 1px solid rgba(255, 255, 255, 0.1)
 }
 
-#loginselector .buttons .button.facebook {
-    background-color: #47649e;
+#loginselector .buttons .button.microsoft {
+    background-color: #308c30;
 }
 
-#loginselector .buttons .button.facebook .icon {
-    background-image: url("data:image/svg+xml;charset=utf-8,%3C?xml version=%221.0%22 encoding=%22UTF-8%22 standalone=%22no%22?%3E %3C!DOCTYPE svg PUBLIC %22-//W3C//DTD SVG 1.1//EN%22 %22http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd%22%3E %3Csvg width=%22100%25%22 height=%22100%25%22 viewBox=%220 0 20 20%22 version=%221.1%22 xmlns=%22http://www.w3.org/2000/svg%22 xmlns:xlink=%22http://www.w3.org/1999/xlink%22 xml:space=%22preserve%22 style=%22fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:1.41421;%22%3E %3Cg id=%22Facebook__x28_alt_x29_%22 transform=%22matrix(0.222222,0,0,0.222222,0,0)%22%3E %3Cpath d=%22M90,15.001C90,7.119 82.884,0 75,0L15,0C7.116,0 0,7.119 0,15.001L0,74.999C0,82.881 7.116,90 15.001,90L45,90L45,56L34,56L34,41L45,41L45,35.156C45,25.077 52.568,16 61.875,16L74,16L74,31L61.875,31C60.548,31 59,32.611 59,35.024L59,41L74,41L74,56L59,56L59,90L75,90C82.884,90 90,82.881 90,74.999L90,15.001Z%22 style=%22fill:white;fill-rule:nonzero;%22/%3E %3C/g%3E %3C/svg%3E")
+#loginselector .buttons .button.microsoft .icon {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3C?xml version=%221.0%22 encoding=%22UTF-8%22 standalone=%22no%22?%3E %3C!DOCTYPE svg PUBLIC %22-//W3C//DTD SVG 1.1//EN%22 %22http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd%22%3E %3Csvg width=%22100%%22 height=%22100%%22 viewBox=%22-5 -5 105 105%22 version=%221.1%22 xmlns=%22http://www.w3.org/2000/svg%22 xmlns:xlink=%22http://www.w3.org/1999/xlink%22 xml:space=%22preserve%22%3E %3Cg%3E %3Cpath d=%22M2.5,2.5L2.5,47.5L47.5,47.5L47.5,2.5Z M2.5,52.5L47.5,52.5L47.5,97.5L2.5,97.5Z M52.5,52.5L97.5,52.5L97.5,97.5L52.5,97.5Z M52.5,2.5L97.5,2.5L97.5,47.5L52.5,47.5Z%22 style=%22fill:white;fill-rule:nonzero;%22/%3E %3C/g%3E %3C/svg%3E")
 }
 
-#loginselector .buttons .button.facebook:hover {
-    background-color: #5873ab
+#loginselector .buttons .button.microsoft:hover {
+    background-color: #42a042
 }
 
 #loginselector .buttons .button.google {
