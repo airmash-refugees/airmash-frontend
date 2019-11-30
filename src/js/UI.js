@@ -512,14 +512,14 @@ UI.addChatLine = function(msg, text, msgType) {
     if (!ignoredPlayerIdSet[msg.id]) {
         i++;
         if (0 == msgType)
-            var o = '<div id="chat-' + i + '" class="line"><span class="playersel" data-playerid="' + msg.id + '"><span class="flag small flag-' + msg.flag + '" title="' + getFlagLabel(msg.flag) + '"></span><span class="nick">' + UI.escapeHTML(msg.name) + '</span></span><span class="text">' + UI.escapeHTML(text) + "</span></div>";
+            var o = '<div id="chat-' + i + '" class="line"><span class="playersel" data-playerid="' + msg.id + '"><span class="flag small flag-' + msg.flag + '" title="' + getFlagLabel(msg.flag) + '"></span><span class="nick">' + UI.escapeHTML(msg.name) + '</span></span><span class="text">' + UI.escapeHTML(text, true) + "</span></div>";
         else if (1 == msgType || 2 == msgType) {
             var a = 1 == msgType ? "TO" : "FROM";
             2 == msgType && (lastPrivateMessage = escapePlayerName(msg.name));
-            o = '<div id="chat-' + i + '" class="line"><span class="tag whisper">' + a + '</span><span class="playersel" data-playerid="' + msg.id + '"><span class="nick green">' + UI.escapeHTML(msg.name) + '</span></span><span class="text green">' + UI.escapeHTML(text) + "</span></div>";
+            o = '<div id="chat-' + i + '" class="line"><span class="tag whisper">' + a + '</span><span class="playersel" data-playerid="' + msg.id + '"><span class="nick green">' + UI.escapeHTML(msg.name) + '</span></span><span class="text green">' + UI.escapeHTML(text, true) + "</span></div>";
             s = -1
         } else {
-            o = '<div id="chat-' + i + '" class="line"><span class="tag team">TEAM</span><span class="playersel" data-playerid="' + msg.id + '"><span class="nick blue">' + UI.escapeHTML(msg.name) + '</span></span><span class="text blue">' + UI.escapeHTML(text) + "</span></div>";
+            o = '<div id="chat-' + i + '" class="line"><span class="tag team">TEAM</span><span class="playersel" data-playerid="' + msg.id + '"><span class="nick blue">' + UI.escapeHTML(msg.name) + '</span></span><span class="text blue">' + UI.escapeHTML(text, true) + "</span></div>";
             s = -1
         }
         var c = "#chat-" + (i - config.maxChatLines);
@@ -567,24 +567,27 @@ UI.sayLine = function(e) {
     Players.say(e)
 };
 
-UI.escapeHTML = function(s) {
-    return (
-        ("" + s)
+UI.escapeHTML = function(s, autolink) {
+    s = ("" + s)
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#x27;")
         .replace(/\//g, "&#x2F;")
-        .replace(/`/g, "&#x60;")
-        .replace(/\b(https?:|www\.|[\w.]+\.com)[^\s]*/gi, function(s) {
+        .replace(/`/g, "&#x60;");
+
+    if (autolink) {
+        s = s.replace(/\b(https?:|www\.|[\w.]+\.com)[^\s]*/gi, function(s) {
             var link = s;
             if(link.toLowerCase().indexOf('http') != 0) {
                 link = 'http://' + link;
             }
             return '<a target="_blank" href="' + link + '">' + s + '</a>';
-        })
-    );
+        });
+    }
+
+    return s;
 };
 
 var onWindowResize = function() {
@@ -842,11 +845,11 @@ UI.errorHandler = function(e) {
 
 UI.showCommandReply = function(e) {
     if (0 == e.type)
-        UI.addChatMessage(UI.escapeHTML(e.text));
+        UI.addChatMessage(UI.escapeHTML(e.text, true));
     else {
         var t = JSON.stringify(JSON.parse(e.text), null, "    "),
             n = '<div class="close" onclick="$(this).parent().remove()"></div><div class="text"><pre>' +
-                UI.escapeHTML(t) +
+                UI.escapeHTML(t, true) +
                 "</pre></div>";
         $("body").append('<div id="debugpopup" oncontextmenu="event.stopPropagation()">' + n + "</div>")
     }

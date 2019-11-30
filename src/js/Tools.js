@@ -1,5 +1,8 @@
 import Vector from './Vector';
 
+// if the player is logged in, these are synchronised with the settings service (https://airmash.online/settings)
+const remotelySyncedSettings = [ 'flag', 'helpshown', 'keybinds', 'mobileshown', 'mousemode', 'name', 'region', 'sound' ];
+
 var bucketState = {},
     clientErrorCount = 0,
     reelState = {
@@ -10,7 +13,8 @@ var bucketState = {},
         dist: 100,
         explosion: 4e3,
         direction: 1
-    };
+    },
+    lastRemoteSettingsJson = "";
 
 Tools.updateReel = function() {
     if (!reelState.started) {
@@ -83,25 +87,51 @@ var initMobileConstants = function() {
     "#nomobile" == window.location.hash && (config.mobile = false)
 };
 
+var checkLoginSettings = function() {
+    if (!(config.settings.clienttoken && config.settings.playerid && config.settings.identityprovider && config.settings.loginname)) {
+        Tools.removeSetting("clienttoken");
+        Tools.removeSetting("playerid");
+        Tools.removeSetting("identityprovider");
+        Tools.removeSetting("loginname");
+    }
+}
+
+Tools.syncRemoteSettings = function() {
+    if (config.settings.clienttoken) {
+        var remoteSettings = {};
+        remotelySyncedSettings.forEach((key) => {
+            if (config.settings[key] !== undefined) {
+                remoteSettings[key] = config.settings[key]
+            }
+        });
+        var remoteSettingsJson = JSON.stringify(remoteSettings);
+        if (remoteSettingsJson !== lastRemoteSettingsJson) {
+            lastRemoteSettingsJson = remoteSettingsJson;
+            Tools.ajaxPost(
+                "https://" + game.backendHost + '/settings',
+                remoteSettingsJson,
+                config.settings.clienttoken,
+                function(data) {
+                    if (!(data && data.result == 1)) {
+                        lastRemoteSettingsJson = "";
+                    }
+                });
+        }
+    }
+}
+
+
 Tools.loadSettings = function() {
-    var storage = getSettingsFromLocalStorage();
-    config.storage = storage,
-    DEVELOPMENT && console.log(storage),
-    null != storage.id && (config.settings.id = storage.id),
-    null != storage.session && (config.settings.session = storage.session),
-    null != storage.name && (config.settings.name = storage.name),
-    null != storage.region && (config.settings.region = storage.region),
-    null != storage.helpshown && (config.settings.helpshown = storage.helpshown),
-    null != storage.mobileshown && (config.settings.mobileshown = storage.mobileshown),
-    null != storage.flag && (config.settings.flag = storage.flag),
-    null != storage.hidpi && (config.settings.hidpi = storage.hidpi),
-    null != storage.sound && (config.settings.sound = storage.sound),
-    null != storage.keybinds && (config.settings.keybinds = storage.keybinds),
-    null != storage.mousemode && (config.settings.mousemode = storage.mousemode),
-    i()
+    var settings = getSettingsFromLocalStorage();
+    for (var key in settings) {
+        config.settings[key] = settings[key];
+    }
+    DEVELOPMENT && console.log(settings);
+    checkLoginSettings();
+    Tools.applySettingsToGame();
 };
 
-var i = function() {
+Tools.applySettingsToGame = function() {
     if (null == config.settings.id) {
         var e = Tools.randomID(16);
         config.settings.id = e,
@@ -115,7 +145,7 @@ var i = function() {
     null == config.settings.sound && (config.settings.sound = true),
     config.settings.mousemode && Input.toggleMouse(true),
     UI.updateSound(),
-    config.settings.oldhidpi = config.settings.hidpi
+    config.oldhidpi = config.settings.hidpi
 };
 
 Tools.randomID = function(e) {
@@ -130,31 +160,31 @@ var o = function(str) {
     return n
 };
 
-Tools.setSettings = function(e) {
+Tools.setSettings = function(settings) {
+    for (var key in settings) {
+        config.settings[key] = settings[key];
+    }
     if (null != window.localStorage) {
-        for (var t in e)
-            config.storage[t] = e[t];
         try {
-            localStorage.setItem("settings", JSON.stringify(config.storage))
+            localStorage.setItem("settings", JSON.stringify(config.settings))
         } catch (e) {}
     }
 };
 
-Tools.removeSetting = function(e) {
+Tools.removeSetting = function(key) {
+    null != config.settings[key] && delete config.settings[key];
     if (null != window.localStorage) {
-        null != config.storage[e] && delete config.storage[e];
         try {
-            localStorage.setItem("settings", JSON.stringify(config.storage))
+            localStorage.setItem("settings", JSON.stringify(config.settings))
         } catch (e) {}
     }
 };
 
 Tools.wipeSettings = function() {
+    config.settings = {};
     if (null != window.localStorage) {
-        config.storage = {},
-        config.settings = {};
         try {
-            localStorage.setItem("settings", JSON.stringify(config.storage))
+            localStorage.setItem("settings", JSON.stringify(config.settings))
         } catch (e) {}
     }
 };
@@ -174,18 +204,35 @@ var getSettingsFromLocalStorage = function() {
     return t
 };
 
-Tools.ajaxPost = function(url, data, callback) {
+Tools.ajaxPost = function(url, data, token, callback) {
     $.ajax({
         url: url,
         method: "POST",
         data: data,
         dataType: "json",
         timeout: 1e4,
+        headers: null == token ? {} : {"Authorization": "Bearer " + token},
         success: function(e) {
-            null != callback && callback(null != e && 1 == e.result ? e : null)
+            null != callback && callback(e);
         },
         error: function() {
-            null != callback && callback(null)
+            null != callback && callback(null);
+        }
+    })
+};
+
+Tools.ajaxGet = function(url, token, callback) {
+    $.ajax({
+        url: url,
+        method: "GET",
+        dataType: "json",
+        timeout: 1e4,
+        headers: null == token ? {} : {"Authorization": "Bearer " + token},
+        success: function(e) {
+            null != callback && callback(e);
+        },
+        error: function() {
+            null != callback && callback(null);
         }
     })
 };
