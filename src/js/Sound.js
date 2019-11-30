@@ -81,10 +81,7 @@ Sound.setup = function() {
 };
 
 Sound.toggle = function() {
-    config.settings.sound = !config.settings.sound,
-    Tools.setSettings({
-        sound: config.settings.sound
-    }),
+    Tools.setSettings({ sound: !config.settings.sound }),
     UI.updateSound(true),
     stopSoundsIfPlaying()
 };
