@@ -1,5 +1,8 @@
 import Vector from './Vector';
 
+// if the player is logged in, these are synchronised with the settings service (https://airmash.online/settings)
+const remotelySyncedSettings = [ 'flag', 'helpshown', 'keybinds', 'mobileshown', 'mousemode', 'name', 'region', 'sound' ];
+
 var bucketState = {},
     clientErrorCount = 0,
     reelState = {
@@ -10,7 +13,8 @@ var bucketState = {},
         dist: 100,
         explosion: 4e3,
         direction: 1
-    };
+    },
+    lastRemoteSettingsJson = "";
 
 Tools.updateReel = function() {
     if (!reelState.started) {
@@ -92,6 +96,31 @@ var checkLoginSettings = function() {
     }
 }
 
+Tools.syncRemoteSettings = function() {
+    if (config.settings.clienttoken) {
+        var remoteSettings = {};
+        remotelySyncedSettings.forEach((key) => {
+            if (config.settings[key] !== undefined) {
+                remoteSettings[key] = config.settings[key]
+            }
+        });
+        var remoteSettingsJson = JSON.stringify(remoteSettings);
+        if (remoteSettingsJson !== lastRemoteSettingsJson) {
+            lastRemoteSettingsJson = remoteSettingsJson;
+            Tools.ajaxPost(
+                "https://" + game.backendHost + '/settings',
+                remoteSettingsJson,
+                config.settings.clienttoken,
+                function(data) {
+                    if (!(data && data.result == 1)) {
+                        lastRemoteSettingsJson = "";
+                    }
+                });
+        }
+    }
+}
+
+
 Tools.loadSettings = function() {
     var settings = getSettingsFromLocalStorage();
     for (var key in settings) {
@@ -99,10 +128,10 @@ Tools.loadSettings = function() {
     }
     DEVELOPMENT && console.log(settings);
     checkLoginSettings();
-    applySettingsToGame();
+    Tools.applySettingsToGame();
 };
 
-var applySettingsToGame = function() {
+Tools.applySettingsToGame = function() {
     if (null == config.settings.id) {
         var e = Tools.randomID(16);
         config.settings.id = e,

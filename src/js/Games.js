@@ -48,7 +48,7 @@ var e = false,
         3: "Emotes",
         4: "Flag Pack #1"
     },
-    loginOrigin = "https://login.airmash.online"
+    loginOrigin = "https://login.airmash.online",
     loginIdentityProvider = 0,
     loginNonce = null;
 
@@ -91,7 +91,8 @@ Games.setup = function() {
     }),
     $("#gotomainpage").on("click", Games.redirRoot),
     $("#lifetime-signin").on("click", Games.redirRoot),
-    null != config.settings.clienttoken ? Games.playerAuth() : Games.playerGuest(),
+    null != config.settings.clienttoken ? Games.playerAuth() : Games.playerGuest();
+    setInterval(Tools.syncRemoteSettings, 1000);
     refreshGamesJsonData(function() {
         if (gamesJsonDataIsLoaded = true,
         updatePlayersOnlineCount(),
@@ -125,9 +126,13 @@ var receiveLoginMessage = function(e) {
         return;
     }
     loginNonce = null;
-    delete e.data.nonce;
 
-    window.loginSuccess(e.data);
+    window.loginSuccess({
+        playerid: e.data.playerid,
+        clienttoken: e.data.clienttoken,
+        identityprovider: e.data.provider,
+        loginname: e.data.loginname
+    });
 }
 
 /*
@@ -206,7 +211,7 @@ Games.playerAuth = function() {
                 $("#lifetime-account").remove(),
                 $("#playbutton").html("PLAY"),
                 UI.show("#playbutton", true);
-                Tools.setSettings(settings);
+                Tools.setSettings(remoteSettings);
                 Tools.applySettingsToGame();
             } else {
                 Games.playerGuest();
