@@ -396,7 +396,7 @@ Network.setup = function() {
             c: ClientPacket.LOGIN,
             protocol: game.protocol,
             name: game.myName,
-            session: config.settings.session ? config.settings.session : "none",
+            session: (config.settings.playerid ? config.settings.playerid : "none"),
             horizonX: Math.ceil(game.halfScreenX / game.scale),
             horizonY: Math.ceil(game.halfScreenY / game.scale),
             flag: game.myFlag.toUpperCase()
