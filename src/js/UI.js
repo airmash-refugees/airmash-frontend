@@ -578,7 +578,7 @@ UI.escapeHTML = function(s, autolink) {
         .replace(/`/g, "&#x60;");
 
     if (autolink) {
-        s.replace(/\b(https?:|www\.|[\w.]+\.com)[^\s]*/gi, function(s) {
+        s = s.replace(/\b(https?:|www\.|[\w.]+\.com)[^\s]*/gi, function(s) {
             var link = s;
             if(link.toLowerCase().indexOf('http') != 0) {
                 link = 'http://' + link;
