@@ -119,7 +119,7 @@ Graphics.toggleHiDPI = function() {
         hidpi: true
     }) : Tools.removeSetting("hidpi"),
     UI.updateMainMenuSettings(),
-    1 == config.settings.oldhidpi == config.settings.hidpi ? UI.showMessage("alert", "", 1e3) : UI.showMessage("alert", 'Reload game to apply HiDPI settings<br><span class="button" onclick="Games.redirRoot()">RELOAD</span>', 1e4)
+    1 == config.oldhidpi == config.settings.hidpi ? UI.showMessage("alert", "", 1e3) : UI.showMessage("alert", 'Reload game to apply HiDPI settings<br><span class="button" onclick="Games.redirRoot()">RELOAD</span>', 1e4)
 };
 
 var initGameObjScreenVars = function(screenInnerWidth, screenInnerHeight) {

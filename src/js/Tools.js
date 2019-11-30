@@ -116,7 +116,7 @@ var applySettingsToGame = function() {
     null == config.settings.sound && (config.settings.sound = true),
     config.settings.mousemode && Input.toggleMouse(true),
     UI.updateSound(),
-    config.settings.oldhidpi = config.settings.hidpi
+    config.oldhidpi = config.settings.hidpi
 };
 
 Tools.randomID = function(e) {
