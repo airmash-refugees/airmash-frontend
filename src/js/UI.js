@@ -155,9 +155,9 @@ UI.wipeAllMessages = function() {
 };
 
 UI.updateMyLevel = function(newLevel) {
-    game.myLevel = newLevel,
-    $("#score-rank").html(newLevel),
-    $("#lifetime-rank").html(newLevel)
+    game.myLevel = newLevel;
+    $("#score-rank").html(newLevel);
+    $("#lifetime-rank").html(newLevel);
 };
 
 UI.newScore = function (scoreUpdate) {

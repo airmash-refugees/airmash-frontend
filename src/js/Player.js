@@ -518,11 +518,15 @@ class Player {
         }
     }
 
-    updateLevel(e) {
-        this.me() && (PlaneType.Predator == e.type && Games.showLevelUP(e.level),
-        UI.updateMyLevel(e.level)),
-        this.level = e.level,
-        this.setupLevelPlate()
+    updateLevel(packet) {
+        if (this.me()) { 
+            if (packet.type == 1) {
+                Games.showLevelUP(packet.level);
+            }
+            UI.updateMyLevel(packet.level);
+        }
+        this.level = packet.level;
+        this.setupLevelPlate();
     }
 
     setupLevelPlate() {

@@ -149,9 +149,11 @@ Players.powerup = function(e) {
     Players.getMe().powerup(e)
 };
 
-Players.updateLevel = function(t) {
-    var n = playersById[t.id];
-    null != n && n.updateLevel(t)
+Players.updateLevel = function(packet) {
+    var player = playersById[packet.id];
+    if (player != null) {
+        player.updateLevel(packet);
+    }
 };
 
 Players.reteam = function(t) {
