@@ -34,6 +34,8 @@ module.exports = {
     new CopyPlugin([
       { from: './src/assets', to: 'assets' },
       { from: './src/robots.txt', to: 'robots.txt' },
+      { from: './src/html/privacy.html', to: 'privacy.html' },
+      { from: './src/html/contact.html', to: 'contact.html' },
     ]),
     new HtmlWebpackPlugin({
       filename: 'index.html',
