@@ -43,11 +43,7 @@ var e = false,
         pos: Vector.zero(),
         speed: 0
     },
-    unlockedFeature = {
-        2: "Custom country flags",
-        3: "Emotes",
-        4: "Flag Pack #1"
-    },
+    unlockedFeature = {},
     loginOrigin = "https://login.airmash.online",
     loginIdentityProvider = 0,
     loginNonce = null;
