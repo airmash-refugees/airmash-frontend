@@ -4,7 +4,7 @@ var minimapMobs = {},
     ignoredPlayerIdSet = {},
     delayedGraphicsResizeTimer = null,
     isChatBoxVisible = false,
-    i = 0,
+    chatLineId = 0,
     isChatHintRemoved = false,
     s = -1,
     a = 0,
@@ -18,7 +18,7 @@ var minimapMobs = {},
     isMainMenuVisible = false,
     isTooltipVisible = false,
     hideTooltipTimer = null,
-    y = 0,
+    tooltipId = 0,
     isInviteVisible = false,
     isLoginVisible = false,
     applyPowerupTimer = null,
@@ -42,15 +42,15 @@ var minimapMobs = {},
         default: false,
         destroyed: false
     },
-    thisPlayerState = {
+    playerStats = {
         score: -1,
         upgrades: -1,
         earnings: -1,
         kills: -1,
         deaths: -1
     },
-    hugeKillDeathNoticeInfo = false,
-    currentUpgradeValueByName = {},
+    deathNotice = false,
+    playerUpgrades = {},
     listOfPlayersKills = [],
     lastTimePlayerWasKilled = 0,
     aircraftInfoByType = {
@@ -160,48 +160,89 @@ UI.updateMyLevel = function(newLevel) {
     $("#lifetime-rank").html(newLevel)
 };
 
-UI.newScore = function(scoreUpdateMsg) {
-    if (scoreUpdateMsg.id != game.myID)
+UI.newScore = function (scoreUpdate) {
+    if (scoreUpdate.id != game.myID) {
         return false;
-    var t = scoreUpdateMsg.score - game.myScore,
-        n = "";
-    if (Math.abs(t) < 1 && (t = false),
-    game.myScore = scoreUpdateMsg.score,
-    scoreUpdateMsg.score != thisPlayerState.score && (thisPlayerState.score = scoreUpdateMsg.score,
-    $("#score-score").html(scoreUpdateMsg.score)),
-    scoreUpdateMsg.upgrades != thisPlayerState.upgrades) {
-        var r = scoreUpdateMsg.upgrades - thisPlayerState.upgrades,
-            i = -1 != thisPlayerState.upgrades;
-        if (thisPlayerState.upgrades = scoreUpdateMsg.upgrades,
-        $("#score-upgrades").html(scoreUpdateMsg.upgrades),
-        X(),
-        i && r > 0) {
-            if (Sound.powerup(4, null),
-            hugeKillDeathNoticeInfo && (hugeKillDeathNoticeInfo.msg += "<br>"),
-            noticeMessageVisibleByType.default)
-                return n += '&nbsp;&nbsp;<span class="upgrade">+' + r + "</span>",
-                void $("#alert-update").append(n);
-            n += '<span id="alert-update"><span class="upgrade">+' + r + '<span class="bold"> upgrade</span></span></span>'
+    }
+
+    let scoreChange = scoreUpdate.score - game.myScore;
+    let msg = "";
+        
+    if (Math.abs(scoreChange) < 1) {
+        scoreChange = false;
+    }
+
+    game.myScore = scoreUpdate.score;
+
+    if (scoreUpdate.score != playerStats.score) {
+        playerStats.score = scoreUpdate.score;
+    }
+
+    $("#score-score").html(scoreUpdate.score);
+
+    if (scoreUpdate.upgrades != playerStats.upgrades) {
+        let upgradesChange = scoreUpdate.upgrades - playerStats.upgrades;
+        let playerHadUpgrades = (playerStats.upgrades != -1);
+
+        playerStats.upgrades = scoreUpdate.upgrades;
+        $("#score-upgrades").html(scoreUpdate.upgrades);
+        updateUpgradesLighted();
+
+        if (playerHadUpgrades && upgradesChange > 0) {
+            Sound.powerup(4, null);
+
+            if (deathNotice) {
+                deathNotice.msg += "<br>";
+            }
+
+            if (noticeMessageVisibleByType.default) {
+                msg += '&nbsp;&nbsp;<span class="upgrade">+' + upgradesChange + "</span>";
+                $("#alert-update").append(msg);
+                return;
+            }
+
+            msg += '<span id="alert-update"><span class="upgrade">+' + upgradesChange + '<span class="bold"> upgrade</span></span></span>'
         }
     }
-    if (scoreUpdateMsg.earnings != thisPlayerState.earnings && 0 != game.myLevel) {
-        thisPlayerState.earnings = scoreUpdateMsg.earnings,
-        $("#lifetime-totalbounty").html(scoreUpdateMsg.earnings);
-        var o = Math.ceil(Tools.rankToEarnings(game.myLevel + 1) - scoreUpdateMsg.earnings);
-        $("#lifetime-nextbounty").html("+" + o)
+
+    if (scoreUpdate.earnings != playerStats.earnings && game.myLevel != 0) {
+        playerStats.earnings = scoreUpdate.earnings;
+        $("#lifetime-totalbounty").html(scoreUpdate.earnings);
+
+        let nextbounty = Math.ceil(Tools.rankToEarnings(game.myLevel + 1) - scoreUpdate.earnings);
+        $("#lifetime-nextbounty").html("+" + nextbounty)
     }
-    if (scoreUpdateMsg.totalkills != thisPlayerState.kills || scoreUpdateMsg.totaldeaths != thisPlayerState.deaths) {
-        var s = 0 == scoreUpdateMsg.totalkills || 0 == scoreUpdateMsg.totaldeaths ? "-" : (scoreUpdateMsg.totalkills / scoreUpdateMsg.totaldeaths).toFixed(2);
-        $("#lifetime-kdratio").html(s)
+
+    if (scoreUpdate.totalkills != playerStats.kills || scoreUpdate.totaldeaths != playerStats.deaths) {
+        let kdratio = (scoreUpdate.totalkills == 0 || scoreUpdate.totaldeaths == 0) ? "-" : (scoreUpdate.totalkills / scoreUpdate.totaldeaths).toFixed(2)
+        $("#lifetime-kdratio").html(kdratio)
     }
-    scoreUpdateMsg.totalkills != thisPlayerState.kills && (thisPlayerState.kills = scoreUpdateMsg.totalkills,
-    $("#lifetime-kills").html(scoreUpdateMsg.totalkills)),
-    scoreUpdateMsg.totaldeaths != thisPlayerState.deaths && (thisPlayerState.deaths = scoreUpdateMsg.totaldeaths,
-    $("#lifetime-deaths").html(scoreUpdateMsg.totaldeaths)),
-    t && (hugeKillDeathNoticeInfo && (hugeKillDeathNoticeInfo.msg += "<br>"),
-    n += UI.getScoreString(t)),
-    hugeKillDeathNoticeInfo ? (UI.showMessage(hugeKillDeathNoticeInfo.type, hugeKillDeathNoticeInfo.msg + n, hugeKillDeathNoticeInfo.duration),
-    hugeKillDeathNoticeInfo = false) : "" != n && UI.showMessage("default", n, 3e3)
+
+    if (scoreUpdate.totalkills != playerStats.kills) {
+        playerStats.kills = scoreUpdate.totalkills;
+        $("#lifetime-kills").html(scoreUpdate.totalkills);
+    }
+
+    if (scoreUpdate.totaldeaths != playerStats.deaths) {
+        playerStats.deaths = scoreUpdate.totaldeaths;
+        $("#lifetime-deaths").html(scoreUpdate.totaldeaths);
+    }
+
+    if (scoreChange) {
+        if (deathNotice) {
+            deathNotice.msg += "<br>";
+        }
+        msg += UI.getScoreString(scoreChange);
+    }
+    
+    if (deathNotice) {
+        UI.showMessage(deathNotice.type, deathNotice.msg + msg, deathNotice.duration);
+        deathNotice = false;
+    } else { 
+        if (msg != "") {
+            UI.showMessage("default", msg, 3000)
+        }
+    }
 };
 
 UI.getScoreString = function(e, t, n) {
@@ -510,19 +551,19 @@ UI.parseCommand = function(chatInput) {
 
 UI.addChatLine = function(msg, text, msgType) {
     if (!ignoredPlayerIdSet[msg.id]) {
-        i++;
+        chatLineId++;
         if (0 == msgType)
-            var o = '<div id="chat-' + i + '" class="line"><span class="playersel" data-playerid="' + msg.id + '"><span class="flag small flag-' + msg.flag + '" title="' + getFlagLabel(msg.flag) + '"></span><span class="nick">' + UI.escapeHTML(msg.name) + '</span></span><span class="text">' + UI.escapeHTML(text, true) + "</span></div>";
+            var o = '<div id="chat-' + chatLineId + '" class="line"><span class="playersel" data-playerid="' + msg.id + '"><span class="flag small flag-' + msg.flag + '" title="' + getFlagLabel(msg.flag) + '"></span><span class="nick">' + UI.escapeHTML(msg.name) + '</span></span><span class="text">' + UI.escapeHTML(text, true) + "</span></div>";
         else if (1 == msgType || 2 == msgType) {
             var a = 1 == msgType ? "TO" : "FROM";
             2 == msgType && (lastPrivateMessage = escapePlayerName(msg.name));
-            o = '<div id="chat-' + i + '" class="line"><span class="tag whisper">' + a + '</span><span class="playersel" data-playerid="' + msg.id + '"><span class="nick green">' + UI.escapeHTML(msg.name) + '</span></span><span class="text green">' + UI.escapeHTML(text, true) + "</span></div>";
+            o = '<div id="chat-' + chatLineId + '" class="line"><span class="tag whisper">' + a + '</span><span class="playersel" data-playerid="' + msg.id + '"><span class="nick green">' + UI.escapeHTML(msg.name) + '</span></span><span class="text green">' + UI.escapeHTML(text, true) + "</span></div>";
             s = -1
         } else {
-            o = '<div id="chat-' + i + '" class="line"><span class="tag team">TEAM</span><span class="playersel" data-playerid="' + msg.id + '"><span class="nick blue">' + UI.escapeHTML(msg.name) + '</span></span><span class="text blue">' + UI.escapeHTML(text, true) + "</span></div>";
+            o = '<div id="chat-' + chatLineId + '" class="line"><span class="tag team">TEAM</span><span class="playersel" data-playerid="' + msg.id + '"><span class="nick blue">' + UI.escapeHTML(msg.name) + '</span></span><span class="text blue">' + UI.escapeHTML(text, true) + "</span></div>";
             s = -1
         }
-        var c = "#chat-" + (i - config.maxChatLines);
+        var c = "#chat-" + (chatLineId - config.maxChatLines);
         if ($(c).length && $(c).remove(),
         $("#chatlines").append(o),
         isChatMinimized)
@@ -540,8 +581,8 @@ UI.addChatLine = function(msg, text, msgType) {
 UI.addChatMessage = function(text, isNotWarning) {
     a = 0,
     s = -1;
-    var n = '<div id="chat-' + ++i + '" class="line">' + (isNotWarning ? "" : '<span class="nick">⚠</span>') + '<span class="text">' + text + "</span></div>",
-        r = "#chat-" + (i - config.maxChatLines);
+    var n = '<div id="chat-' + ++chatLineId + '" class="line">' + (isNotWarning ? "" : '<span class="nick">⚠</span>') + '<span class="text">' + text + "</span></div>",
+        r = "#chat-" + (chatLineId - config.maxChatLines);
     $(r).length && $(r).remove(),
     $("#chatlines").append(n);
     var o = $("#chatbox");
@@ -762,7 +803,7 @@ UI.killed = function(playerKillMsg) {
         r = listOfPlayersKills[i][1],
         1 != listOfPlayersKills.length && r.length > 10 && (r = r.substr(0, 10) + "..."),
         n += '<span class="player"><span class="flag big flag-' + listOfPlayersKills[i][0] + '"></span>' + UI.escapeHTML(r) + listOfPlayersKills[i][2] + "</span>";
-    hugeKillDeathNoticeInfo = {
+    deathNotice = {
         type: "default",
         duration: 3e3,
         msg: "You have destroyed" + n
@@ -771,7 +812,7 @@ UI.killed = function(playerKillMsg) {
 
 UI.killedBy = function(playerKillMsg) {
     var t = null == playerKillMsg.level ? "" : '<span class="level">' + playerKillMsg.level + "</span>";
-    hugeKillDeathNoticeInfo = {
+    deathNotice = {
         type: "destroyed",
         duration: 3e3,
         msg: 'Destroyed by<span class="playerbig"><span class="flag big flag-' + playerKillMsg.flag + '"></span>' + UI.escapeHTML(playerKillMsg.name) + t + "</span>"
@@ -1338,30 +1379,35 @@ UI.selectUpgrade = function(e) {
     Network.sendCommand("upgrade", e + "")
 };
 
-var X = function() {
-    for (var e = ["", "speed", "defense", "energy", "missile"], t = 1; t < 5; t++)
-        t - 1,
-        currentUpgradeValueByName[e[t]] < 5 && thisPlayerState.upgrades > 0 ? $("#selectupgrade-" + t).addClass("lighted") : $("#selectupgrade-" + t).removeClass("lighted")
+var updateUpgradesLighted = function() {
+    let upgradeNames = ["", "speed", "defense", "energy", "missile"];
+    for (let t = 1; t < 5; t++) {
+        if (playerUpgrades[upgradeNames[t]] < 5 && playerStats.upgrades > 0) {
+            $("#selectupgrade-" + t).addClass("lighted");
+        } else {
+            $("#selectupgrade-" + t).removeClass("lighted");
+        }
+    }
 };
 
 UI.updateUpgrades = function(speedDefenseEnergyMissileArray, msgUpgrades, msgTypeId) {
     for (var r, upgradeKind = ["", "speed", "defense", "energy", "missile"], o = 1; o < 5; o++)
         r = o - 1,
         "",
-        null != currentUpgradeValueByName[upgradeKind[o]] && currentUpgradeValueByName[upgradeKind[o]] == speedDefenseEnergyMissileArray[r] || (currentUpgradeValueByName[upgradeKind[o]] = speedDefenseEnergyMissileArray[r],
+        null != playerUpgrades[upgradeKind[o]] && playerUpgrades[upgradeKind[o]] == speedDefenseEnergyMissileArray[r] || (playerUpgrades[upgradeKind[o]] = speedDefenseEnergyMissileArray[r],
         $("#selectupgrade-" + o + "-level").html(speedDefenseEnergyMissileArray[r]),
-        isTooltipVisible && y - 100 == o && UI.popTooltip(null, 100 + o));
+        isTooltipVisible && tooltipId - 100 == o && UI.popTooltip(null, 100 + o));
     if (null != msgTypeId) {
         if (0 != msgTypeId) {
             var s = ["", "Speed", "Defense", "Energy Regen", "Missile Speed"],
-                a = "+" + Math.round(100 * (config.upgrades[upgradeKind[msgTypeId]].factor[currentUpgradeValueByName[upgradeKind[msgTypeId]]] - 1)) + "% " + s[msgTypeId];
+                a = "+" + Math.round(100 * (config.upgrades[upgradeKind[msgTypeId]].factor[playerUpgrades[upgradeKind[msgTypeId]]] - 1)) + "% " + s[msgTypeId];
             UI.showMessage("information", '<span class="info">UPGRADE</span>' + a, 3e3),
             Sound.playerUpgrade()
         }
-        thisPlayerState.upgrades = msgUpgrades,
+        playerStats.upgrades = msgUpgrades,
         $("#score-upgrades").html(msgUpgrades)
     }
-    X()
+    updateUpgradesLighted()
 };
 
 UI.resetUpgrades = function() {
@@ -1437,7 +1483,7 @@ UI.gameStart = function(playerName, isFirstTime) {
     UI.hide("#gamespecific");
     $("#gameinfo").html("&nbsp;");  
     $("#gameinfo").addClass("ingame");
-    currentUpgradeValueByName = {};
+    playerUpgrades = {};
     UI.resetUpgrades();
     UI.hideSpectator();
     UI.resetPowerups();
@@ -1458,17 +1504,17 @@ var setupMobileUI = function() {
 };
 
 UI.reconnection = function() {
-    i = 0,
+    chatLineId = 0,
     s = -1,
-    thisPlayerState = {
+    playerStats = {
         score: -1,
         upgrades: -1,
         earnings: -1,
         kills: -1,
         deaths: -1
     },
-    hugeKillDeathNoticeInfo = false,
-    currentUpgradeValueByName = {},
+    deathNotice = false,
+    playerUpgrades = {},
     ignoredPlayerIdSet = {},
     UI.resetUpgrades(),
     UI.resetPowerups(),
@@ -1513,14 +1559,14 @@ UI.popTooltip = function(e, t) {
     } else {
         var l = ["", "speed", "defense", "energy", "missile"],
             u = n - 100,
-            c = currentUpgradeValueByName[l[u]],
-            h = "+" + Math.round(100 * (config.upgrades[l[u]].factor[currentUpgradeValueByName[l[u]]] - 1)) + "%";
+            c = playerUpgrades[l[u]],
+            h = "+" + Math.round(100 * (config.upgrades[l[u]].factor[playerUpgrades[l[u]]] - 1)) + "%";
         if (i += '<div class="header">' + aircraftInfoByType[n][0] + "</div>",
         i += '<div class="item"><div class="level">' + c + " / " + (config.upgrades[l[u]].factor.length - 1) + "</div>",
         c > 0 && (i += '<div class="percent">' + h + "</div></div>"),
         c < config.upgrades[l[u]].factor.length - 1) {
             i += '<div class="item smaller"><div class="requires">Requires 1 upgrade point</div></div>';
-            i += '<div class="item smaller"><div class="clickto">Click to upgrade to ' + (h = "+" + Math.round(100 * (config.upgrades[l[u]].factor[currentUpgradeValueByName[l[u]] + 1] - 1)) + "%") + "</div></div>"
+            i += '<div class="item smaller"><div class="clickto">Click to upgrade to ' + (h = "+" + Math.round(100 * (config.upgrades[l[u]].factor[playerUpgrades[l[u]] + 1] - 1)) + "%") + "</div></div>"
         } else
             i += '<div class="item smaller"><div class="clickto">Max upgrade reached</div></div>'
     }
@@ -1530,7 +1576,7 @@ UI.popTooltip = function(e, t) {
         top: Math.round(r.top - 10) + "px"
     }),
     $("#tooltip").html(i),
-    y = n,
+    tooltipId = n,
     null != hideTooltipTimer && clearTimeout(hideTooltipTimer),
     isTooltipVisible || (isTooltipVisible = true,
     UI.show("#tooltip"))
