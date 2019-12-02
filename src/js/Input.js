@@ -64,7 +64,7 @@ var lastTransmittedKeyState = {},
         SHOWGAMES: true,
         HELP: true
     },
-    v = [
+    defaultKeybinds = [
         ["Forward", "UP"],
         ["Backward", "DOWN"],
         ["Turn Left", "LEFT"],
@@ -201,7 +201,7 @@ Input.setup = function() {
         keyNameByCode[keyCodeByName[name]] = name;
     p = JSON.parse(JSON.stringify(keyBindDescription)),
     initKeyBindsFromSettings(),
-    M(true),
+    updateKeybindsList(true),
     $(window).on("keydown", onWindowKeyDown),
     $(window).on("keyup", onWindowKeyUp),
     $(window).on("gamepadconnected", function(e) {
@@ -285,7 +285,7 @@ Input.bindKey = function(e, t, n) {
 };
 
 Input.closeBind = function() {
-    null != c && (M(),
+    null != c && (updateKeybindsList(),
     c = null)
 };
 
@@ -293,7 +293,7 @@ Input.resetBinds = function() {
     keyBindDescription = JSON.parse(JSON.stringify(p)),
     Tools.removeSetting("keybinds"),
     c = null,
-    M()
+    updateKeybindsList()
 };
 
 var initKeyBindsFromSettings = function() {
@@ -313,7 +313,7 @@ var P = function(keyCode) {
         for (n in keyBindDescription)
             keyBindDescription[n].length > 1 && "" == keyBindDescription[n][0] && "" != keyBindDescription[n][1] && (keyBindDescription[n] = [keyBindDescription[n][1]]),
             2 == keyBindDescription[n].length && "" === keyBindDescription[n][1] && keyBindDescription[n].splice(-1, 1);
-        return M(),
+        return updateKeybindsList(),
         function() {
             var e = {},
                 t = "";
@@ -329,20 +329,55 @@ var P = function(keyCode) {
     return false
 };
 
-var M = function(e) {
-    var t = "",
-        n = "",
-        r = "",
-        i = null;
-    t += '<div class="left-binds">';
-    for (var o = 0; o < v.length; o++)
-        null != v[o][0] && ("" != v[o][0] ? (null == (i = keyBindDescription[v[o][1]]) ? (n = "&nbsp;",
-        r = "&nbsp;") : ("" == (n = i[0]) && (n = "&nbsp;"),
-        "" == (r = 1 == i.length ? "" : i[1]) && (r = "&nbsp;")),
-        t += '<div class="item"><div class="name">' + v[o][0] + '</div><div class="bind' + ("&nbsp;" == n ? " blank" : "") + '" onclick="Input.bindKey(event,\'' + v[o][1] + "',0)\">" + n + '</div><div class="bind' + ("&nbsp;" == r ? " blank" : "") + '" onclick="Input.bindKey(event,\'' + v[o][1] + "',1)\">" + r + "</div></div>",
-        13 == o && (t += '</div><div class="right-binds">')) : t += '<div class="item empty"></div>');
-    t += "</div>",
-    null == e && $("#keybinds-list").html(t),
+var updateKeybindsList = function(e) {
+    var n = "";
+    var r = "";
+    var i = null;
+
+    var bindHtml = '<div class="left-binds">';
+    for(var o = 0; o < defaultKeybinds.length; o++) {
+        if(null != defaultKeybinds[o][0]) {
+            if("" != defaultKeybinds[o][0]) {
+                if(null == (i = keyBindDescription[defaultKeybinds[o][1]])) {
+                    n = "&nbsp;";
+                    r = "&nbsp;";
+                } else {
+                    if("" == (n = i[0])) {
+                        n = "&nbsp;";
+                    }
+                    if("" == (r = 1 == i.length ? "" : i[1])) {
+                        r = "&nbsp;";
+                    }
+                }
+
+                bindHtml += (
+                    '<div class="item">' +
+                        '<div class="name">' +
+                            defaultKeybinds[o][0] +
+                        '</div>' +
+                        '<div class="bind' + ("&nbsp;" == n ? " blank" : "") + '" onclick="Input.bindKey(event,\'' + defaultKeybinds[o][1] + "',0)\">" +
+                            n +
+                        '</div>' +
+                        '<div class="bind' + ("&nbsp;" == r ? " blank" : "") + '" onclick="Input.bindKey(event,\'' + defaultKeybinds[o][1] + "',1)\">" +
+                            r +
+                        '</div>' +
+                    '</div>'
+                );
+
+                if(13 == o) {
+                    bindHtml += '</div><div class="right-binds">'
+                }
+            } else {
+                bindHtml += '<div class="item empty"></div>';
+            }
+        }
+    }
+
+    bindHtml += "</div>";
+    if(null == e) {
+        $("#keybinds-list").html(bindHtml);
+    }
+
     g = {};
     o = 0;
     var s = 0;
@@ -355,7 +390,7 @@ var M = function(e) {
 
 Input.openKeybinds = function() {
     config.mobile || isKeybindsUiVisible || (UI.closeAllPanels("keybinds"),
-    M(),
+    updateKeybindsList(),
     UI.showPanel("#keybinds"),
     isKeybindsUiVisible = true)
 };
