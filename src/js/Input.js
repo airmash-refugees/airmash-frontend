@@ -252,7 +252,27 @@ var onWindowKeyUp = function(event) {
 };
 
 var shouldInterpretAsControlKey = function(keyCode, t) {
-    return !!UI.chatBoxOpen() && (9 != keyCode && 27 != keyCode && 13 != keyCode && 38 != keyCode && 40 != keyCode && 37 != keyCode && 39 != keyCode && 112 != keyCode && 113 != keyCode && 114 != keyCode && 115 != keyCode && 116 != keyCode && 117 != keyCode && 118 != keyCode && 119 != keyCode && 120 != keyCode && 121 != keyCode && 122 != keyCode && 123 != keyCode)
+    return !!UI.chatBoxOpen() && (
+        9 != keyCode && // Tab
+        27 != keyCode && // Escape
+        13 != keyCode && // Enter
+        38 != keyCode && // Up
+        40 != keyCode && // Down
+        37 != keyCode && // Left
+        39 != keyCode && // Right
+        112 != keyCode && // F1
+        113 != keyCode && // F2
+        114 != keyCode && // F3
+        115 != keyCode && // F4
+        116 != keyCode && // F5
+        117 != keyCode && // F6
+        118 != keyCode && // F7
+        119 != keyCode && // F8
+        120 != keyCode && // F9
+        121 != keyCode && // F10
+        122 != keyCode && // F11
+        123 != keyCode // F12
+    )
 };
 
 var resetNetworkKeyState = function() {
