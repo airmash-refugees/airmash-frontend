@@ -65,7 +65,7 @@ window.game = {
     graphics: {},
     debug: {},
     buckets: [],
-    backendHost: "airmash.online"
+    backendHost: "data.airmash.online"
 };
 
 window.config = {
