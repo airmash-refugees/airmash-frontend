@@ -2,11 +2,17 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
+console.log('---- ' + path.basename(__filename) + '\n');
+
 /*
  *  see https://github.com/airmash-refugees/airmash-games/blob/master/README.md for file format details
  */
 
 const baseUrl = 'https://raw.githubusercontent.com/airmash-refugees/airmash-games/master/';
+const regionsUrl = baseUrl + 'regions.txt'
+const gamesUrl = baseUrl + 'games.txt'
+
+const gamesDataJsPath = path.join(__dirname, 'js', 'GamesData.js');
 
 const options = {
     headers: {
@@ -27,10 +33,14 @@ function download(url, callback) {
 
 let data = [];
 
-download(baseUrl + 'regions.txt', (d) => {
+console.log(regionsUrl + ':');
+download(regionsUrl, (d) => {
+    console.log(d);
     regionstxt = d.split('\n');
 
-    download(baseUrl + 'games.txt', (d) => {
+    console.log(gamesUrl + ':');
+    download(gamesUrl, (d) => {
+        console.log(d);
         gamestxt = d.split('\n');
 
         for (let region of regionstxt) {
@@ -65,9 +75,11 @@ download(baseUrl + 'regions.txt', (d) => {
 
         data = JSON.stringify(data);
 
-        fs.writeFileSync(
-            path.join(__dirname, 'js', 'GamesData.js'),
-            'export const defaultGamesData = ' + data + ';'
-        );
+        const js = 'export const defaultGamesData = ' + data + ';'
+
+        console.log(gamesDataJsPath + ':');
+        console.log(js);
+
+        fs.writeFileSync(gamesDataJsPath, js);
     });
 });
