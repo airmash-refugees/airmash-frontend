@@ -35,9 +35,16 @@ var setupPixiRenderer = function() {
     };
     config.settings.hidpi && (pixiSettings.resolution = 2);
     try {
-        renderer = new PIXI.WebGLRenderer(game.screenX,game.screenY,pixiSettings)
+        renderer = new PIXI.WebGLRenderer(game.screenX,game.screenY,pixiSettings);
     } catch (e) {
-        return void UI.popBigMsg(2)
+        try {
+            // workaround for WebGL failure on Linux + Mesa drivers + Firefox, see issue #18
+            PIXI.settings.SPRITE_MAX_TEXTURES = Math.min(PIXI.settings.SPRITE_MAX_TEXTURES, 16);
+            renderer = new PIXI.WebGLRenderer(game.screenX,game.screenY,pixiSettings);
+        } catch (e) {
+            UI.popBigMsg(2);
+            return;
+        }
     }
     document.body.appendChild(renderer.view)
 }
