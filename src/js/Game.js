@@ -16,7 +16,7 @@ window.subscribeToAmEvent = function(evName, subscriber) {
     subscriptions[evName] = subs;
 };
 
-window.DEVELOPMENT = false;
+window.DEVELOPMENT = /^http:\/\/127\.0\.0\.1:[0-9]{1,5}\/?$/.test(window.origin);
 
 window.game = {
     protocol: 5,
@@ -65,6 +65,7 @@ window.game = {
     graphics: {},
     debug: {},
     buckets: [],
+    customServerUrl: null,
     backendHost: "data.airmash.online"
 };
 
@@ -313,5 +314,16 @@ $(function() {
     var ticker = new PIXI.ticker.Ticker;
     ticker.add(scheduleFrame),
     ticker.start(),
-    setInterval(scheduleOccasionalFrameWhileBlurred, 500)
+    setInterval(scheduleOccasionalFrameWhileBlurred, 500);
+
+    let customServerHashPrefix = '#connect#'
+    if (DEVELOPMENT && window.location.hash.startsWith(customServerHashPrefix))
+    {
+        game.playRegion = "custom";
+        game.playRoom = "custom";
+        game.playInvited = true;
+        game.myOriginalName = config.settings.name || Tools.randomID(6);
+        game.customServerUrl = window.location.hash.substr(customServerHashPrefix.length);
+        Games.start(game.myOriginalName, true);
+    }
 });

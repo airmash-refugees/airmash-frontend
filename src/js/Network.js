@@ -385,10 +385,11 @@ Network.reconnect = function() {
 };
 
 Network.setup = function() {
-    if (DEVELOPMENT) {
-        currentSockUrl = -1 != document.domain.indexOf("192.168.") ? "ws://" + document.domain + ":8010/" + game.playPath : "ws://" + game.playHost + ".airmash.devel:8000/" + game.playPath
-    } else
+    if (DEVELOPMENT && game.customServerUrl) {
+        currentSockUrl = game.customServerUrl;
+    } else {
         currentSockUrl = "wss://" + game.playHost + "/" + game.playPath;
+    }
     backupSock && backupSockIsConnected && backupSock.close(),
     (primarySock = new WebSocket(currentSockUrl)).binaryType = "arraybuffer",
     primarySock.onopen = function() {

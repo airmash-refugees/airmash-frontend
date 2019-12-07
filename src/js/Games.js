@@ -96,17 +96,13 @@ Games.setup = function() {
     initGameHostState();
 
     refreshGamesJsonData(function() {
-        if (gamesJsonDataIsLoaded = true,
-        updatePlayersOnlineCount(),
-        DEVELOPMENT && "#tony" == window.location.hash)
-            return game.playRegion = "eu",
-            game.playRoom = "ffa1",
-            game.playInvited = true,
-            game.myOriginalName = window.location.hash.substr(1),
-            void Games.start(game.myOriginalName, true);
-        isServerMaintenance || (I(),
-        Games.updateRegion(false),
-        Games.updateType(false))
+        gamesJsonDataIsLoaded = true;
+        updatePlayersOnlineCount();
+        if (!isServerMaintenance) {
+            selectGameFromURLFragment();
+            Games.updateRegion(false);
+            Games.updateType(false);
+        }
     }, true)
 };
 
@@ -314,17 +310,19 @@ var getPlayData = function(e, gameTypeId) {
     return null
 };
 
-var I = function() {
-    var e = window.location.hash;
-    if (history.replaceState(null, null, "/"),
-    "#reload" !== e && null != e && !(e.length < 4 || e.length > 20)) {
-        var t = (e = e.substr(1)).indexOf("-");
-        if (-1 != t) {
-            var n = e.substr(0, t),
-                r = e.substr(t + 1);
-            null != getPlayData(n, r) && (game.playRegion = n,
-            game.playRoom = r,
-            game.playInvited = true)
+var selectGameFromURLFragment = function() {
+    var hash = window.location.hash;
+    if ("#reload" !== hash && null != hash && !(hash.length < 4 || hash.length > 20)) {
+        var regionRoom = (hash = hash.substr(1)).indexOf("-");
+        if (regionRoom != -1) {
+            var region = hash.substr(0, regionRoom),
+                room = hash.substr(regionRoom + 1);
+            if (getPlayData(region, room) != null) {
+                game.playRegion = region;
+                game.playRoom = room;
+                game.playInvited = true;
+                history.replaceState(null, null, "/");
+            }
         }
     }
 };
@@ -565,7 +563,7 @@ Games.performPing = function() {
         else {
             gameHostState[gameKey].num++;
             var pingUrl;
-            pingUrl = DEVELOPMENT ? "/ping" : "https://" + gameKey + "/ping",
+            pingUrl = "https://" + gameKey + "/ping",
             performSinglePing(gameKey, pingUrl, function() {
                 performSinglePing(gameKey, pingUrl)
             })
@@ -668,49 +666,69 @@ Games.start = function(playerName, isFirstTime) {
         return;
     }
 
-    var playRegion = game.playRegion;
-    var gameId = getSelectedGameId();
-    if (!gameId) {
-        return;
-    }
-
-    game.playRegion = gameId;
-    if (null != performPingTimerId) {
+    if (DEVELOPMENT && game.customServerUrl) {
+        if (null != performPingTimerId) {
             clearInterval(performPingTimerId);
-    }
-    gameHasStarted = true;
+        }
 
-    var playRoom = getPlayRoom();
+        gameHasStarted = true;
 
-    var data = getPlayData(game.playRegion, playRoom);
-    game.playHost = data.host;
-    game.playPath = data.path;
-    game.regionName = getPlayRegion(game.playRegion).name;
-    game.playRoom = playRoom;
-    if (game.state == Network.STATE.LOGIN) {
-        Tools.wipeReel();
-    }
-    game.state = Network.STATE.CONNECTING;
-    var player = {
-        name: playerName
-    };
+        if (game.state == Network.STATE.LOGIN) {
+            Tools.wipeReel();
+        }
 
-    if (!game.playInvited) {
-        player.region = playRegion;
-    }
+        game.state = Network.STATE.CONNECTING;
+        var player = {
+            name: playerName
+        };
 
-    Tools.setSettings(player);
-    UI.gameStart(playerName, isFirstTime);
-    
-    // this is for stats and not necessary for the game
-    if (isFirstTime) {
-        Tools.ajaxPost("https://" + game.backendHost + "/enter", {
-            id: config.settings.id,
-            name: playerName,
-            game: game.playRegion + "-" + game.playRoom,
-            source: null != document.referrer ? document.referrer : "",
-            mode: config.mobile ? 1 : 0
-        });
+        Tools.setSettings(player);
+        UI.gameStart(playerName, isFirstTime);
+    } else {
+        var playRegion = game.playRegion;
+        var gameId = getSelectedGameId();
+        if (!gameId) {
+            return;
+        }
+
+        game.playRegion = gameId;
+        if (null != performPingTimerId) {
+                clearInterval(performPingTimerId);
+        }
+        gameHasStarted = true;
+
+        var playRoom = getPlayRoom();
+
+        var data = getPlayData(game.playRegion, playRoom);
+        game.playHost = data.host;
+        game.playPath = data.path;
+        game.regionName = getPlayRegion(game.playRegion).name;
+        game.playRoom = playRoom;
+        if (game.state == Network.STATE.LOGIN) {
+            Tools.wipeReel();
+        }
+        game.state = Network.STATE.CONNECTING;
+        var player = {
+            name: playerName
+        };
+
+        if (!game.playInvited) {
+            player.region = playRegion;
+        }
+
+        Tools.setSettings(player);
+        UI.gameStart(playerName, isFirstTime);
+
+        // this is for stats and not necessary for the game
+        if (isFirstTime) {
+            Tools.ajaxPost("https://" + game.backendHost + "/enter", {
+                id: config.settings.id,
+                name: playerName,
+                game: game.playRegion + "-" + game.playRoom,
+                source: null != document.referrer ? document.referrer : "",
+                mode: config.mobile ? 1 : 0
+            });
+        }
     }
 };
 

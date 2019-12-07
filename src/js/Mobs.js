@@ -53,8 +53,8 @@ Mobs.explosion = function (pos, mobType) {
 };
 
 Mobs.count = function () {
-    count = 0;
-    culledCount = 0;
+    let count = 0;
+    let culledCount = 0;
     for (var mob in mobs) {
         count++;
         if (mobs[mob].culled) {
