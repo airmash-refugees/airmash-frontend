@@ -11,7 +11,7 @@ var imageUrlByName = {
         shadows: "assets/shadows.png",
         particles: "assets/particles.png",
         flags: "assets/flagsbig.png?4",
-        items: "assets/items.png?2",
+        items: "assets/items.png?3",
         gui: "assets/gui.png"
     },
     spriteByName = {
