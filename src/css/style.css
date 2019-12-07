@@ -364,6 +364,10 @@ input:focus {
     color: #8c8c8c
 }
 
+#logon .playoptions .item .playersunknown {
+    color: #787878
+}
+
 #logon .playoptions .item .chooser .infocontainer {
     position: relative;
     margin-left: 10px;

@@ -4,3 +4,6 @@ node_modules
 dist
 
 .vscode
+
+# this is generated in the build:
+src/js/GamesData.js

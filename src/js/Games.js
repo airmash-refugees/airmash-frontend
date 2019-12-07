@@ -1,4 +1,5 @@
 import Vector from './Vector';
+import { defaultGamesData } from './GamesData';
 
 var e = false,
     t = false,
@@ -32,7 +33,7 @@ var e = false,
     gameHasStarted = false,
     gamesJsonDataIsLoaded = false,
     inviteCopiedTimer = null,
-    gamesJsonData = [],
+    gamesJsonData = defaultGamesData,
     isServerMaintenance = false,
     ctfGameState = {},
     firewallHotSmokeSprites = {},
@@ -89,6 +90,11 @@ Games.setup = function() {
     $("#lifetime-signin").on("click", Games.redirRoot),
     null != config.settings.clienttoken ? Games.playerAuth() : Games.playerGuest();
     setInterval(Tools.syncRemoteSettings, 1000);
+
+    Games.updateRegion(false);
+    Games.updateType(false);
+    initGameHostState();
+
     refreshGamesJsonData(function() {
         if (gamesJsonDataIsLoaded = true,
         updatePlayersOnlineCount(),
@@ -100,8 +106,7 @@ Games.setup = function() {
             void Games.start(game.myOriginalName, true);
         isServerMaintenance || (I(),
         Games.updateRegion(false),
-        Games.updateType(false),
-        initGameHostState())
+        Games.updateType(false))
     }, true)
 };
 
@@ -263,7 +268,9 @@ var updatePlayersOnlineCount = function() {
     totalPlayersOnlineCount = 0;
     for (var e = 0, t = 0; t < gamesJsonData.length; t++)
         for (var n = 0; n < gamesJsonData[t].games.length; n++)
-            totalPlayersOnlineCount += gamesJsonData[t].games[n].players,
+            if (gamesJsonData[t].games[n].players) {
+                totalPlayersOnlineCount += gamesJsonData[t].games[n].players;
+            }
             e++;
     if (0 == e)
         isServerMaintenance = true,
@@ -345,7 +352,7 @@ Games.closeDropdowns = function() {
 Games.updateRegion = function(n, r) {
     var i = "",
         o = null;
-    if (gamesJsonDataIsLoaded && !isServerMaintenance) {
+    if (!isServerMaintenance) {
         if (null != r && (r.stopPropagation(),
         e || Sound.UIClick()),
         n && UI.closeLogin(),
@@ -360,6 +367,9 @@ Games.updateRegion = function(n, r) {
                 for (var l = 0, c = 0; c < gamesJsonData[a].games.length; c++)
                     l += gamesJsonData[a].games[c].players;
                 var d;
+                if (!l) {
+                    l = '<span class="playersunknown">?</span>';
+                }
                 d = null == gamesJsonData[a].ping ? "&nbsp;" : Math.round(gamesJsonData[a].ping) + '<span class="ms">ms</span>',
                 i += '<div class="item selectable' + (game.playRegion === gamesJsonData[a].id ? " sel" : "") + '" onclick="Games.selectRegion(event, &quot;' + gamesJsonData[a].id + '&quot;)"><div class="region chooser">' + gamesJsonData[a].name + '</div><div class="players number">' + l + '</div><div class="ping chooser nopadding">' + d + '</div><div class="clear"></div></div>'
             }
@@ -407,7 +417,7 @@ var getGameTypeInfoHtml = function(gameType) {
 Games.updateType = function(trueOrFalseOrUndefined, clickEvent) {
     var s = "",
         a = null;
-    if (gamesJsonDataIsLoaded && !isServerMaintenance) {
+    if (!isServerMaintenance) {
         if (null != clickEvent && (clickEvent.stopPropagation(),
         t || Sound.UIClick()),
         trueOrFalseOrUndefined && UI.closeLogin(),
@@ -425,7 +435,7 @@ Games.updateType = function(trueOrFalseOrUndefined, clickEvent) {
                 if (0 != d[l].length)
                     for (s += '<div class="item selectable' + (gameTypes[l] === game.playRoom ? " sel" : "") + '" onclick="Games.selectGame(event, &quot;' + gameTypes[l] + '&quot;)"><div class="gametype chooser">' + gameTypeNames[l] + '<span class="infocontainer">&nbsp;<div class="infoicon">' + getGameTypeInfoHtml(l) + '</div></span></div><div class="clear"></div></div>',
                     u = 0; u < d[l].length; u++)
-                        s += '<div class="item selectable' + (d[l][u].id === game.playRoom ? " sel" : "") + '" onclick="Games.selectGame(event, &quot;' + d[l][u].id + '&quot;)"><div class="gametype chooser">' + d[l][u].nameShort + '</div><div class="players number">' + d[l][u].players + '</div><div class="clear"></div></div>';
+                        s += '<div class="item selectable' + (d[l][u].id === game.playRoom ? " sel" : "") + '" onclick="Games.selectGame(event, &quot;' + d[l][u].id + '&quot;)"><div class="gametype chooser">' + d[l][u].nameShort + '</div><div class="players number">' + (d[l][u].players || '<span class="playersunknown">?</span>') + '</div><div class="clear"></div></div>';
             s += '<div class="item"></div>',
             a = {
                 width: "240px",
