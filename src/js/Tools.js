@@ -87,17 +87,8 @@ var initMobileConstants = function() {
     "#nomobile" == window.location.hash && (config.mobile = false)
 };
 
-var checkLoginSettings = function() {
-    if (!(config.settings.clienttoken && config.settings.playerid && config.settings.identityprovider && config.settings.loginname)) {
-        Tools.removeSetting("clienttoken");
-        Tools.removeSetting("playerid");
-        Tools.removeSetting("identityprovider");
-        Tools.removeSetting("loginname");
-    }
-}
-
 Tools.syncRemoteSettings = function() {
-    if (config.settings.clienttoken) {
+    if (config.auth.tokens && config.auth.tokens.settings) {
         var remoteSettings = {};
         remotelySyncedSettings.forEach((key) => {
             if (config.settings[key] !== undefined) {
@@ -110,7 +101,7 @@ Tools.syncRemoteSettings = function() {
             Tools.ajaxPost(
                 "https://" + game.backendHost + '/settings',
                 remoteSettingsJson,
-                config.settings.clienttoken,
+                config.auth.tokens.settings,
                 function(data) {
                     if (!(data && data.result == 1)) {
                         lastRemoteSettingsJson = "";
@@ -120,14 +111,35 @@ Tools.syncRemoteSettings = function() {
     }
 }
 
+var loadObjectFromLocalStorage = function(key) {
+    if (null == window.localStorage)
+        return {};
+    var e = null,
+        t = {};
+    try {
+        e = localStorage.getItem(key)
+    } catch (e) {}
+    if (null != e)
+        try {
+            t = JSON.parse(e)
+        } catch (e) {}
+    return t
+};
+
+var saveObjectToLocalStorage = function(key, obj) {
+    if (null != window.localStorage) {
+        try {
+            localStorage.setItem(key, JSON.stringify(obj))
+        } catch (e) {}
+    }
+};
 
 Tools.loadSettings = function() {
-    var settings = getSettingsFromLocalStorage();
+    var settings = loadObjectFromLocalStorage("settings");
     for (var key in settings) {
         config.settings[key] = settings[key];
     }
     DEVELOPMENT && console.log(settings);
-    checkLoginSettings();
     Tools.applySettingsToGame();
 };
 
@@ -164,45 +176,41 @@ Tools.setSettings = function(settings) {
     for (var key in settings) {
         config.settings[key] = settings[key];
     }
-    if (null != window.localStorage) {
-        try {
-            localStorage.setItem("settings", JSON.stringify(config.settings))
-        } catch (e) {}
-    }
+    saveObjectToLocalStorage("settings", config.settings);
 };
 
 Tools.removeSetting = function(key) {
     null != config.settings[key] && delete config.settings[key];
-    if (null != window.localStorage) {
-        try {
-            localStorage.setItem("settings", JSON.stringify(config.settings))
-        } catch (e) {}
-    }
+    saveObjectToLocalStorage("settings", config.settings);
 };
 
 Tools.wipeSettings = function() {
     config.settings = {};
-    if (null != window.localStorage) {
-        try {
-            localStorage.setItem("settings", JSON.stringify(config.settings))
-        } catch (e) {}
-    }
+    saveObjectToLocalStorage("settings", config.settings);
 };
 
-var getSettingsFromLocalStorage = function() {
-    if (null == window.localStorage)
-        return {};
-    var e = null,
-        t = {};
-    try {
-        e = localStorage.getItem("settings")
-    } catch (e) {}
-    if (null != e)
-        try {
-            t = JSON.parse(e)
-        } catch (e) {}
-    return t
-};
+var checkAuth = function() {
+    if (undefined === config.auth.tokens ||
+        undefined === config.auth.tokens.settings || 
+        undefined === config.auth.tokens.game ||
+        undefined === config.auth.identityprovider ||
+        undefined === config.auth.loginname) {
+        config.auth = {};
+        saveObjectToLocalStorage("auth", config.auth);
+    }
+}
+
+Tools.loadAuth = function() {
+    config.auth = loadObjectFromLocalStorage("auth");
+    checkAuth();
+    return !($.isEmptyObject(config.auth));
+}
+
+Tools.setAuth = function(auth) {
+    config.auth = auth;
+    saveObjectToLocalStorage("auth", config.auth);
+    checkAuth();
+}
 
 Tools.ajaxPost = function(url, data, token, callback) {
     $.ajax({

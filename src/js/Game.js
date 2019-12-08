@@ -70,8 +70,8 @@ window.game = {
 };
 
 window.config = {
-    storage: {},
     settings: {},
+    auth: {},
     ships: [
         // Unused (0)
         {},
