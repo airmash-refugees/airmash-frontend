@@ -217,7 +217,9 @@ Games.playerAuth = function() {
 
 Games.logout = function() {
     Tools.setAuth({});
-    window.location = "/"
+    Tools.removeSetting("flag");
+    Tools.removeSetting("name");
+    window.location = window.location;
 };
 
 var refreshGamesJsonData = function(successCallback, t) {
