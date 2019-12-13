@@ -572,7 +572,7 @@ var performSinglePing = function(gameKey, pingUrl, onSuccess) {
         inProgressPingCount++;
         var now = performance.now();
         fetch(pingUrl, {
-            method: "HEAD",
+            method: "GET",
             mode: "no-cors",
             cache: "no-cache"
         }).then(response => {
