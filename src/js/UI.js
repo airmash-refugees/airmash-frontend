@@ -1631,15 +1631,6 @@ UI.endDragChat = function(e) {
 };
 
 UI.setup = function() {
-    // sign in feature isn't ready for airmash.online yet - change/remove UI elements that refer to it
-    if (window.origin === "https://airmash.online") {
-        $("#playbutton").html("PLAY");
-        $("#loginbutton").remove();
-        $("#lifetime-account").hide();
-        $("#lifetime-signin").hide();
-        $('a[href="/privacy"]').remove();
-    }
-
     $(window).resize(onWindowResize),
     $(window).on("orientationchange", onWindowResize),
     $(window).on("contextmenu", function(e) {
