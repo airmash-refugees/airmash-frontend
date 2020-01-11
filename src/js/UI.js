@@ -822,15 +822,15 @@ UI.killedBy = function(playerKillMsg) {
 UI.errorHandler = function(e) {
     switch (e.error) {
     case 1:
-        UI.showMessage("alert", '<span class="info">DISCONNECTED</span>Packet flooding detected', 2e4),
+        UI.showMessage("alert", '<span class="info">DISCONNECTED</span>Packet flooding detected<br><span class="button" onclick="Network.reconnect()">RECONNECT</span>', 2e4),
         Network.receivedError(e.error);
         break;
     case 2:
-        UI.showMessage("alert", '<span class="info">BANNED</span>Packet flooding detected', 2e4),
+        UI.showMessage("alert", '<span class="info">BANNED</span>You have been banned for packet flooding', 2e4),
         Network.receivedError(e.error);
         break;
     case 3:
-        UI.showMessage("alert", '<span class="info">BANNED</span>You have been globally banned', 2e4),
+        UI.showMessage("alert", '<span class="info">BANNED</span>You have been banned from this server (' + game.playRoom + ')', 2e4),
         Network.receivedError(e.error);
         break;
     case 4:
