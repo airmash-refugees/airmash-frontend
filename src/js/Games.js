@@ -958,8 +958,8 @@ Games.showLevelUP = function(e) {
     var r = '<div id="custom-msg" class="levelup' + n + '"><div class="leveltext">NEW LEVEL REACHED</div><div class="levelbadge"></div><div class="levelnum">' + e + "</div>" + t + "</div>";
     $("body").append(r),
     UI.showPanel("#custom-msg"),
-    Sound.levelUp(),
-    UI.showChatLevel(e)
+    Sound.levelUp()
+    // UI.showChatLevel(e)
 };
 
 Games.popFirewall = function(e, t) {
