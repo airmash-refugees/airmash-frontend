@@ -800,6 +800,10 @@ input:focus {
     color: #787878
 }
 
+#gameselector .item .playersunknown {
+    color: #787878
+}
+
 #gameselector .item .chooser .infocontainer {
     position: relative;
     margin-left: 10px;

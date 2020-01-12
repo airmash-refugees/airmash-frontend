@@ -358,14 +358,19 @@ Games.updateRegion = function(n, r) {
             null != closestGameRegion && (s = '<span class="autoregion">(' + gamesJsonData[closestGameRegion].name + ")</span>"),
             i += '<div class="item selectable' + ("closest" === game.playRegion ? " sel" : "") + '" onclick="Games.selectRegion(event, &quot;closest&quot;)"><div class="region chooser">Closest' + s + '</div><div class="clear"></div></div>';
             for (var a = 0; a < gamesJsonData.length; a++) {
-                for (var l = 0, c = 0; c < gamesJsonData[a].games.length; c++)
-                    l += gamesJsonData[a].games[c].players;
+                for (var anyPlayers = false, playerCount = 0, c = 0; c < gamesJsonData[a].games.length; c++) {
+                    if (gamesJsonData[a].games[c].players !== undefined)
+                    {
+                        playerCount += gamesJsonData[a].games[c].players;
+                        anyPlayers = true;
+                    }
+                }
                 var d;
-                if (!l) {
-                    l = '<span class="playersunknown">?</span>';
+                if (!anyPlayers) {
+                    playerCount = '<span class="playersunknown">?</span>';
                 }
                 d = null == gamesJsonData[a].ping ? "&nbsp;" : Math.round(gamesJsonData[a].ping) + '<span class="ms">ms</span>',
-                i += '<div class="item selectable' + (game.playRegion === gamesJsonData[a].id ? " sel" : "") + '" onclick="Games.selectRegion(event, &quot;' + gamesJsonData[a].id + '&quot;)"><div class="region chooser">' + gamesJsonData[a].name + '</div><div class="players number">' + l + '</div><div class="ping chooser nopadding">' + d + '</div><div class="clear"></div></div>'
+                i += '<div class="item selectable' + (game.playRegion === gamesJsonData[a].id ? " sel" : "") + '" onclick="Games.selectRegion(event, &quot;' + gamesJsonData[a].id + '&quot;)"><div class="region chooser">' + gamesJsonData[a].name + '</div><div class="players number">' + playerCount + '</div><div class="ping chooser nopadding">' + d + '</div><div class="clear"></div></div>'
             }
             i += '<div class="item"></div>',
             o = {
@@ -429,7 +434,7 @@ Games.updateType = function(trueOrFalseOrUndefined, clickEvent) {
                 if (0 != d[l].length)
                     for (s += '<div class="item selectable' + (gameTypes[l] === game.playRoom ? " sel" : "") + '" onclick="Games.selectGame(event, &quot;' + gameTypes[l] + '&quot;)"><div class="gametype chooser">' + gameTypeNames[l] + '<span class="infocontainer">&nbsp;<div class="infoicon">' + getGameTypeInfoHtml(l) + '</div></span></div><div class="clear"></div></div>',
                     u = 0; u < d[l].length; u++)
-                        s += '<div class="item selectable' + (d[l][u].id === game.playRoom ? " sel" : "") + '" onclick="Games.selectGame(event, &quot;' + d[l][u].id + '&quot;)"><div class="gametype chooser">' + d[l][u].nameShort + '</div><div class="players number">' + (d[l][u].players || '<span class="playersunknown">?</span>') + '</div><div class="clear"></div></div>';
+                        s += '<div class="item selectable' + (d[l][u].id === game.playRoom ? " sel" : "") + '" onclick="Games.selectGame(event, &quot;' + d[l][u].id + '&quot;)"><div class="gametype chooser">' + d[l][u].nameShort + '</div><div class="players number">' + (d[l][u].players === undefined ? '<span class="playersunknown">?</span>' : d[l][u].players) + '</div><div class="clear"></div></div>';
             s += '<div class="item"></div>',
             a = {
                 width: "240px",
@@ -487,7 +492,7 @@ var A = function() {
                 o[t][n].id === game.playRoom ? (s = " sel",
                 a = "") : (s = " selectable",
                 a = ' onclick="Games.switchGame(&quot;' + o[t][n].id + '&quot;)"'),
-                e += '<div class="item' + s + '"' + a + '><div class="gametype chooser">' + o[t][n].nameShort + '</div><div class="players number">' + o[t][n].players + '</div><div class="clear"></div></div>';
+                e += '<div class="item' + s + '"' + a + '><div class="gametype chooser">' + o[t][n].nameShort + '</div><div class="players number">' + (o[t][n].players === undefined ? '<span class="playersunknown">?</span>' : o[t][n].players ) + '</div><div class="clear"></div></div>';
     return e
 };
 
