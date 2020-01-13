@@ -221,7 +221,6 @@ var dispatchIncomingMessage = function(msg) {
             for (t = 0; t < msg.players.length; t++) {
                 Players.add(msg.players[t], true);
             }
-            triggerAmEvent('spawned', {respawn: false, id: game.myID});
             break;
         case ServerPacket.ERROR:
             UI.errorHandler(msg);

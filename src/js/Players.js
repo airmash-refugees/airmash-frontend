@@ -166,11 +166,6 @@ Players.kill = function(ev) {
     if (!player) {
         return;
     }
-    
-    triggerAmEvent('playerkilled', {
-        killedID: ev.id, 
-        killerID: ev.killer
-    });
 
     if (0 != ev.killer || 0 != ev.posX || 0 != ev.posY) {
         if (player.kill(ev),
