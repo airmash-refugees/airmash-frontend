@@ -1,21 +1,3 @@
-const subscriptions = {};
-
-window.triggerAmEvent = function(evName, data) {
-    var subs = subscriptions[evName];
-    if (!subs) {
-        return;
-    }
-    for (let i = 0; i < subs.length; i++) {
-        subs[i](data);
-    }
-};
-
-window.subscribeToAmEvent = function(evName, subscriber) {
-    var subs = subscriptions[evName] || [];
-    subs.push(subscriber);
-    subscriptions[evName] = subs;
-};
-
 window.DEVELOPMENT = /^http:\/\/127\.0\.0\.1:[0-9]{1,5}\/?$/.test(window.origin);
 
 window.game = {
@@ -290,7 +272,6 @@ var scheduleFrame = function(fractionalFramesSinceLastFrame, skipGraphicsRenderi
         Graphics.render();
     }
     Tools.debugEndFrame();
-    triggerAmEvent('tick');
 };
 
 var scheduleOccasionalFrameWhileBlurred = function() {

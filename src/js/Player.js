@@ -643,8 +643,6 @@ class Player {
         }
         this.updateGraphics(1);
         Sound.playerRespawn(this);
-
-        triggerAmEvent('spawned', {respawn: true, id: this.id});
     }
 
     revive() {

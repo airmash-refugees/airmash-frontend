@@ -18,8 +18,6 @@ more readable and maintainable:
 - Modified the connection code to not rely on airma.sh DNS layout. Instead
   it reads the game data from `https://airmash.online/games`, and constructs
   each server's WebSocket (`wss://`) URL from ``host`` and ``path``.
-- Hidden the login/logout links since there is no longer any authentication
-  backend to handle them.
 - Print a nice error when WebSocket connections fail.
 
 ### Building and deployment
