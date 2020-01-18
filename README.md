@@ -16,7 +16,7 @@ more readable and maintainable:
   ``jsnice.org`` to improve readability of some functions, particularly in
   graphics. The Git log details each use individually.
 - Modified the connection code to not rely on airma.sh DNS layout. Instead
-  it reads the game data from `https://airmash.online/games`, and constructs
+  it reads the game data from `https://data.airmash.online/games`, and constructs
   each server's WebSocket (`wss://`) URL from ``host`` and ``path``.
 - Print a nice error when WebSocket connections fail.
 

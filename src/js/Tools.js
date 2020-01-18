@@ -1,7 +1,7 @@
 import Vector from './Vector';
 
-// if the player is logged in, these are synchronised with the settings service (https://airmash.online/settings)
-const remotelySyncedSettings = [ 'flag', 'helpshown', 'keybinds', 'mobileshown', 'mousemode', 'name', 'region', 'sound' ];
+// if the player is logged in, all settings except for these are synchronised with the settings service (https://data.airmash.online/settings)
+const localOnlySettings = [ 'id', 'hidpi' ];
 
 var bucketState = {},
     clientErrorCount = 0,
@@ -90,8 +90,8 @@ var initMobileConstants = function() {
 Tools.syncRemoteSettings = function() {
     if (config.auth.tokens && config.auth.tokens.settings) {
         var remoteSettings = {};
-        remotelySyncedSettings.forEach((key) => {
-            if (config.settings[key] !== undefined) {
+        Object.keys(config.settings).forEach(key => {
+            if (!localOnlySettings.includes(key)) {
                 remoteSettings[key] = config.settings[key]
             }
         });
