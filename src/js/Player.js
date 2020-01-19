@@ -521,7 +521,7 @@ class Player {
     updateLevel(packet) {
         if (this.me()) { 
             if (packet.type == 1) {
-                Games.showLevelUP(packet.level);
+                Games.showLevelUp(packet.level);
             }
             UI.updateMyLevel(packet.level);
         }

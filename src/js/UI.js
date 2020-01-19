@@ -958,47 +958,76 @@ UI.closeLogin = function() {
     isLoginVisible = false)
 };
 
-UI.showPanel = function(e) {
-    var t = 0.9,
-        n = 1;
-    config.phone && (t *= .7,
-    n *= .7),
-    $(e).css({
+UI.showPanel = function(id) {
+    var scale0 = 0.9,
+        scale1 = 1;
+    if (config.phone) {
+        scale0 *= 0.7;
+        scale1 *= 0.7;
+    }
+    $(id).css({
         display: "block",
         opacity: "0",
-        transform: "scale(" + t + ")",
+        transform: "scale(" + scale0 + ")",
         "pointer-events": "auto"
-    }),
-    $(e).width(),
-    $(e).css({
+    });
+    $(id).width();
+    $(id).css({
         opacity: "1",
-        transform: "scale(" + n + ")",
+        transform: "scale(" + scale1 + ")",
         transition: "all 0.75s cubic-bezier(0.23, 1, 0.32, 1)"
-    }),
-    "#custom-msg" != e && Sound.UIClick()
+    });
+    if (id != "#custom-msg") {
+        Sound.UIClick()
+    }
 };
 
-UI.hidePanel = function(e, t, n) {
-    if ("#custom-msg" != e || $("#custom-msg").length) {
-        var r = .9;
-        config.phone && (r *= .7),
-        $(e).css({
+UI.hidePanel = function(id, visible, remove, longfadenoclick) {
+    if (id != "#custom-msg" || $("#custom-msg").length) {
+        var scale = 0.9;
+        if (config.phone) {
+            scale *= 0.7;
+        }
+        if (longfadenoclick) {
+            $(id).css({
+                transition: "all 1.5s cubic-bezier(0.23, 1, 0.32, 1)"
+            });
+        } else {
+            $(id).css({
+                transition: "all 0.75s cubic-bezier(0.23, 1, 0.32, 1)"
+            });            
+        }
+        $(id).css({
             opacity: "0",
-            transform: "scale(" + r + ")",
+            transform: "scale(" + scale + ")",
             "pointer-events": "none"
-        }),
-        Sound.UIClick(),
-        setTimeout(function(e) {
-            if (!("#mainmenu" === e ? isMainMenuVisible : "#scoredetailed" === e ? isScoreVisible : "#howtoplay" === e ? isHelpVisible : "#invitefriends" === e ? isInviteVisible : "#loginselector" === e ? isLoginVisible : t)) {
-                if (n)
-                    return void $(e).remove();
-                $(e).css({
+        });
+        if (!longfadenoclick) {
+            Sound.UIClick();
+        }
+        setTimeout(function(id) {
+            let isVisible = ({
+                "#mainmenu": isMainMenuVisible,
+                "#scoredetailed": isScoreVisible,
+                "#howtoplay": isHelpVisible,
+                "#invitefriends": isInviteVisible,
+                "#loginselector": isLoginVisible
+            })[id];
+            if (isVisible === undefined) {
+                isVisible = visible;
+            }
+            if (!isVisible) {
+                if (remove) {
+                    $(id).remove();
+                    return;
+                }
+                $(id).css({
                     display: "none",
                     transform: "none",
                     transition: "none"
-                })
+                });
             }
-        }, 800, e)
+        }, longfadenoclick ? 1600 : 800, id);
     }
 };
 

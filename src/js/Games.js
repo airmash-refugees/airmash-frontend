@@ -949,17 +949,22 @@ Games.showCTFWin = function(e) {
     }
 };
 
-Games.showLevelUP = function(e) {
+Games.showLevelUp = function(level) {
     $("#custom-msg").length && $("#custom-msg").remove();
-    var t = "",
-        n = " lvlsmaller";
-    null != unlockedFeature[e + ""] && (n = "",
-    t = '<div class="unlocked">FEATURE UNLOCKED<br><div class="unlockedtext">' + unlockedFeature[e + ""] + "</div></div>");
-    var r = '<div id="custom-msg" class="levelup' + n + '"><div class="leveltext">NEW LEVEL REACHED</div><div class="levelbadge"></div><div class="levelnum">' + e + "</div>" + t + "</div>";
-    $("body").append(r),
-    UI.showPanel("#custom-msg"),
-    Sound.levelUp()
-    // UI.showChatLevel(e)
+    let featureUnlockText = "";
+    let divclass = " lvlsmaller";
+    if (unlockedFeature[level + ""] != null) {
+        divclass = "";
+        featureUnlockText = '<div class="unlocked">FEATURE UNLOCKED<br><div class="unlockedtext">' + unlockedFeature[level + ""] + "</div></div>";
+    }
+    let html = '<div id="custom-msg" class="levelup' + divclass + '">' +
+               '<div class="leveltext">NEW LEVEL REACHED</div>' + 
+               '<div class="levelbadge"></div>' +
+               '<div class="levelnum">' + level + "</div>" + featureUnlockText + "</div>";
+    $("body").append(html);
+    UI.showPanel("#custom-msg");
+    setTimeout(function() { UI.hidePanel("#custom-msg", false, true, true) }, 2000);
+    Sound.levelUp();
 };
 
 Games.popFirewall = function(e, t) {
