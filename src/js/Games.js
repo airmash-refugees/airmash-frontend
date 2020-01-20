@@ -927,7 +927,7 @@ Games.playersAlive = function(e) {
 
 Games.showBTRWin = function(e) {
     if (!$("#custom-msg").length) {
-        var t = '<div id="custom-msg" class="btrwin"><div class="trophy"></div><div class="winner"><div class="player"><span class="flag big flag-' + e.f + '"></span>' + UI.escapeHTML(e.p) + '</div></div><div class="bounty"><span class="stat">' + e.k + " KILL" + (1 == e.k ? "" : "S") + "</span>+" + e.b + " BOUNTY</div></div>";
+        var t = '<div id="custom-msg" class="btrwin"><div class="trophy"></div><div class="winner"><div class="player"><span class="flag big flag-' + UI.escapeHTML(e.f) + '"></span>' + UI.escapeHTML(e.p) + '</div></div><div class="bounty"><span class="stat">' + UI.escapeHTML(e.k) + " KILL" + (1 == e.k ? "" : "S") + "</span>+" + UI.escapeHTML(e.b) + " BOUNTY</div></div>";
         $("body").append(t),
         UI.showPanel("#custom-msg"),
         setTimeout(function() {
@@ -939,7 +939,7 @@ Games.showBTRWin = function(e) {
 
 Games.showCTFWin = function(e) {
     if (!$("#custom-msg").length) {
-        var t = '<div id="custom-msg" class="ctfwin"><div class="trophy"></div><div class="winner">' + (1 == e.w ? '<div class="player blue">BLUE TEAM</div>' : '<div class="player red">RED TEAM</div>') + '</div><div class="bounty">+' + e.b + " BOUNTY</div></div>";
+        var t = '<div id="custom-msg" class="ctfwin"><div class="trophy"></div><div class="winner">' + (1 == e.w ? '<div class="player blue">BLUE TEAM</div>' : '<div class="player red">RED TEAM</div>') + '</div><div class="bounty">+' + UI.escapeHTML(e.b) + " BOUNTY</div></div>";
         $("body").append(t),
         UI.showPanel("#custom-msg"),
         setTimeout(function() {

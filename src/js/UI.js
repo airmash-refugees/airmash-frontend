@@ -121,10 +121,35 @@ UI.isEmote = function(word, addColons) {
     return false
 };
 
-UI.serverMessage = function(serverMsg) {
-    var t = "alert";
-    2 == serverMsg.type && (t = "information"),
-    UI.showMessage(t, serverMsg.text, serverMsg.duration)
+var sanitizePossiblyEscapedHtml = function(html) {
+    return UI.escapeHTML(html
+        .replace(/&#x2F;/g, '/')
+        .replace(/&#x27;/g, "'")
+        .replace(/&quot;/g, '"')
+        .replace(/&gt;/g, '>')
+        .replace(/&lt;/g, '<')
+        .replace(/&amp;/g, '&')
+        )
+}
+
+var sanitizeServerMessageHtml = function(html) {
+    let ctfFlagPattern = /^(<span class="info inline"><span class="(blueflag|redflag)"><\/span><\/span>(Captured|Returned|Taken) by )(.*)$/m;
+    let result = ctfFlagPattern.exec(html);
+    if (result) {
+        return result[1] + sanitizePossiblyEscapedHtml(result[4]);
+    }
+
+    return UI.escapeHTML(html.replace(/<br>/g,'\n')).replace(/\n/g,'<br>');
+}
+
+UI.serverMessage = function(msg) {
+    let type = "alert";
+
+    if (msg.type == 2) { 
+        type = "information"
+    }
+
+    UI.showMessage(type, sanitizeServerMessageHtml(msg.text), msg.duration)
 };
 
 UI.showMessage = function(msgType, htmlContents, timeoutMs) {
