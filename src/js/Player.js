@@ -451,7 +451,7 @@ class Player {
         this.state.bubbleFade = 0,
         this.state.bubble || (this.state.bubble = true,
         this.state.bubbleProgress = 0,
-        this.sprites.bubble.visible = true,
+        this.sprites.bubble.visible = this.render,
         this.sprites.bubble.alpha = 0,
         this.sprites.bubble.scale.set(0, 0)),
         this.sprites.bubble.cacheAsBitmap = false;
@@ -681,6 +681,7 @@ class Player {
     }
 
     updateBubble() {
+        this.sprites.bubble.visible = this.render,
         this.state.bubbleProgress += .015 * game.timeFactor,
         this.state.bubbleProgress >= 1 && (this.state.bubbleProgress = 1),
         game.time - this.state.bubbleTime > 4e3 ? (this.state.bubbleFade += .08 * game.timeFactor,
