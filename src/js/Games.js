@@ -523,6 +523,7 @@ Games.switchGame = function(e) {
     Games.closeGames(),
     null != e && (game.playRoom = e),
     game.myScore = 0,
+    game.server = {},
     game.state = Network.STATE.CONNECTING,
     Network.shutdown(),
     Particles.wipe(),
@@ -683,6 +684,8 @@ Games.start = function(playerName, isFirstTime) {
             name: playerName
         };
 
+        game.server = {id: `custom-${game.customServerUrl}`};
+
         Tools.setSettings(player);
         UI.gameStart(playerName, isFirstTime);
     } else {
@@ -717,6 +720,8 @@ Games.start = function(playerName, isFirstTime) {
             player.region = playRegion;
         }
 
+        game.server = {id: `${game.playRegion}-${game.playRoom}`};
+
         Tools.setSettings(player);
         UI.gameStart(playerName, isFirstTime);
 
@@ -725,7 +730,7 @@ Games.start = function(playerName, isFirstTime) {
             Tools.ajaxPost("https://" + game.backendHost + "/enter", {
                 id: config.settings.id,
                 name: playerName,
-                game: game.playRegion + "-" + game.playRoom,
+                game: game.server.id,
                 source: null != document.referrer ? document.referrer : "",
                 mode: config.mobile ? 1 : 0,
                 version: game.version,

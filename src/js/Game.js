@@ -48,7 +48,8 @@ window.game = {
     debug: {},
     buckets: [],
     customServerUrl: null,
-    backendHost: "data.airmash.online"
+    backendHost: "data.airmash.online",
+    server: {}
 };
 
 window.config = {

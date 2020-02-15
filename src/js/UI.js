@@ -851,11 +851,11 @@ UI.errorHandler = function(e) {
         Network.receivedError(e.error);
         break;
     case 2:
-        UI.showMessage("alert", '<span class="info">BANNED</span>You have been banned for packet flooding', 2e4),
+        UI.showMessage("alert", `<span class="info">BANNED</span>You have been banned from this server (${UI.escapeHTML(game.server.id)}) for packet flooding`, 2e4),
         Network.receivedError(e.error);
         break;
     case 3:
-        UI.showMessage("alert", '<span class="info">BANNED</span>You have been banned from this server (' + game.playRoom + ')', 2e4),
+        UI.showMessage("alert", `<span class="info">BANNED</span>You have been banned from this server (${UI.escapeHTML(game.server.id)})`, 2e4),
         Network.receivedError(e.error);
         break;
     case 4:
@@ -1058,7 +1058,7 @@ UI.hidePanel = function(id, visible, remove, longfadenoclick) {
 
 UI.openInvite = function() {
     isInviteVisible || (UI.closeAllPanels("invite"),
-    game.inviteLink = document.URL + "#" + game.playRegion + "-" + game.playRoom,
+    game.inviteLink = document.URL + "#" + game.server.id,
     $("#invite-link").html(game.inviteLink),
     $("#invite-link").attr("href", game.inviteLink),
     UI.showPanel("#invitefriends"),

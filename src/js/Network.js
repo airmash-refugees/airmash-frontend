@@ -404,9 +404,17 @@ Network.setup = function() {
     }
     ,
     primarySock.onclose = function() {
-        null != ackIntervalId && clearInterval(ackIntervalId),
-        game.state !== Network.STATE.CONNECTING && (game.state = Network.STATE.CONNECTING,
-        false === lastReceivedError && Network.reconnectMessage())
+        if (ackIntervalId != null) {
+            clearInterval(ackIntervalId)
+        }
+
+        if (game.state !== Network.STATE.CONNECTING) {
+            game.server = {};
+            game.state = Network.STATE.CONNECTING;
+            if (lastReceivedError === false) { 
+                Network.reconnectMessage();
+            }
+        }
     }
     ,
     primarySock.onerror = function(event) {
