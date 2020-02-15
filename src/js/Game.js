@@ -309,3 +309,18 @@ $(function() {
         Games.start(game.myOriginalName, true);
     }
 });
+
+!function() {
+    var alreadyWarned;
+    setInterval(function() {
+        if (alreadyWarned !== game.server.id && 
+            game.state === Network.STATE.PLAYING && 
+            game.server.config &&
+            game.server.config.sf && 
+            config.scalingFactor > game.server.config.sf)
+        {
+            console.log(`%c⚠️ The maximum scalingFactor on this server (${game.server.id}) is ${game.server.config.sf}.\nThis is enforced by the server. Objects past the horizon limit will not be visible.`, "color:red");
+            alreadyWarned = game.server.id;
+        }
+    }, 100);
+}();

@@ -866,7 +866,11 @@ UI.errorHandler = function(e) {
         UI.showMessage("alert", '<span class="info">RESPAWN</span>Full health and 2 seconds of inactivity required', 3e3);
         break;
     case 6:
-        UI.showMessage("alert", '<span class="info">DISCONNECTED</span>AFK for more than 10 minutes<br><span class="button" onclick="Network.reconnect()">RECONNECT</span>', 72e5),
+        let message = 'AFK time exceeded the server limit';
+        if (game.server.config && game.server.config.afk) {
+            message = `AFK for more than ${UI.escapeHTML(game.server.config.afk)} minute${game.server.config.afk != 1 ? 's' : ''}`
+        }
+        UI.showMessage("alert", `<span class="info">DISCONNECTED</span>${message}<br><span class="button" onclick="Network.reconnect()">RECONNECT</span>`, 72e5),
         Network.receivedError(e.error);
         break;
     case 7:
