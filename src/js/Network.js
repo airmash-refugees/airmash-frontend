@@ -350,7 +350,17 @@ var handleCustomMessage = function(msg) {
     } catch (e) {
         return
     }
-    1 == msg.type ? Games.showBTRWin(parsedData) : 2 == msg.type && Games.showCTFWin(parsedData)
+    switch (msg.type) {
+        case 1:
+            Games.showBTRWin(parsedData);
+            break;
+        case 2:
+            Games.showCTFWin(parsedData);
+            break;
+        case 128:
+            game.server.config = parsedData;
+            break;
+    }
 };
 
 var shouldDiscardTimestampedMessage = function(msg) {
