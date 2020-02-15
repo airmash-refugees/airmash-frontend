@@ -727,7 +727,9 @@ Games.start = function(playerName, isFirstTime) {
                 name: playerName,
                 game: game.playRegion + "-" + game.playRoom,
                 source: null != document.referrer ? document.referrer : "",
-                mode: config.mobile ? 1 : 0
+                mode: config.mobile ? 1 : 0,
+                version: game.version,
+                switch: !isFirstTime
             });
         }
     }

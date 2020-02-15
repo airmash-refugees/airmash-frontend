@@ -5,5 +5,6 @@ dist
 
 .vscode
 
-# this is generated in the build:
+# these are generated in the build
 src/js/GamesData.js
+src/js/Version.js

@@ -2,7 +2,7 @@ window.DEVELOPMENT = /^http:\/\/127\.0\.0\.1:[0-9]{1,5}\/?$/.test(window.origin)
 
 window.game = {
     protocol: 5,
-    version: "v1.0.2",
+    version: `v${require('./Version')}`,
     state: 0,
     focus: true,
     screenX: 0,
