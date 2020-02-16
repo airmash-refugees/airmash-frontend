@@ -724,20 +724,17 @@ Games.start = function(playerName, isFirstTime) {
 
         Tools.setSettings(player);
         UI.gameStart(playerName, isFirstTime);
-
-        // this is for stats and not necessary for the game
-        if (isFirstTime) {
-            Tools.ajaxPost("https://" + game.backendHost + "/enter", {
-                id: config.settings.id,
-                name: playerName,
-                game: game.server.id,
-                source: null != document.referrer ? document.referrer : "",
-                mode: config.mobile ? 1 : 0,
-                version: game.version,
-                switch: !isFirstTime
-            });
-        }
     }
+
+    Tools.ajaxPost("https://" + game.backendHost + "/enter", {
+        id: config.settings.id,
+        name: playerName,
+        game: game.server.id,
+        source: null != document.referrer ? document.referrer : "",
+        mode: config.mobile ? 1 : 0,
+        version: game.version,
+        switch: !isFirstTime
+    });
 };
 
 function getPlayRoom() {
