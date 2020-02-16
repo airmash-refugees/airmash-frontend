@@ -62,6 +62,7 @@ class Player {
           powerupFadeState : 0,
           lastBounceSound : 0
         };
+        this.bot = playerNewMsg.isBot;
         this.setupGraphics();
         if (0 == this.status) {
           Tools.decodeUpgrades(this, playerNewMsg.upgrades);

@@ -218,8 +218,11 @@ var dispatchIncomingMessage = function(msg) {
                 initBackupSock();
             }(msg),
             UI.loggedIn(msg);
+            let botIds = msg.bots ? msg.bots.map(b => b.id) : [];
             for (t = 0; t < msg.players.length; t++) {
-                Players.add(msg.players[t], true);
+                let player = msg.players[t];
+                player.isBot = botIds.includes(player.id);
+                Players.add(player, true);
             }
             break;
         case ServerPacket.ERROR:
@@ -557,190 +560,192 @@ var decodeMessageToDict = function(encoded, t) {
         schema = ServerMessageSchema[msg.c];
     if (null == schema)
         return null;
-    for (var fieldIdx = 0; fieldIdx < schema.length; fieldIdx++) {
-        var fieldName = schema[fieldIdx][0];
-        switch (schema[fieldIdx][1]) {
-        case FieldType.text:
-        case FieldType.textbig:
-            if (schema[fieldIdx][1] == FieldType.text) {
-                var l = dataView.getUint8(inputPos, true);
-                inputPos += 1
-            } else {
-                l = dataView.getUint16(inputPos, true);
-                inputPos += 2
-            }
-            for (var u = new Uint8Array(l), c = 0; c < l; c++)
-                u[c] = dataView.getUint8(inputPos + c, true);
-            var h = Tools.decodeUTF8(u);
-            msg[fieldName] = h,
-            inputPos += l;
-            break;
-        case FieldType.array:
-        case FieldType.arraysmall:
-            if (schema[fieldIdx][1] == FieldType.arraysmall) {
-                var d = dataView.getUint8(inputPos, true);
-                inputPos += 1
-            } else {
-                d = dataView.getUint16(inputPos, true);
-                inputPos += 2
-            }
-            msg[fieldName] = [];
-            for (var p = schema[fieldIdx][2], f = 0; f < d; f++) {
-                for (var g = {}, m = 0; m < p.length; m++) {
-                    var v = p[m][0];
-                    switch (p[m][1]) {
-                    case FieldType.text:
-                    case FieldType.textbig:
-                        if (p[m][1] == FieldType.text) {
-                            l = dataView.getUint8(inputPos, true);
-                            inputPos += 1
-                        } else {
-                            l = dataView.getUint16(inputPos, true);
-                            inputPos += 2
-                        }
-                        for (u = new Uint8Array(l),
-                        c = 0; c < l; c++)
-                            u[c] = dataView.getUint8(inputPos + c, true);
-                        h = Tools.decodeUTF8(u);
-                        g[v] = h,
-                        inputPos += l;
-                        break;
-                    case FieldType.uint8:
-                        g[v] = dataView.getUint8(inputPos, true),
-                        inputPos += 1;
-                        break;
-                    case FieldType.uint16:
-                        g[v] = dataView.getUint16(inputPos, true),
-                        inputPos += 2;
-                        break;
-                    case FieldType.uint24:
-                        var y = 256 * dataView.getUint16(inputPos, true);
-                        inputPos += 2,
-                        msg[v] = y + dataView.getUint8(inputPos, true),
-                        inputPos += 1;
-                        break;
-                    case FieldType.uint32:
-                        g[v] = dataView.getUint32(inputPos, true),
-                        inputPos += 4;
-                        break;
-                    case FieldType.float32:
-                        g[v] = dataView.getFloat32(inputPos, true),
-                        inputPos += 4;
-                        break;
-                    case FieldType.float64:
-                        g[v] = dataView.getFloat64(inputPos, true),
-                        inputPos += 8;
-                        break;
-                    case FieldType.boolean:
-                        g[v] = 0 != dataView.getUint8(inputPos, true),
-                        inputPos += 1;
-                        break;
-                    case FieldType.speed:
-                        g[v] = Tools.decodeSpeed(dataView.getUint16(inputPos, true)),
-                        inputPos += 2;
-                        break;
-                    case FieldType.accel:
-                        g[v] = Tools.decodeAccel(dataView.getUint16(inputPos, true)),
-                        inputPos += 2;
-                        break;
-                    case FieldType.coordx:
-                        g[v] = Tools.decodeCoordX(dataView.getUint16(inputPos, true)),
-                        inputPos += 2;
-                        break;
-                    case FieldType.coordy:
-                        g[v] = Tools.decodeCoordY(dataView.getUint16(inputPos, true)),
-                        inputPos += 2;
-                        break;
-                    case FieldType.coord24:
-                        y = 256 * dataView.getUint16(inputPos, true);
-                        inputPos += 2,
-                        msg[v] = Tools.decodeCoord24(y + dataView.getUint8(inputPos, true)),
-                        inputPos += 1;
-                        break;
-                    case FieldType.rotation:
-                        g[v] = Tools.decodeRotation(dataView.getUint16(inputPos, true)),
-                        inputPos += 2;
-                        break;
-                    case FieldType.regen:
-                        g[v] = Tools.decodeRegen(dataView.getUint16(inputPos, true)),
-                        inputPos += 2;
-                        break;
-                    case FieldType.healthnergy:
-                        g[v] = Tools.decodeHealthnergy(dataView.getUint8(inputPos, true)),
-                        inputPos += 1
-                    }
+    try {
+        for (var fieldIdx = 0; fieldIdx < schema.length; fieldIdx++) {
+            var fieldName = schema[fieldIdx][0];
+            switch (schema[fieldIdx][1]) {
+            case FieldType.text:
+            case FieldType.textbig:
+                if (schema[fieldIdx][1] == FieldType.text) {
+                    var l = dataView.getUint8(inputPos, true);
+                    inputPos += 1
+                } else {
+                    l = dataView.getUint16(inputPos, true);
+                    inputPos += 2
                 }
-                msg[fieldName].push(g)
+                for (var u = new Uint8Array(l), c = 0; c < l; c++)
+                    u[c] = dataView.getUint8(inputPos + c, true);
+                var h = Tools.decodeUTF8(u);
+                msg[fieldName] = h,
+                inputPos += l;
+                break;
+            case FieldType.array:
+            case FieldType.arraysmall:
+                if (schema[fieldIdx][1] == FieldType.arraysmall) {
+                    var d = dataView.getUint8(inputPos, true);
+                    inputPos += 1
+                } else {
+                    d = dataView.getUint16(inputPos, true);
+                    inputPos += 2
+                }
+                msg[fieldName] = [];
+                for (var p = schema[fieldIdx][2], f = 0; f < d; f++) {
+                    for (var g = {}, m = 0; m < p.length; m++) {
+                        var v = p[m][0];
+                        switch (p[m][1]) {
+                        case FieldType.text:
+                        case FieldType.textbig:
+                            if (p[m][1] == FieldType.text) {
+                                l = dataView.getUint8(inputPos, true);
+                                inputPos += 1
+                            } else {
+                                l = dataView.getUint16(inputPos, true);
+                                inputPos += 2
+                            }
+                            for (u = new Uint8Array(l),
+                            c = 0; c < l; c++)
+                                u[c] = dataView.getUint8(inputPos + c, true);
+                            h = Tools.decodeUTF8(u);
+                            g[v] = h,
+                            inputPos += l;
+                            break;
+                        case FieldType.uint8:
+                            g[v] = dataView.getUint8(inputPos, true),
+                            inputPos += 1;
+                            break;
+                        case FieldType.uint16:
+                            g[v] = dataView.getUint16(inputPos, true),
+                            inputPos += 2;
+                            break;
+                        case FieldType.uint24:
+                            var y = 256 * dataView.getUint16(inputPos, true);
+                            inputPos += 2,
+                            msg[v] = y + dataView.getUint8(inputPos, true),
+                            inputPos += 1;
+                            break;
+                        case FieldType.uint32:
+                            g[v] = dataView.getUint32(inputPos, true),
+                            inputPos += 4;
+                            break;
+                        case FieldType.float32:
+                            g[v] = dataView.getFloat32(inputPos, true),
+                            inputPos += 4;
+                            break;
+                        case FieldType.float64:
+                            g[v] = dataView.getFloat64(inputPos, true),
+                            inputPos += 8;
+                            break;
+                        case FieldType.boolean:
+                            g[v] = 0 != dataView.getUint8(inputPos, true),
+                            inputPos += 1;
+                            break;
+                        case FieldType.speed:
+                            g[v] = Tools.decodeSpeed(dataView.getUint16(inputPos, true)),
+                            inputPos += 2;
+                            break;
+                        case FieldType.accel:
+                            g[v] = Tools.decodeAccel(dataView.getUint16(inputPos, true)),
+                            inputPos += 2;
+                            break;
+                        case FieldType.coordx:
+                            g[v] = Tools.decodeCoordX(dataView.getUint16(inputPos, true)),
+                            inputPos += 2;
+                            break;
+                        case FieldType.coordy:
+                            g[v] = Tools.decodeCoordY(dataView.getUint16(inputPos, true)),
+                            inputPos += 2;
+                            break;
+                        case FieldType.coord24:
+                            y = 256 * dataView.getUint16(inputPos, true);
+                            inputPos += 2,
+                            msg[v] = Tools.decodeCoord24(y + dataView.getUint8(inputPos, true)),
+                            inputPos += 1;
+                            break;
+                        case FieldType.rotation:
+                            g[v] = Tools.decodeRotation(dataView.getUint16(inputPos, true)),
+                            inputPos += 2;
+                            break;
+                        case FieldType.regen:
+                            g[v] = Tools.decodeRegen(dataView.getUint16(inputPos, true)),
+                            inputPos += 2;
+                            break;
+                        case FieldType.healthnergy:
+                            g[v] = Tools.decodeHealthnergy(dataView.getUint8(inputPos, true)),
+                            inputPos += 1
+                        }
+                    }
+                    msg[fieldName].push(g)
+                }
+                break;
+            case FieldType.uint8:
+                msg[fieldName] = dataView.getUint8(inputPos, true),
+                inputPos += 1;
+                break;
+            case FieldType.uint16:
+                msg[fieldName] = dataView.getUint16(inputPos, true),
+                inputPos += 2;
+                break;
+            case FieldType.uint24:
+                y = 256 * dataView.getUint16(inputPos, true);
+                inputPos += 2,
+                msg[fieldName] = y + dataView.getUint8(inputPos, true),
+                inputPos += 1;
+                break;
+            case FieldType.uint32:
+                msg[fieldName] = dataView.getUint32(inputPos, true),
+                inputPos += 4;
+                break;
+            case FieldType.float32:
+                msg[fieldName] = dataView.getFloat32(inputPos, true),
+                inputPos += 4;
+                break;
+            case FieldType.float64:
+                msg[fieldName] = dataView.getFloat64(inputPos, true),
+                inputPos += 8;
+                break;
+            case FieldType.boolean:
+                msg[fieldName] = 0 != dataView.getUint8(inputPos, true),
+                inputPos += 1;
+                break;
+            case FieldType.speed:
+                msg[fieldName] = Tools.decodeSpeed(dataView.getUint16(inputPos, true)),
+                inputPos += 2;
+                break;
+            case FieldType.accel:
+                msg[fieldName] = Tools.decodeAccel(dataView.getUint16(inputPos, true)),
+                inputPos += 2;
+                break;
+            case FieldType.coordx:
+                msg[fieldName] = Tools.decodeCoordX(dataView.getUint16(inputPos, true)),
+                inputPos += 2;
+                break;
+            case FieldType.coordy:
+                msg[fieldName] = Tools.decodeCoordY(dataView.getUint16(inputPos, true)),
+                inputPos += 2;
+                break;
+            case FieldType.coord24:
+                y = 256 * dataView.getUint16(inputPos, true);
+                inputPos += 2,
+                msg[fieldName] = Tools.decodeCoord24(y + dataView.getUint8(inputPos, true)),
+                inputPos += 1;
+                break;
+            case FieldType.rotation:
+                msg[fieldName] = Tools.decodeRotation(dataView.getUint16(inputPos, true)),
+                inputPos += 2;
+                break;
+            case FieldType.regen:
+                msg[fieldName] = Tools.decodeRegen(dataView.getUint16(inputPos, true)),
+                inputPos += 2;
+                break;
+            case FieldType.healthnergy:
+                msg[fieldName] = Tools.decodeHealthnergy(dataView.getUint8(inputPos, true)),
+                inputPos += 1;
+                break;
+            default:
+                return null
             }
-            break;
-        case FieldType.uint8:
-            msg[fieldName] = dataView.getUint8(inputPos, true),
-            inputPos += 1;
-            break;
-        case FieldType.uint16:
-            msg[fieldName] = dataView.getUint16(inputPos, true),
-            inputPos += 2;
-            break;
-        case FieldType.uint24:
-            y = 256 * dataView.getUint16(inputPos, true);
-            inputPos += 2,
-            msg[fieldName] = y + dataView.getUint8(inputPos, true),
-            inputPos += 1;
-            break;
-        case FieldType.uint32:
-            msg[fieldName] = dataView.getUint32(inputPos, true),
-            inputPos += 4;
-            break;
-        case FieldType.float32:
-            msg[fieldName] = dataView.getFloat32(inputPos, true),
-            inputPos += 4;
-            break;
-        case FieldType.float64:
-            msg[fieldName] = dataView.getFloat64(inputPos, true),
-            inputPos += 8;
-            break;
-        case FieldType.boolean:
-            msg[fieldName] = 0 != dataView.getUint8(inputPos, true),
-            inputPos += 1;
-            break;
-        case FieldType.speed:
-            msg[fieldName] = Tools.decodeSpeed(dataView.getUint16(inputPos, true)),
-            inputPos += 2;
-            break;
-        case FieldType.accel:
-            msg[fieldName] = Tools.decodeAccel(dataView.getUint16(inputPos, true)),
-            inputPos += 2;
-            break;
-        case FieldType.coordx:
-            msg[fieldName] = Tools.decodeCoordX(dataView.getUint16(inputPos, true)),
-            inputPos += 2;
-            break;
-        case FieldType.coordy:
-            msg[fieldName] = Tools.decodeCoordY(dataView.getUint16(inputPos, true)),
-            inputPos += 2;
-            break;
-        case FieldType.coord24:
-            y = 256 * dataView.getUint16(inputPos, true);
-            inputPos += 2,
-            msg[fieldName] = Tools.decodeCoord24(y + dataView.getUint8(inputPos, true)),
-            inputPos += 1;
-            break;
-        case FieldType.rotation:
-            msg[fieldName] = Tools.decodeRotation(dataView.getUint16(inputPos, true)),
-            inputPos += 2;
-            break;
-        case FieldType.regen:
-            msg[fieldName] = Tools.decodeRegen(dataView.getUint16(inputPos, true)),
-            inputPos += 2;
-            break;
-        case FieldType.healthnergy:
-            msg[fieldName] = Tools.decodeHealthnergy(dataView.getUint8(inputPos, true)),
-            inputPos += 1;
-            break;
-        default:
-            return null
         }
-    }
+    } catch(e) {};
     return msg
 };
 
@@ -867,14 +872,14 @@ var ServerPacket = {
 };
 
 var ServerMessageSchema = {
-    [ServerPacket.LOGIN]: [["success", FieldType.boolean], ["id", FieldType.uint16], ["team", FieldType.uint16], ["clock", FieldType.uint32], ["token", FieldType.text], ["type", FieldType.uint8], ["room", FieldType.text], ["players", FieldType.array, [["id", FieldType.uint16], ["status", FieldType.uint8], ["level", FieldType.uint8], ["name", FieldType.text], ["type", FieldType.uint8], ["team", FieldType.uint16], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["rot", FieldType.rotation], ["flag", FieldType.uint16], ["upgrades", FieldType.uint8]]]],
+    [ServerPacket.LOGIN]: [["success", FieldType.boolean], ["id", FieldType.uint16], ["team", FieldType.uint16], ["clock", FieldType.uint32], ["token", FieldType.text], ["type", FieldType.uint8], ["room", FieldType.text], ["players", FieldType.array, [["id", FieldType.uint16], ["status", FieldType.uint8], ["level", FieldType.uint8], ["name", FieldType.text], ["type", FieldType.uint8], ["team", FieldType.uint16], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["rot", FieldType.rotation], ["flag", FieldType.uint16], ["upgrades", FieldType.uint8]]],["bots", FieldType.array, [["id", FieldType.uint16]]]],
     [ServerPacket.BACKUP]: [],
     [ServerPacket.PING]: [["clock", FieldType.uint32], ["num", FieldType.uint32]],
     [ServerPacket.PING_RESULT]: [["ping", FieldType.uint16], ["playerstotal", FieldType.uint32], ["playersgame", FieldType.uint32]],
     [ServerPacket.ACK]: [],
     [ServerPacket.ERROR]: [["error", FieldType.uint8]],
     [ServerPacket.COMMAND_REPLY]: [["type", FieldType.uint8], ["text", FieldType.textbig]],
-    [ServerPacket.PLAYER_NEW]: [["id", FieldType.uint16], ["status", FieldType.uint8], ["name", FieldType.text], ["type", FieldType.uint8], ["team", FieldType.uint16], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["rot", FieldType.rotation], ["flag", FieldType.uint16], ["upgrades", FieldType.uint8]],
+    [ServerPacket.PLAYER_NEW]: [["id", FieldType.uint16], ["status", FieldType.uint8], ["name", FieldType.text], ["type", FieldType.uint8], ["team", FieldType.uint16], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["rot", FieldType.rotation], ["flag", FieldType.uint16], ["upgrades", FieldType.uint8], ["isBot", FieldType.boolean]],
     [ServerPacket.PLAYER_LEAVE]: [["id", FieldType.uint16]],
     [ServerPacket.PLAYER_UPDATE]: [["clock", FieldType.uint32], ["id", FieldType.uint16], ["keystate", FieldType.uint8], ["upgrades", FieldType.uint8], ["posX", FieldType.coord24], ["posY", FieldType.coord24], ["rot", FieldType.rotation], ["speedX", FieldType.speed], ["speedY", FieldType.speed]],
     [ServerPacket.PLAYER_FIRE]: [["clock", FieldType.uint32], ["id", FieldType.uint16], ["energy", FieldType.healthnergy], ["energyRegen", FieldType.regen], ["projectiles", FieldType.arraysmall, [["id", FieldType.uint16], ["type", FieldType.uint8], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["speedX", FieldType.speed], ["speedY", FieldType.speed], ["accelX", FieldType.accel], ["accelY", FieldType.accel], ["maxSpeed", FieldType.speed]]]],
