@@ -562,6 +562,9 @@ var decodeMessageToDict = function(encoded, t) {
         return null;
     try {
         for (var fieldIdx = 0; fieldIdx < schema.length; fieldIdx++) {
+            if (inputPos >= dataView.byteLength) {
+                break;
+            }
             var fieldName = schema[fieldIdx][0];
             switch (schema[fieldIdx][1]) {
             case FieldType.text:
