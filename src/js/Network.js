@@ -212,6 +212,7 @@ var dispatchIncomingMessage = function(msg) {
                 game.gameType = msg.type;
                 game.spectatingID = null;
                 game.myLevel = 0;
+                handleServerConfigUpdate(msg.serverConfiguration);
                 Games.prep();
                 baseDivClk = msg.clock / 100;
                 baseDivClkLastResetTime = performance.now();
@@ -360,11 +361,16 @@ var handleCustomMessage = function(msg) {
         case 2:
             Games.showCTFWin(parsedData);
             break;
-        case 128:
-            game.server.config = parsedData;
-            break;
     }
 };
+
+var handleServerConfigUpdate = function(data) {
+    let config = {};
+    try {
+        config = JSON.parse(data)
+    } catch (e) {}
+    game.server.config = config;
+}
 
 var shouldDiscardTimestampedMessage = function(msg) {
     var msgTombstone = msg.c + "_" + msg.clock + "_" + msg.posX + "_" + msg.posY + "_" + msg.rot + "_" + msg.speedX + "_" + msg.speedY;
@@ -875,7 +881,7 @@ var ServerPacket = {
 };
 
 var ServerMessageSchema = {
-    [ServerPacket.LOGIN]: [["success", FieldType.boolean], ["id", FieldType.uint16], ["team", FieldType.uint16], ["clock", FieldType.uint32], ["token", FieldType.text], ["type", FieldType.uint8], ["room", FieldType.text], ["players", FieldType.array, [["id", FieldType.uint16], ["status", FieldType.uint8], ["level", FieldType.uint8], ["name", FieldType.text], ["type", FieldType.uint8], ["team", FieldType.uint16], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["rot", FieldType.rotation], ["flag", FieldType.uint16], ["upgrades", FieldType.uint8]]],["bots", FieldType.array, [["id", FieldType.uint16]]]],
+    [ServerPacket.LOGIN]: [["success", FieldType.boolean], ["id", FieldType.uint16], ["team", FieldType.uint16], ["clock", FieldType.uint32], ["token", FieldType.text], ["type", FieldType.uint8], ["room", FieldType.text], ["players", FieldType.array, [["id", FieldType.uint16], ["status", FieldType.uint8], ["level", FieldType.uint8], ["name", FieldType.text], ["type", FieldType.uint8], ["team", FieldType.uint16], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["rot", FieldType.rotation], ["flag", FieldType.uint16], ["upgrades", FieldType.uint8]]],["serverConfiguration", FieldType.textbig],["bots", FieldType.array, [["id", FieldType.uint16]]]],
     [ServerPacket.BACKUP]: [],
     [ServerPacket.PING]: [["clock", FieldType.uint32], ["num", FieldType.uint32]],
     [ServerPacket.PING_RESULT]: [["ping", FieldType.uint16], ["playerstotal", FieldType.uint32], ["playersgame", FieldType.uint32]],
