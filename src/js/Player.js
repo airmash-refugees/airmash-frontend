@@ -63,6 +63,9 @@ class Player {
           lastBounceSound : 0
         };
         this.bot = playerNewMsg.isBot;
+        if (this.bot) {
+            this.name = Tools.stripBotsNamePrefix(this.name);
+        }
         this.setupGraphics();
         if (0 == this.status) {
           Tools.decodeUpgrades(this, playerNewMsg.upgrades);

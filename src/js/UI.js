@@ -136,7 +136,8 @@ var sanitizeServerMessageHtml = function(html) {
     let ctfFlagPattern = /^(<span class="info inline"><span class="(blueflag|redflag)"><\/span><\/span>(Captured|Returned|Taken) by )(.*)$/m;
     let result = ctfFlagPattern.exec(html);
     if (result) {
-        return result[1] + sanitizePossiblyEscapedHtml(result[4]);
+        let name = Tools.stripBotsNamePrefix(result[4]);
+        return result[1] + sanitizePossiblyEscapedHtml(name);
     }
 
     return UI.escapeHTML(html.replace(/<br>/g,'\n')).replace(/\n/g,'<br>');

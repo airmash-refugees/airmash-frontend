@@ -563,3 +563,12 @@ Tools.decodeUTF8 = function(e) {
     }
     return t
 };
+
+Tools.stripBotsNamePrefix = function(name) {
+    if (game.server.config && game.server.config.botsNamePrefix) {
+        if (name.startsWith(game.server.config.botsNamePrefix)) {
+            name = name.substring(game.server.config.botsNamePrefix.length);
+        }
+    }
+    return name;
+}
