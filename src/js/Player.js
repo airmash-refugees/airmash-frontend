@@ -177,7 +177,7 @@ class Player {
         if(! (this.reel || isPlaneTypeChange)) {
             this.setupNameplate();
             this.setupChatBubbles();
-            if(null != this.level) {
+            if(this.level != null || this.bot) {
                 this.setupLevelPlate();
             }
         }
@@ -534,9 +534,10 @@ class Player {
     }
 
     setupLevelPlate() {
-        null == this.sprites.level ? (this.sprites.level = new PIXI.Text(this.level + "",{
+        let plateText = this.bot ? "bot" : this.level + "";
+        null == this.sprites.level ? (this.sprites.level = new PIXI.Text(plateText, {
             fontFamily: "MontserratWeb, Helvetica, sans-serif",
-            fontSize: "28px",
+            fontSize: this.bot ? "24px" : "28px",
             fill: "rgb(200, 200, 200)",
             dropShadow: true,
             dropShadowBlur: 6,
@@ -547,7 +548,7 @@ class Player {
         this.sprites.levelBorder = Textures.sprite("levelborder"),
         this.sprites.levelBorder.alpha = .4,
         game.graphics.layers.playernames.addChild(this.sprites.levelBorder),
-        game.graphics.layers.playernames.addChild(this.sprites.level)) : this.sprites.level.text = this.level + "",
+        game.graphics.layers.playernames.addChild(this.sprites.level)) : this.sprites.level.text = plateText,
         this.sprites.levelBorder.scale.set((this.sprites.level.width + 10) / 32, .65),
         this.sprites.level.visible = this.render,
         this.sprites.levelBorder.visible = this.render
@@ -673,14 +674,18 @@ class Player {
 
     updateNameplate() {
         if (!this.reel) {
-            var e = (this.sprites.name.width + this.sprites.flag.width + 10) / 2,
-                t = this.pos.x - e + (this.state.hasBadge ? 12 : 0) - (null != this.level ? this.sprites.level.width / 2 + 8 : 0),
-                n = this.pos.y + this.state.nameplateDist * this.scale;
-            this.sprites.name.position.set(t + 40, n),
-            this.sprites.flag.position.set(t + 15, n + 10),
-            null != this.level && (this.sprites.level.position.set(t + 2 * e + 13, n + 2),
-            this.sprites.levelBorder.position.set(t + 2 * e + 7.75, n - .5)),
-            this.state.hasBadge && this.sprites.badge.position.set(t - 28, n)
+            let nameFlagHalfWidth = (this.sprites.name.width + this.sprites.flag.width + 10) / 2;
+            let nameplateX = this.pos.x - nameFlagHalfWidth + (this.state.hasBadge ? 12 : 0) - (this.sprites.level ? this.sprites.level.width / 2 + 8 : 0);
+            let nameplateY = this.pos.y + this.state.nameplateDist * this.scale;
+            this.sprites.flag.position.set(nameplateX + 15, nameplateY + 10);
+            this.sprites.name.position.set(nameplateX + 40, nameplateY);
+            if (this.sprites.level) {
+                this.sprites.level.position.set(nameplateX + 2 * nameFlagHalfWidth + 13, nameplateY + (this.bot ? 3 : 2));
+                this.sprites.levelBorder.position.set(nameplateX + 2 * nameFlagHalfWidth + 7.75, nameplateY - 0.5);
+            }
+            if (this.state.hasBadge) {
+                this.sprites.badge.position.set(nameplateX - 28, nameplateY);
+            }
         }
     }
 
