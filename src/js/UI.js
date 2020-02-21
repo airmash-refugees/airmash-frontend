@@ -820,11 +820,17 @@ UI.aircraftSelected = function(e) {
         t == e ? $("#selectaircraft-" + t).addClass("sel") : $("#selectaircraft-" + t).removeClass("sel")
 };
 
-UI.killed = function(playerKillMsg) {
-    var t = null == playerKillMsg.level ? "" : '<span class="level">' + playerKillMsg.level + "</span>";
+UI.killed = function(victim) {
+    let levelBotHtml = '';
+    if (victim.bot) {
+        levelBotHtml = '<span class="level bot">bot</span>';
+    }
+    else if (victim.level) {
+        levelBotHtml = '<span class="level">' + victim.level + '</span>';
+    }
     (game.time - lastTimePlayerWasKilled > 1500 || listOfPlayersKills.length >= 6) && (listOfPlayersKills = []),
     lastTimePlayerWasKilled = game.time,
-    listOfPlayersKills.push([playerKillMsg.flag, playerKillMsg.name, t]);
+    listOfPlayersKills.push([victim.flag, victim.name, levelBotHtml]);
     for (var n = "", r = "", i = 0; i < listOfPlayersKills.length; i++)
         r = listOfPlayersKills[i][1],
         1 != listOfPlayersKills.length && r.length > 10 && (r = r.substr(0, 10) + "..."),
@@ -836,12 +842,18 @@ UI.killed = function(playerKillMsg) {
     }
 };
 
-UI.killedBy = function(playerKillMsg) {
-    var t = null == playerKillMsg.level ? "" : '<span class="level">' + playerKillMsg.level + "</span>";
+UI.killedBy = function(killer) {
+    let levelBotHtml = '';
+    if (killer.bot) {
+        levelBotHtml = '<span class="level bot">bot</span>';
+    }
+    else if (killer.level) {
+        levelBotHtml = '<span class="level">' + killer.level + '</span>';
+    }
     deathNotice = {
         type: "destroyed",
         duration: 3e3,
-        msg: 'Destroyed by<span class="playerbig"><span class="flag big flag-' + playerKillMsg.flag + '"></span>' + UI.escapeHTML(playerKillMsg.name) + t + "</span>"
+        msg: 'Destroyed by<span class="playerbig"><span class="flag big flag-' + killer.flag + '"></span>' + UI.escapeHTML(killer.name) + levelBotHtml + "</span>"
     }
 };
 

@@ -1468,6 +1468,13 @@ input:focus {
     margin-left: 12px
 }
 
+.message .bot {
+    font-weight: lighter;
+    font-size: 18px;
+    vertical-align: middle;
+    margin-left: 14px;
+}
+
 .message .playerbig {
     color: #fff;
     font-weight: bold;
