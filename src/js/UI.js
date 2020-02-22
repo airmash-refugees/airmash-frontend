@@ -406,7 +406,7 @@ UI.scoreboardUpdate = function (msgData, msgRankings, maxScoreboard) {
 
         var isCurPlayerClass = player.me() ? " sel" : "";
         var curPlayerScore = msgData[i].score;
-        var curPlayerLevel = msgData[i].level;
+        var curPlayerLevel = player.bot ? "bot" : msgData[i].level;
 
         if (somethingLikeHighestPlayerId > maxScoreboard && playerRank == maxScoreboard - 1) {
             html += '<div class="line dottedline">&middot; &middot; &middot;</div>';
@@ -443,7 +443,7 @@ UI.scoreboardUpdate = function (msgData, msgRankings, maxScoreboard) {
             html += (
                 '<span class="holder">' +
                     '&nbsp;' +
-                    '<span class="rank">' + curPlayerLevel + '</span>' +
+                    '<span class="rank' + (player.bot ? ' bot' : '') + '">' + curPlayerLevel + '</span>' +
                 '</span>'
             );
         }

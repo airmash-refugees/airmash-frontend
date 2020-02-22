@@ -1923,6 +1923,12 @@ input:focus {
     font-weight: bold
 }
 
+#scoreboard .line .holder .bot {
+    font-size: 10px;
+    font-weight: lighter;
+    color: #eee;
+}
+
 #scoreboard .line .score {
     position: absolute;
     top: 0;
