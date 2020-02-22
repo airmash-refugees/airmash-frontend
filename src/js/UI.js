@@ -1227,6 +1227,7 @@ UI.updateScore = function (scoreDetailedMsg) {
                     '<div class="player' + u + '">' +
                         UI.escapeHTML(player.name) +
                     '</div>' +
+                    (player.bot ? '<div class="bot">bot</div>' : '') +
                 '</div>'
         );
 

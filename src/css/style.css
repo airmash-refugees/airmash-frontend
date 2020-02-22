@@ -2365,7 +2365,7 @@ input:focus {
 
 #scoredetailed .item .name {
     display: inline-block;
-    width: 33%;
+    width: 38%;
 }
 
 #scoredetailed .item .name .position {
@@ -2388,6 +2388,17 @@ input:focus {
     font-weight: bold
 }
 
+#scoredetailed .item .name .bot {
+    display: inline-block;
+    background-color: rgba(70, 70, 70, 0.75);
+    border-radius: 5px;
+    padding: 0 4px 0 4px;
+    margin-left: 6px;
+    font-weight: lighter;
+    color: #ddd;
+    font-size: 10px;
+}
+
 #scoredetailed .item .name .team-1 {
     color: #4d7fd5
 }
@@ -2407,7 +2418,7 @@ input:focus {
 
 #scoredetailed .item .captures {
     display: inline-block;
-    width: 13%;
+    width: 10%;
     font-weight: bold;
     text-align: right;
     color: #fff;
@@ -2433,7 +2444,7 @@ input:focus {
 
 #scoredetailed .item .wins {
     display: inline-block;
-    width: 13%;
+    width: 12%;
     font-weight: bold;
     text-align: right;
     color: #fff;
@@ -2469,14 +2480,14 @@ input:focus {
 
 #scoredetailed .item .bounty {
     display: inline-block;
-    width: 13%;
+    width: 12%;
     color: #fff;
     font-weight: bold
 }
 
 #scoredetailed .item .rank {
     display: inline-block;
-    width: 9%;
+    width: 8%;
     color: #fff;
     font-weight: bold
 }
