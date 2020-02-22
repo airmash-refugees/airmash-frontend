@@ -1325,7 +1325,6 @@ UI.updateScore = function (scoreDetailedMsg) {
     }
     $("#scoreplayers").html(playerHtml);
     $("#scoretable").html(tableHtml);
-    console.log(containerHtml);
     $("#scorecontainer").html(containerHtml);
     $("#scoremvp").html(mvpHtml);
 };
