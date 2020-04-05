@@ -205,7 +205,7 @@ class Player {
             e = this.team == game.myTeam ? "#FFFFFF" : "#FFEC52";
         return {
             fontFamily: "MontserratWeb, Helvetica, sans-serif",
-            fontSize: "33px",
+            fontSize: (33 * config.airmashRefugees.fontSizeMul) + "px",
             fill: e,
             dropShadow: true,
             dropShadowBlur: 10,
@@ -250,7 +250,7 @@ class Player {
         });
         this.sprites.bubbleText = new PIXI.Text("a",{
             fontFamily: "MontserratWeb, Helvetica, sans-serif",
-            fontSize: "12px",
+            fontSize: (12 * config.airmashRefugees.fontSizeMul) + "px",
             fill: "white"
         });
         this.sprites.bubble.addChild(this.sprites.bubbleText);
@@ -537,7 +537,9 @@ class Player {
         let plateText = this.bot ? "bot" : this.level + "";
         null == this.sprites.level ? (this.sprites.level = new PIXI.Text(plateText, {
             fontFamily: "MontserratWeb, Helvetica, sans-serif",
-            fontSize: this.bot ? "24px" : "28px",
+            fontSize: (
+                ((this.bot ? 24 : 28) * config.airmashRefugees.fontSizeMul) + "px"
+            ),
             fill: "rgb(200, 200, 200)",
             dropShadow: true,
             dropShadowBlur: 6,

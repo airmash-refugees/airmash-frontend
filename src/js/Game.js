@@ -53,6 +53,10 @@ window.game = {
 };
 
 window.config = {
+    airmashRefugees: {
+        // Multiply all sprite font sizes (for blind people)
+        fontSizeMul: 1.0
+    },
     settings: {},
     auth: {},
     ships: [
