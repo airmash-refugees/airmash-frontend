@@ -2427,7 +2427,7 @@ input:focus {
 #scoredetailed .item .captures .captures-container {
     display: inline-block;
     position: relative;
-    width: 50px;
+    width: 50%;
 }
 
 #scoredetailed .item .captures .captures-container .captures-icon {
