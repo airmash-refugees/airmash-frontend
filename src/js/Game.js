@@ -55,7 +55,9 @@ window.game = {
 window.config = {
     airmashRefugees: {
         // Multiply all sprite font sizes (for blind people)
-        fontSizeMul: 1.0
+        fontSizeMul: 1.0,
+        // Replace non-ASCII nicks with "playerXXX", where XXX is player ID.
+        unicodeWorkaround: false
     },
     settings: {},
     auth: {},
