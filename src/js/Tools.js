@@ -571,4 +571,18 @@ Tools.stripBotsNamePrefix = function(name) {
         }
     }
     return name;
-}
+};
+
+Tools.mungeNonAscii = function(s, id)
+{
+    if(! config.airmashRefugees.unicodeWorkaround) {
+        return s;
+    }
+
+    var re = /^[a-z0-9!"#$%&'()*+,.\/:;<=>?@\[\] ^_`{|}~-]*$/i;
+    if(re.test(s)) {
+        return s;
+    }
+
+    return 'player#' + id;
+};

@@ -1,16 +1,6 @@
 import Vector from './Vector';
 
 
-function mungeNonAscii(s, id)
-{
-    var re = /^[a-z0-9!"#$%&'()*+,.\/:;<=>?@\[\] ^_`{|}~-]*$/i;
-    if(re.test(s)) {
-        return s;
-    }
-    return 'player#' + id;
-}
-
-
 class Player {
     constructor(playerNewMsg, isFromLoginPacket) {
         this.id = playerNewMsg.id;
@@ -77,9 +67,7 @@ class Player {
         if (this.bot) {
             this.name = Tools.stripBotsNamePrefix(this.name);
         }
-        if (config.airmashRefugees.unicodeWorkaround) {
-            this.name = mungeNonAscii(this.name, this.id);
-        }
+        this.name = Tools.mungeNonAscii(this.name, this.id);
         this.setupGraphics();
         if (0 == this.status) {
           Tools.decodeUpgrades(this, playerNewMsg.upgrades);

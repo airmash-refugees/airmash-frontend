@@ -436,7 +436,7 @@ UI.scoreboardUpdate = function (msgData, msgRankings, maxScoreboard) {
                 '<span class="flag small flag-' + player.flag + '" ' +
                     'title="' + getFlagLabel(player.flag) + '"></span>' +
                 '<span class="nick ' + currentTeamClass + '">' +
-                    UI.escapeHTML(player.name) +
+                    UI.escapeHTML(Tools.mungeNonAscii(player.name, player.id)) +
                 '</span>'
         );
         if (curPlayerLevel) {
@@ -582,7 +582,7 @@ UI.addChatLine = function(msg, text, msgType) {
             var o = '<div id="chat-' + chatLineId + '" class="line"><span class="playersel" data-playerid="' + msg.id + '"><span class="flag small flag-' + msg.flag + '" title="' + getFlagLabel(msg.flag) + '"></span><span class="nick">' + UI.escapeHTML(msg.name) + '</span></span><span class="text">' + UI.escapeHTML(text, true) + "</span></div>";
         else if (1 == msgType || 2 == msgType) {
             var a = 1 == msgType ? "TO" : "FROM";
-            2 == msgType && (lastPrivateMessage = escapePlayerName(msg.name));
+            2 == msgType && (lastPrivateMessage = escapePlayerName(Tools.mungeNonAscii(msg.name, msg.id)));
             o = '<div id="chat-' + chatLineId + '" class="line"><span class="tag whisper">' + a + '</span><span class="playersel" data-playerid="' + msg.id + '"><span class="nick green">' + UI.escapeHTML(msg.name) + '</span></span><span class="text green">' + UI.escapeHTML(text, true) + "</span></div>";
             s = -1
         } else {
