@@ -1842,4 +1842,104 @@ UI.setup = function() {
             error: i
         })
     }
+
+    UI.createZoomSlider();
+    UI.hideZoomSlider();
 }
+
+
+// airmash-refugees Zoom slider
+
+var zoomBox = null;
+var zoomKnob = null;
+var zoomIsDragging = false;
+var zoomDragOffset = -1;
+
+UI.createZoomSlider = function() {
+    zoomBox = document.createElement('div');
+    zoomBox.style.position = 'absolute';
+    zoomBox.style.width = '250px';
+    zoomBox.style.background = 'white';
+    zoomBox.style.borderRadius = '5px';
+    zoomBox.style.top = '21px';
+    zoomBox.style.left = '320px';
+    zoomBox.style.zIndex = 110;
+    zoomBox.style.height = '10px';
+    zoomBox.style.opacity = 0.1;
+
+    zoomKnob = document.createElement('div');
+    zoomKnob.style.position = 'absolute';
+    zoomKnob.style.width = '22px';
+    zoomKnob.style.background = 'white';
+    zoomKnob.style.borderRadius = '5px';
+    zoomKnob.style.top = '21px';
+    zoomKnob.style.left = '350px';
+    zoomKnob.style.zIndex = 110;
+    zoomKnob.style.height = '10px';
+    zoomKnob.style.opacity = 0.1;
+
+    zoomKnob.addEventListener('mousedown', UI.onZoomKnobMouseDown);
+    document.addEventListener('mousemove', UI.onZoomKnobMouseMove);
+    document.addEventListener('mouseup', UI.onZoomKnobMouseUp);
+
+    document.body.appendChild(zoomBox);
+    document.body.appendChild(zoomKnob);
+};
+
+UI.hideZoomSlider = function() {
+    zoomBox.style.display = 'none';
+    zoomKnob.style.display = 'none';
+};
+
+UI.showZoomSlider = function() {
+    zoomBox.style.display = 'block';
+    zoomKnob.style.display = 'block';
+};
+
+UI.onZoomKnobMouseDown = function(event) {
+    console.log('drag start', event);
+    zoomIsDragging = true;
+    zoomDragOffset = event.clientX - event.target.getBoundingClientRect().left;
+};
+
+UI.setZoomLevel = function(zoom) {
+    config.scalingFactor = zoom;
+    clearTimeout(delayedGraphicsResizeTimer);
+    delayedGraphicsResizeTimer = setTimeout(function()
+    {
+        Graphics.resizeRenderer(window.innerWidth, window.innerHeight)
+    }, 100);
+};
+
+UI.onZoomKnobMouseMove = function(event) {
+    if(zoomIsDragging) {
+        console.log('drag', event);
+        var minLeft = parseInt(zoomBox.style.left, 10);
+        var maxLeft = minLeft + (
+            parseInt(zoomBox.style.width, 10) -
+            parseInt(zoomKnob.style.width, 10)
+        );
+
+        var left = Math.max(
+            minLeft,
+            Math.min(
+                maxLeft,
+                event.clientX - zoomDragOffset
+            )
+        );
+        zoomKnob.style.left = left + 'px';
+
+        var zoomPct = (left - minLeft) / (maxLeft - minLeft);
+        console.log(zoomPct);
+
+        var zoom = 800 + (6000 * zoomPct);
+        UI.setZoomLevel(zoom);
+    }
+};
+
+UI.onZoomKnobMouseUp = function(event) {
+    if(zoomIsDragging) {
+        console.log('drag end', event);
+        zoomIsDragging = false;
+    }
+};
