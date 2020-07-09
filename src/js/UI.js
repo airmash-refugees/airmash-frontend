@@ -660,10 +660,7 @@ UI.escapeHTML = function(s, autolink) {
 var onWindowResize = function() {
     var width = window.innerWidth,
         height = window.innerHeight;
-    width == game.screenX && height == game.screenY || (clearTimeout(delayedGraphicsResizeTimer),
-    delayedGraphicsResizeTimer = setTimeout(function() {
-        Graphics.resizeRenderer(width, height)
-    }, 250))
+    width == game.screenX && height == game.screenY || (UI.scheduleGraphicsResize(250));
 };
 
 UI.controlKey = function(keyCode, bindName, alwaysTrue) {
@@ -677,6 +674,15 @@ UI.controlKey = function(keyCode, bindName, alwaysTrue) {
             if (191 != keyCode)
                 if (75 != keyCode)
                     switch (bindName) {
+                    case "ALTZOOM":
+                        UI.toggleScaleAltMode();
+                        break;
+                    case "ZOOMIN":
+                        UI.scaleIncrease();
+                        break;
+                    case "ZOOMOUT":
+                        UI.scaleDecrease();
+                        break;
                     case "DROPUPGRADE":
                         UI.dropUpgrade();
                         break;
@@ -1843,115 +1849,141 @@ UI.setup = function() {
         })
     }
 
-    UI.createZoomSlider();
+    UI.createScaleSlider();
     UI.hideScaleSlider();
 }
 
 
 // airmash-refugees Zoom slider
 
-var zoomBox = null;
-var zoomKnob = null;
-var zoomAlt = null;
-var zoomAltPath = null;
-var zoomIsDragging = false;
-var zoomDragOffset = -1;
+var scaleBox = null;
+var scaleKnob = null;
+var scaleAlt = null;
+var scaleAltPath = null;
+var scaleIsDragging = false;
+var scaleDragOffset = -1;
 
-const ZOOM_MIN = 800;
-const ZOOM_MAX = 7000;
+const SCALE_MIN = 800;
+const SCALE_MAX = 7000;
 
 
-UI.createZoomSlider = function() {
-    zoomBox = document.createElement('div');
-    zoomBox.style.position = 'absolute';
-    zoomBox.style.width = '250px';
-    zoomBox.style.background = 'white';
-    zoomBox.style.borderRadius = '5px';
-    zoomBox.style.top = '21px';
-    zoomBox.style.left = '320px';
-    zoomBox.style.zIndex = 110;
-    zoomBox.style.height = '10px';
-    zoomBox.style.opacity = 0.1;
+UI.createScaleSlider = function() {
+    scaleBox = document.createElement('div');
+    scaleBox.style.position = 'absolute';
+    scaleBox.style.width = '250px';
+    scaleBox.style.background = 'white';
+    scaleBox.style.borderRadius = '5px';
+    scaleBox.style.top = '21px';
+    scaleBox.style.left = '320px';
+    scaleBox.style.zIndex = 110;
+    scaleBox.style.height = '10px';
+    scaleBox.style.opacity = 0.1;
 
-    zoomKnob = document.createElement('div');
-    zoomKnob.style.position = 'absolute';
-    zoomKnob.style.width = '22px';
-    zoomKnob.style.background = 'white';
-    zoomKnob.style.borderRadius = '5px';
-    zoomKnob.style.top = '21px';
-    zoomKnob.style.left = '350px';
-    zoomKnob.style.zIndex = 110;
-    zoomKnob.style.height = '10px';
-    zoomKnob.style.opacity = 0.1;
+    scaleKnob = document.createElement('div');
+    scaleKnob.style.position = 'absolute';
+    scaleKnob.style.width = '22px';
+    scaleKnob.style.background = 'white';
+    scaleKnob.style.borderRadius = '5px';
+    scaleKnob.style.top = '21px';
+    scaleKnob.style.left = '350px';
+    scaleKnob.style.zIndex = 110;
+    scaleKnob.style.height = '10px';
+    scaleKnob.style.opacity = 0.1;
 
-    zoomAlt = document.createElement('div');
-    zoomAlt.style.position = 'absolute';
-    zoomAlt.style.width = '24px';
-    zoomAlt.style.height = '24px';
-    zoomAlt.style.top = '14px';
-    zoomAlt.style.left = '580px';
-    zoomAlt.style.zIndex = 110;
-    zoomAlt.style.borderRadius = '5px';
+    scaleAlt = document.createElement('div');
+    scaleAlt.style.position = 'absolute';
+    scaleAlt.style.width = '24px';
+    scaleAlt.style.height = '24px';
+    scaleAlt.style.top = '14px';
+    scaleAlt.style.left = '580px';
+    scaleAlt.style.zIndex = 110;
+    scaleAlt.style.borderRadius = '5px';
 
     var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('width', 24);
     svg.setAttribute('height', 24);
     svg.setAttribute('viewBox', '0 0 24 24');
 
-    zoomAltPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    zoomAltPath.setAttribute('d', (
+    scaleAltPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    scaleAltPath.setAttribute('d', (
         'M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 '+
         '1.42-1.42L6.7 5.3 9 3H3zm6 12l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 '+
         '15v6zm12-6l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6z'
     ));
-    zoomAltPath.setAttribute('stroke', 'white');
-    zoomAltPath.setAttribute('fill', 'white');
+    scaleAltPath.setAttribute('stroke', 'white');
+    scaleAltPath.setAttribute('fill', 'white');
 
-    svg.appendChild(zoomAltPath);
-    zoomAlt.appendChild(svg);
+    svg.appendChild(scaleAltPath);
+    scaleAlt.appendChild(svg);
 
-    document.body.appendChild(zoomBox);
-    document.body.appendChild(zoomKnob);
-    document.body.appendChild(zoomAlt);
+    document.body.appendChild(scaleBox);
+    document.body.appendChild(scaleKnob);
+    document.body.appendChild(scaleAlt);
 
-    zoomKnob.addEventListener('mousedown', UI.onScaleKnobMouseDown);
-    zoomAlt.addEventListener('click', UI.onScaleAltClick);
+    scaleKnob.addEventListener('mousedown', UI.onScaleKnobMouseDown);
+    scaleAlt.addEventListener('click', UI.onScaleAltClick);
     document.addEventListener('mousemove', UI.onScaleKnobMouseMove);
-    document.addEventListener('mouseup', UI.onZoomKnobMouseUp);
+    document.addEventListener('mouseup', UI.onScaleKnobMouseUp);
 
+    UI.updateScalingWidgetState();
+};
+
+UI.toggleScaleAltMode = function() {
+    Tools.setSettings({scalingAltMode: !config.settings.scalingAltMode});
+    UI.updateScalingWidgetState();
+    UI.scheduleGraphicsResize(0);
+};
+
+UI.scaleIncrease = function() {
+    UI.setScalingFactor(UI.getScalingFactor() + 200);
+    UI.updateScalingWidgetState();
+};
+
+UI.scaleDecrease = function() {
+    UI.setScalingFactor(UI.getScalingFactor() - 200);
     UI.updateScalingWidgetState();
 };
 
 UI.onScaleAltClick = function(event) {
-    Tools.setSettings({scalingAltMode: !config.settings.scalingAltMode});
-    UI.updateScalingWidgetState();
-    Graphics.resizeRenderer(window.innerWidth, window.innerHeight);
+    UI.toggleScaleAltMode();
 };
 
 UI.hideScaleSlider = function() {
-    zoomBox.style.display = 'none';
-    zoomKnob.style.display = 'none';
-    zoomAlt.style.display = 'none';
+    scaleBox.style.display = 'none';
+    scaleKnob.style.display = 'none';
+    scaleAlt.style.display = 'none';
 };
 
 UI.showScaleSlider = function() {
-    zoomBox.style.display = 'block';
-    zoomKnob.style.display = 'block';
-    zoomAlt.style.display = 'block';
+    scaleBox.style.display = 'block';
+    scaleKnob.style.display = 'block';
+    scaleAlt.style.display = 'block';
 };
 
 UI.onScaleKnobMouseDown = function(event) {
     console.log('drag start', event);
-    zoomIsDragging = true;
-    zoomDragOffset = event.clientX - event.target.getBoundingClientRect().left;
+    scaleIsDragging = true;
+    scaleDragOffset = event.clientX - event.target.getBoundingClientRect().left;
 };
 
 UI.getScalingFactor = function() {
     if(config.settings.scalingAltMode) {
-        return config.settings.altScalingFactor || config.altScalingFactor;
+        return UI.capScalingFactor(config.settings.altScalingFactor || config.altScalingFactor);
     } else {
-        return config.settings.scalingFactor || config.scalingFactor;
+        return UI.capScalingFactor(config.settings.scalingFactor || config.scalingFactor);
     }
+};
+
+UI.capScalingFactor = function(zoom) {
+    return Math.min(SCALE_MAX, Math.max(SCALE_MIN, zoom));
+};
+
+UI.scheduleGraphicsResize = function(delay) {
+    clearTimeout(delayedGraphicsResizeTimer);
+    delayedGraphicsResizeTimer = setTimeout(function()
+    {
+        Graphics.resizeRenderer(window.innerWidth, window.innerHeight)
+    }, delay || 0);
 };
 
 UI.setScalingFactor = function(zoom) {
@@ -1961,57 +1993,51 @@ UI.setScalingFactor = function(zoom) {
         Tools.setSettings({scalingFactor: zoom});
     }
 
-    clearTimeout(delayedGraphicsResizeTimer);
-    delayedGraphicsResizeTimer = setTimeout(function()
-    {
-        Graphics.resizeRenderer(window.innerWidth, window.innerHeight)
-    }, 100);
+    UI.scheduleGraphicsResize(100);
 };
 
 UI.onScaleKnobMouseMove = function(event) {
-    if(zoomIsDragging) {
+    if(scaleIsDragging) {
         console.log('drag', event);
-        var minLeft = parseInt(zoomBox.style.left, 10);
+        var minLeft = parseInt(scaleBox.style.left, 10);
         var maxLeft = minLeft + (
-            parseInt(zoomBox.style.width, 10) -
-            parseInt(zoomKnob.style.width, 10)
+            parseInt(scaleBox.style.width, 10) -
+            parseInt(scaleKnob.style.width, 10)
         );
 
         var left = Math.max(
             minLeft,
             Math.min(
                 maxLeft,
-                event.clientX - zoomDragOffset
+                event.clientX - scaleDragOffset
             )
         );
-        zoomKnob.style.left = left + 'px';
-        UI.setScalingFactor(ZOOM_MIN + ((ZOOM_MAX - ZOOM_MIN) * ((left - minLeft) / (maxLeft - minLeft))));
+        scaleKnob.style.left = left + 'px';
+        UI.setScalingFactor(SCALE_MIN + ((SCALE_MAX - SCALE_MIN) * ((left - minLeft) / (maxLeft - minLeft))));
     }
 };
 
 UI.updateScalingWidgetState = function() {
     if(config.settings.scalingAltMode) {
-        zoomAlt.style.opacity = 0.2;
+        scaleAlt.style.opacity = 0.2;
     } else {
-        zoomAlt.style.opacity = 0.1;
+        scaleAlt.style.opacity = 0.1;
     }
 
-    var minLeft = parseInt(zoomBox.style.left, 10);
+    var minLeft = parseInt(scaleBox.style.left, 10);
     var maxLeft = minLeft + (
-        parseInt(zoomBox.style.width, 10) -
-        parseInt(zoomKnob.style.width, 10)
+        parseInt(scaleBox.style.width, 10) -
+        parseInt(scaleKnob.style.width, 10)
     );
 
-    var zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, UI.getScalingFactor()));
-    UI.setScalingFactor(zoom);
-
-    var left = minLeft + ((zoom - ZOOM_MIN) * ((maxLeft - minLeft) / (ZOOM_MAX - ZOOM_MIN)));
-    zoomKnob.style.left = left + 'px';
+    var zoom = UI.getScalingFactor();
+    var left = minLeft + ((zoom - SCALE_MIN) * ((maxLeft - minLeft) / (SCALE_MAX - SCALE_MIN)));
+    scaleKnob.style.left = left + 'px';
 };
 
-UI.onZoomKnobMouseUp = function(event) {
-    if(zoomIsDragging) {
+UI.onScaleKnobMouseUp = function(event) {
+    if(scaleIsDragging) {
         console.log('drag end', event);
-        zoomIsDragging = false;
+        scaleIsDragging = false;
     }
 };
