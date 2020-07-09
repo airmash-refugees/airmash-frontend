@@ -1562,7 +1562,7 @@ UI.gameStart = function(playerName, isFirstTime) {
         UI.show("#scorebig");
         UI.show("#settings");
         UI.show("#sidebar");
-        UI.showZoomSlider();
+        UI.showScaleSlider();
         if (config.mobile) {
             setupMobile();
         }
@@ -1844,7 +1844,7 @@ UI.setup = function() {
     }
 
     UI.createZoomSlider();
-    UI.hideZoomSlider();
+    UI.hideScaleSlider();
 }
 
 
@@ -1852,8 +1852,14 @@ UI.setup = function() {
 
 var zoomBox = null;
 var zoomKnob = null;
+var zoomAlt = null;
+var zoomAltPath = null;
 var zoomIsDragging = false;
 var zoomDragOffset = -1;
+
+const ZOOM_MIN = 800;
+const ZOOM_MAX = 7000;
+
 
 UI.createZoomSlider = function() {
     zoomBox = document.createElement('div');
@@ -1878,32 +1884,83 @@ UI.createZoomSlider = function() {
     zoomKnob.style.height = '10px';
     zoomKnob.style.opacity = 0.1;
 
-    zoomKnob.addEventListener('mousedown', UI.onZoomKnobMouseDown);
-    document.addEventListener('mousemove', UI.onZoomKnobMouseMove);
-    document.addEventListener('mouseup', UI.onZoomKnobMouseUp);
+    zoomAlt = document.createElement('div');
+    zoomAlt.style.position = 'absolute';
+    zoomAlt.style.width = '24px';
+    zoomAlt.style.height = '24px';
+    zoomAlt.style.top = '14px';
+    zoomAlt.style.left = '580px';
+    zoomAlt.style.zIndex = 110;
+    zoomAlt.style.borderRadius = '5px';
+
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', 24);
+    svg.setAttribute('height', 24);
+    svg.setAttribute('viewBox', '0 0 24 24');
+
+    zoomAltPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    zoomAltPath.setAttribute('d', (
+        'M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 '+
+        '1.42-1.42L6.7 5.3 9 3H3zm6 12l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 '+
+        '15v6zm12-6l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6z'
+    ));
+    zoomAltPath.setAttribute('stroke', 'white');
+    zoomAltPath.setAttribute('fill', 'white');
+
+    svg.appendChild(zoomAltPath);
+    zoomAlt.appendChild(svg);
 
     document.body.appendChild(zoomBox);
     document.body.appendChild(zoomKnob);
+    document.body.appendChild(zoomAlt);
+
+    zoomKnob.addEventListener('mousedown', UI.onScaleKnobMouseDown);
+    zoomAlt.addEventListener('click', UI.onScaleAltClick);
+    document.addEventListener('mousemove', UI.onScaleKnobMouseMove);
+    document.addEventListener('mouseup', UI.onZoomKnobMouseUp);
+
+    UI.updateScalingWidgetState();
 };
 
-UI.hideZoomSlider = function() {
+UI.onScaleAltClick = function(event) {
+    Tools.setSettings({scalingAltMode: !config.settings.scalingAltMode});
+    UI.updateScalingWidgetState();
+    Graphics.resizeRenderer(window.innerWidth, window.innerHeight);
+};
+
+UI.hideScaleSlider = function() {
     zoomBox.style.display = 'none';
     zoomKnob.style.display = 'none';
+    zoomAlt.style.display = 'none';
 };
 
-UI.showZoomSlider = function() {
+UI.showScaleSlider = function() {
     zoomBox.style.display = 'block';
     zoomKnob.style.display = 'block';
+    zoomAlt.style.display = 'block';
 };
 
-UI.onZoomKnobMouseDown = function(event) {
+UI.onScaleKnobMouseDown = function(event) {
     console.log('drag start', event);
     zoomIsDragging = true;
     zoomDragOffset = event.clientX - event.target.getBoundingClientRect().left;
 };
 
-UI.setZoomLevel = function(zoom) {
-    config.scalingFactor = zoom;
+UI.getScalingFactor = function() {
+    if(config.settings.scalingAltMode) {
+        return config.settings.altScalingFactor || config.altScalingFactor;
+    } else {
+        return config.settings.scalingFactor || config.scalingFactor;
+    }
+};
+
+UI.setScalingFactor = function(zoom) {
+    if(config.settings.scalingAltMode) {
+        Tools.setSettings({altScalingFactor: zoom});
+    } else {
+        Tools.setSettings({scalingFactor: zoom});
+    }
+
     clearTimeout(delayedGraphicsResizeTimer);
     delayedGraphicsResizeTimer = setTimeout(function()
     {
@@ -1911,7 +1968,7 @@ UI.setZoomLevel = function(zoom) {
     }, 100);
 };
 
-UI.onZoomKnobMouseMove = function(event) {
+UI.onScaleKnobMouseMove = function(event) {
     if(zoomIsDragging) {
         console.log('drag', event);
         var minLeft = parseInt(zoomBox.style.left, 10);
@@ -1928,13 +1985,28 @@ UI.onZoomKnobMouseMove = function(event) {
             )
         );
         zoomKnob.style.left = left + 'px';
-
-        var zoomPct = (left - minLeft) / (maxLeft - minLeft);
-        console.log(zoomPct);
-
-        var zoom = 800 + (6000 * zoomPct);
-        UI.setZoomLevel(zoom);
+        UI.setScalingFactor(ZOOM_MIN + ((ZOOM_MAX - ZOOM_MIN) * ((left - minLeft) / (maxLeft - minLeft))));
     }
+};
+
+UI.updateScalingWidgetState = function() {
+    if(config.settings.scalingAltMode) {
+        zoomAlt.style.opacity = 0.2;
+    } else {
+        zoomAlt.style.opacity = 0.1;
+    }
+
+    var minLeft = parseInt(zoomBox.style.left, 10);
+    var maxLeft = minLeft + (
+        parseInt(zoomBox.style.width, 10) -
+        parseInt(zoomKnob.style.width, 10)
+    );
+
+    var zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, UI.getScalingFactor()));
+    UI.setScalingFactor(zoom);
+
+    var left = minLeft + ((zoom - ZOOM_MIN) * ((maxLeft - minLeft) / (ZOOM_MAX - ZOOM_MIN)));
+    zoomKnob.style.left = left + 'px';
 };
 
 UI.onZoomKnobMouseUp = function(event) {

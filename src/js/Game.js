@@ -232,6 +232,7 @@ window.config = {
     overdrawOptimize: true,
     overdraw: 256,
     scalingFactor: 2500,
+    altScalingFactor: 4000,
     minimapPaddingX: 16,
     minimapPaddingY: 16,
     minimapSize: 240,

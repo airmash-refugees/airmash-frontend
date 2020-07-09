@@ -136,7 +136,7 @@ var initGameObjScreenVars = function(screenInnerWidth, screenInnerHeight) {
 };
 
 var initContainerScales = function() {
-    game.scale = (game.screenX + game.screenY) / config.scalingFactor,
+    game.scale = (game.screenX + game.screenY) / UI.getScalingFactor(),
     pixiContainerByName.groundobjects.scale.set(game.scale),
     pixiContainerByName.objects.scale.set(game.scale),
     pixiContainerByName.shadows.scale.set(game.scale),
