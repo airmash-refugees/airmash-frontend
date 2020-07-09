@@ -1877,7 +1877,7 @@ UI.createScaleSlider = function() {
     scaleBox.style.left = '320px';
     scaleBox.style.zIndex = 110;
     scaleBox.style.height = '10px';
-    scaleBox.style.opacity = 0.1;
+    scaleBox.style.opacity = 0.07;
 
     scaleKnob = document.createElement('div');
     scaleKnob.style.position = 'absolute';
@@ -1888,7 +1888,7 @@ UI.createScaleSlider = function() {
     scaleKnob.style.left = '350px';
     scaleKnob.style.zIndex = 110;
     scaleKnob.style.height = '10px';
-    scaleKnob.style.opacity = 0.1;
+    scaleKnob.style.opacity = 0.08;
 
     scaleAlt = document.createElement('div');
     scaleAlt.style.position = 'absolute';
@@ -2019,9 +2019,9 @@ UI.onScaleKnobMouseMove = function(event) {
 
 UI.updateScalingWidgetState = function() {
     if(config.settings.scalingAltMode) {
-        scaleAlt.style.opacity = 0.2;
+        scaleAlt.style.opacity = 0.15;
     } else {
-        scaleAlt.style.opacity = 0.1;
+        scaleAlt.style.opacity = 0.08;
     }
 
     var minLeft = parseInt(scaleBox.style.left, 10);
