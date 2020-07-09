@@ -146,7 +146,7 @@ var sanitizeServerMessageHtml = function(html) {
 UI.serverMessage = function(msg) {
     let type = "alert";
 
-    if (msg.type == 2) { 
+    if (msg.type == 2) {
         type = "information"
     }
 
@@ -193,7 +193,7 @@ UI.newScore = function (scoreUpdate) {
 
     let scoreChange = scoreUpdate.score - game.myScore;
     let msg = "";
-        
+
     if (Math.abs(scoreChange) < 1) {
         scoreChange = false;
     }
@@ -260,11 +260,11 @@ UI.newScore = function (scoreUpdate) {
         }
         msg += UI.getScoreString(scoreChange);
     }
-    
+
     if (deathNotice) {
         UI.showMessage(deathNotice.type, deathNotice.msg + msg, deathNotice.duration);
         deathNotice = false;
-    } else { 
+    } else {
         if (msg != "") {
             UI.showMessage("default", msg, 3000)
         }
@@ -1037,7 +1037,7 @@ UI.hidePanel = function(id, visible, remove, longfadenoclick) {
         } else {
             $(id).css({
                 transition: "all 0.75s cubic-bezier(0.23, 1, 0.32, 1)"
-            });            
+            });
         }
         $(id).css({
             opacity: "0",
@@ -1329,31 +1329,53 @@ UI.updateScore = function (scoreDetailedMsg) {
     $("#scoremvp").html(mvpHtml);
 };
 
-UI.popMenu = function(e, n) {
-    if (game.state == Network.STATE.LOGIN)
-        return Games.closeDropdowns(),
-        void UI.closeLogin();
-    n || game.state != Network.STATE.PLAYING || UI.closeAllPanels();
-    var r = $(e.target).parent().data("playerid");
-    if (null == r && (r = $(e.target).data("playerid")),
-    null != r && r != game.myID) {
-        var i = Players.get(r);
-        if (null == i)
-            return true;
-        var o = {
-            left: "20px",
-            top: $(e.target).parent()[0].getBoundingClientRect().top - 166 + "px"
-        };
-        isContextMenuVisible || (o.display = "block",
-        isContextMenuVisible = true);
-        var s = null == ignoredPlayerIdSet[i.id] ? "Ignore" : "Unignore",
-            a = '<div class="header">' + UI.escapeHTML(i.name) + '</div><div class="item" onclick="UI.contextWhisper()">Whisper</div><div class="item" onclick="UI.context' + s + '()">' + s + '</div><div class="item" onclick="UI.contextVotemute()">Vote mute</div><div class="arrow"></div>';
-        return $("#contextmenu").html(a),
-        $("#contextmenu").css(o),
-        lastClickedPlayerId = i.id,
-        e.stopPropagation(),
-        false
+UI.popMenu = function(event, closeMenu) {
+    if (game.state == Network.STATE.LOGIN) {
+        Games.closeDropdowns()
+        UI.closeLogin();
+        return;
     }
+
+    if(closeMenu || game.state != Network.STATE.PLAYING) {
+         UI.closeAllPanels();
+    }
+
+    var playerId = $(event.target).parent().data("playerid");
+    if (null == playerId) {
+        playerId = $(event.target).data("playerid");
+    }
+
+    if(null != playerId && playerId != game.myID) {
+        var player = Players.get(playerId);
+        if (null == player) {
+            return true;
+        }
+
+        var cssStyle = {
+            left: "20px",
+            top: $(event.target).parent()[0].getBoundingClientRect().top - 166 + "px"
+        };
+        isContextMenuVisible || (cssStyle.display = "block",
+        isContextMenuVisible = true);
+        var ignoreText = null == ignoredPlayerIdSet[player.id] ? "Ignore" : "Unignore";
+        var menuContent = (
+            '<div class="header">' +
+                UI.escapeHTML(player.name) +
+            '</div>' +
+            '<div class="item" onclick="UI.contextWhisper()">Whisper</div>' +
+            '<div class="item" onclick="UI.context' + ignoreText + '()">' +
+                ignoreText +
+            '</div>' +
+            '<div class="item" onclick="UI.contextVotemute()">Vote mute</div>' +
+            '<div class="arrow"></div>'
+        );
+        $("#contextmenu").html(menuContent);
+        $("#contextmenu").css(cssStyle);
+        lastClickedPlayerId = player.id;
+        event.stopPropagation();
+        return false;
+    }
+
     UI.closeMenu()
 };
 
@@ -1527,7 +1549,7 @@ UI.updateSound = function(e) {
 };
 
 UI.gameStart = function(playerName, isFirstTime) {
-    if (isFirstTime) { 
+    if (isFirstTime) {
         $("#login-ui").remove();
         UI.show("#logosmall");
         UI.show("#menu", true);
@@ -1540,10 +1562,11 @@ UI.gameStart = function(playerName, isFirstTime) {
         UI.show("#scorebig");
         UI.show("#settings");
         UI.show("#sidebar");
+        UI.showZoomSlider();
         if (config.mobile) {
             setupMobile();
         }
-        if (!config.settings.helpshown) { 
+        if (!config.settings.helpshown) {
             UI.showHelp(true);
             config.settings.helpshown = true;
             Tools.setSettings({
@@ -1552,7 +1575,7 @@ UI.gameStart = function(playerName, isFirstTime) {
         }
     }
     UI.hide("#gamespecific");
-    $("#gameinfo").html("&nbsp;");  
+    $("#gameinfo").html("&nbsp;");
     $("#gameinfo").addClass("ingame");
     playerUpgrades = {};
     UI.resetUpgrades();
