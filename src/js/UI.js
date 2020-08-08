@@ -146,7 +146,7 @@ var sanitizeServerMessageHtml = function(html) {
 UI.serverMessage = function(msg) {
     let type = "alert";
 
-    if (msg.type == 2) { 
+    if (msg.type == 2) {
         type = "information"
     }
 
@@ -193,7 +193,7 @@ UI.newScore = function (scoreUpdate) {
 
     let scoreChange = scoreUpdate.score - game.myScore;
     let msg = "";
-        
+
     if (Math.abs(scoreChange) < 1) {
         scoreChange = false;
     }
@@ -260,11 +260,11 @@ UI.newScore = function (scoreUpdate) {
         }
         msg += UI.getScoreString(scoreChange);
     }
-    
+
     if (deathNotice) {
         UI.showMessage(deathNotice.type, deathNotice.msg + msg, deathNotice.duration);
         deathNotice = false;
-    } else { 
+    } else {
         if (msg != "") {
             UI.showMessage("default", msg, 3000)
         }
@@ -660,10 +660,7 @@ UI.escapeHTML = function(s, autolink) {
 var onWindowResize = function() {
     var width = window.innerWidth,
         height = window.innerHeight;
-    width == game.screenX && height == game.screenY || (clearTimeout(delayedGraphicsResizeTimer),
-    delayedGraphicsResizeTimer = setTimeout(function() {
-        Graphics.resizeRenderer(width, height)
-    }, 250))
+    width == game.screenX && height == game.screenY || (UI.scheduleGraphicsResize(250));
 };
 
 UI.controlKey = function(keyCode, bindName, alwaysTrue) {
@@ -677,6 +674,15 @@ UI.controlKey = function(keyCode, bindName, alwaysTrue) {
             if (191 != keyCode)
                 if (75 != keyCode)
                     switch (bindName) {
+                    case "ALTZOOM":
+                        UI.toggleScaleAltMode();
+                        break;
+                    case "ZOOMIN":
+                        UI.scaleIncrease();
+                        break;
+                    case "ZOOMOUT":
+                        UI.scaleDecrease();
+                        break;
                     case "DROPUPGRADE":
                         UI.dropUpgrade();
                         break;
@@ -1037,7 +1043,7 @@ UI.hidePanel = function(id, visible, remove, longfadenoclick) {
         } else {
             $(id).css({
                 transition: "all 0.75s cubic-bezier(0.23, 1, 0.32, 1)"
-            });            
+            });
         }
         $(id).css({
             opacity: "0",
@@ -1329,31 +1335,53 @@ UI.updateScore = function (scoreDetailedMsg) {
     $("#scoremvp").html(mvpHtml);
 };
 
-UI.popMenu = function(e, n) {
-    if (game.state == Network.STATE.LOGIN)
-        return Games.closeDropdowns(),
-        void UI.closeLogin();
-    n || game.state != Network.STATE.PLAYING || UI.closeAllPanels();
-    var r = $(e.target).parent().data("playerid");
-    if (null == r && (r = $(e.target).data("playerid")),
-    null != r && r != game.myID) {
-        var i = Players.get(r);
-        if (null == i)
-            return true;
-        var o = {
-            left: "20px",
-            top: $(e.target).parent()[0].getBoundingClientRect().top - 166 + "px"
-        };
-        isContextMenuVisible || (o.display = "block",
-        isContextMenuVisible = true);
-        var s = null == ignoredPlayerIdSet[i.id] ? "Ignore" : "Unignore",
-            a = '<div class="header">' + UI.escapeHTML(i.name) + '</div><div class="item" onclick="UI.contextWhisper()">Whisper</div><div class="item" onclick="UI.context' + s + '()">' + s + '</div><div class="item" onclick="UI.contextVotemute()">Vote mute</div><div class="arrow"></div>';
-        return $("#contextmenu").html(a),
-        $("#contextmenu").css(o),
-        lastClickedPlayerId = i.id,
-        e.stopPropagation(),
-        false
+UI.popMenu = function(event, closeMenu) {
+    if (game.state == Network.STATE.LOGIN) {
+        Games.closeDropdowns()
+        UI.closeLogin();
+        return;
     }
+
+    if(closeMenu || game.state != Network.STATE.PLAYING) {
+         UI.closeAllPanels();
+    }
+
+    var playerId = $(event.target).parent().data("playerid");
+    if (null == playerId) {
+        playerId = $(event.target).data("playerid");
+    }
+
+    if(null != playerId && playerId != game.myID) {
+        var player = Players.get(playerId);
+        if (null == player) {
+            return true;
+        }
+
+        var cssStyle = {
+            left: "20px",
+            top: $(event.target).parent()[0].getBoundingClientRect().top - 166 + "px"
+        };
+        isContextMenuVisible || (cssStyle.display = "block",
+        isContextMenuVisible = true);
+        var ignoreText = null == ignoredPlayerIdSet[player.id] ? "Ignore" : "Unignore";
+        var menuContent = (
+            '<div class="header">' +
+                UI.escapeHTML(player.name) +
+            '</div>' +
+            '<div class="item" onclick="UI.contextWhisper()">Whisper</div>' +
+            '<div class="item" onclick="UI.context' + ignoreText + '()">' +
+                ignoreText +
+            '</div>' +
+            '<div class="item" onclick="UI.contextVotemute()">Vote mute</div>' +
+            '<div class="arrow"></div>'
+        );
+        $("#contextmenu").html(menuContent);
+        $("#contextmenu").css(cssStyle);
+        lastClickedPlayerId = player.id;
+        event.stopPropagation();
+        return false;
+    }
+
     UI.closeMenu()
 };
 
@@ -1527,7 +1555,7 @@ UI.updateSound = function(e) {
 };
 
 UI.gameStart = function(playerName, isFirstTime) {
-    if (isFirstTime) { 
+    if (isFirstTime) {
         $("#login-ui").remove();
         UI.show("#logosmall");
         UI.show("#menu", true);
@@ -1540,10 +1568,11 @@ UI.gameStart = function(playerName, isFirstTime) {
         UI.show("#scorebig");
         UI.show("#settings");
         UI.show("#sidebar");
+        UI.showScaleSlider();
         if (config.mobile) {
             setupMobile();
         }
-        if (!config.settings.helpshown) { 
+        if (!config.settings.helpshown) {
             UI.showHelp(true);
             config.settings.helpshown = true;
             Tools.setSettings({
@@ -1552,7 +1581,7 @@ UI.gameStart = function(playerName, isFirstTime) {
         }
     }
     UI.hide("#gamespecific");
-    $("#gameinfo").html("&nbsp;");  
+    $("#gameinfo").html("&nbsp;");
     $("#gameinfo").addClass("ingame");
     playerUpgrades = {};
     UI.resetUpgrades();
@@ -1819,4 +1848,196 @@ UI.setup = function() {
             error: i
         })
     }
+
+    UI.createScaleSlider();
+    UI.hideScaleSlider();
 }
+
+
+// airmash-refugees Zoom slider
+
+var scaleBox = null;
+var scaleKnob = null;
+var scaleAlt = null;
+var scaleAltPath = null;
+var scaleIsDragging = false;
+var scaleDragOffset = -1;
+
+const SCALE_MIN = 800;
+const SCALE_MAX = 7000;
+
+
+UI.createScaleSlider = function() {
+    scaleBox = document.createElement('div');
+    scaleBox.style.position = 'absolute';
+    scaleBox.style.width = '250px';
+    scaleBox.style.background = 'white';
+    scaleBox.style.borderRadius = '5px';
+    scaleBox.style.top = '21px';
+    scaleBox.style.left = '320px';
+    scaleBox.style.zIndex = 110;
+    scaleBox.style.height = '10px';
+    scaleBox.style.opacity = 0.07;
+
+    scaleKnob = document.createElement('div');
+    scaleKnob.style.position = 'absolute';
+    scaleKnob.style.width = '22px';
+    scaleKnob.style.background = 'white';
+    scaleKnob.style.borderRadius = '5px';
+    scaleKnob.style.top = '21px';
+    scaleKnob.style.left = '350px';
+    scaleKnob.style.zIndex = 110;
+    scaleKnob.style.height = '10px';
+    scaleKnob.style.opacity = 0.08;
+
+    scaleAlt = document.createElement('div');
+    scaleAlt.style.position = 'absolute';
+    scaleAlt.style.width = '24px';
+    scaleAlt.style.height = '24px';
+    scaleAlt.style.top = '14px';
+    scaleAlt.style.left = '580px';
+    scaleAlt.style.zIndex = 110;
+    scaleAlt.style.borderRadius = '5px';
+
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', 24);
+    svg.setAttribute('height', 24);
+    svg.setAttribute('viewBox', '0 0 24 24');
+
+    scaleAltPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    scaleAltPath.setAttribute('d', (
+        'M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 '+
+        '1.42-1.42L6.7 5.3 9 3H3zm6 12l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 '+
+        '15v6zm12-6l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6z'
+    ));
+    scaleAltPath.setAttribute('stroke', 'white');
+    scaleAltPath.setAttribute('fill', 'white');
+
+    svg.appendChild(scaleAltPath);
+    scaleAlt.appendChild(svg);
+
+    document.body.appendChild(scaleBox);
+    document.body.appendChild(scaleKnob);
+    document.body.appendChild(scaleAlt);
+
+    scaleKnob.addEventListener('mousedown', UI.onScaleKnobMouseDown);
+    scaleAlt.addEventListener('click', UI.onScaleAltClick);
+    document.addEventListener('mousemove', UI.onScaleKnobMouseMove);
+    document.addEventListener('mouseup', UI.onScaleKnobMouseUp);
+
+    UI.updateScalingWidgetState();
+};
+
+UI.toggleScaleAltMode = function() {
+    Tools.setSettings({scalingAltMode: !config.settings.scalingAltMode});
+    UI.updateScalingWidgetState();
+    UI.scheduleGraphicsResize(0);
+};
+
+UI.scaleIncrease = function() {
+    UI.setScalingFactor(UI.getScalingFactor() + 200);
+    UI.updateScalingWidgetState();
+};
+
+UI.scaleDecrease = function() {
+    UI.setScalingFactor(UI.getScalingFactor() - 200);
+    UI.updateScalingWidgetState();
+};
+
+UI.onScaleAltClick = function(event) {
+    UI.toggleScaleAltMode();
+};
+
+UI.hideScaleSlider = function() {
+    scaleBox.style.display = 'none';
+    scaleKnob.style.display = 'none';
+    scaleAlt.style.display = 'none';
+};
+
+UI.showScaleSlider = function() {
+    scaleBox.style.display = 'block';
+    scaleKnob.style.display = 'block';
+    scaleAlt.style.display = 'block';
+};
+
+UI.onScaleKnobMouseDown = function(event) {
+    console.log('drag start', event);
+    scaleIsDragging = true;
+    scaleDragOffset = event.clientX - event.target.getBoundingClientRect().left;
+};
+
+UI.getScalingFactor = function() {
+    if(config.settings.scalingAltMode) {
+        return UI.capScalingFactor(config.settings.altScalingFactor || config.altScalingFactor);
+    } else {
+        return UI.capScalingFactor(config.settings.scalingFactor || config.scalingFactor);
+    }
+};
+
+UI.capScalingFactor = function(zoom) {
+    return Math.min(SCALE_MAX, Math.max(SCALE_MIN, zoom));
+};
+
+UI.scheduleGraphicsResize = function(delay) {
+    clearTimeout(delayedGraphicsResizeTimer);
+    delayedGraphicsResizeTimer = setTimeout(function()
+    {
+        Graphics.resizeRenderer(window.innerWidth, window.innerHeight)
+    }, delay || 0);
+};
+
+UI.setScalingFactor = function(zoom) {
+    if(config.settings.scalingAltMode) {
+        Tools.setSettings({altScalingFactor: zoom});
+    } else {
+        Tools.setSettings({scalingFactor: zoom});
+    }
+
+    UI.scheduleGraphicsResize(100);
+};
+
+UI.onScaleKnobMouseMove = function(event) {
+    if(scaleIsDragging) {
+        console.log('drag', event);
+        var minLeft = parseInt(scaleBox.style.left, 10);
+        var maxLeft = minLeft + (
+            parseInt(scaleBox.style.width, 10) -
+            parseInt(scaleKnob.style.width, 10)
+        );
+
+        var left = Math.max(
+            minLeft,
+            Math.min(
+                maxLeft,
+                event.clientX - scaleDragOffset
+            )
+        );
+        scaleKnob.style.left = left + 'px';
+        UI.setScalingFactor(SCALE_MIN + ((SCALE_MAX - SCALE_MIN) * ((left - minLeft) / (maxLeft - minLeft))));
+    }
+};
+
+UI.updateScalingWidgetState = function() {
+    if(config.settings.scalingAltMode) {
+        scaleAlt.style.opacity = 0.15;
+    } else {
+        scaleAlt.style.opacity = 0.08;
+    }
+
+    var minLeft = parseInt(scaleBox.style.left, 10);
+    var maxLeft = minLeft + (
+        parseInt(scaleBox.style.width, 10) -
+        parseInt(scaleKnob.style.width, 10)
+    );
+
+    var zoom = UI.getScalingFactor();
+    var left = minLeft + ((zoom - SCALE_MIN) * ((maxLeft - minLeft) / (SCALE_MAX - SCALE_MIN)));
+    scaleKnob.style.left = left + 'px';
+};
+
+UI.onScaleKnobMouseUp = function(event) {
+    if(scaleIsDragging) {
+        console.log('drag end', event);
+        scaleIsDragging = false;
+    }
+};

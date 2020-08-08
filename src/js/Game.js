@@ -232,6 +232,7 @@ window.config = {
     overdrawOptimize: true,
     overdraw: 256,
     scalingFactor: 2500,
+    altScalingFactor: 4000,
     minimapPaddingX: 16,
     minimapPaddingY: 16,
     minimapSize: 240,
@@ -261,7 +262,7 @@ window.Sound = {};
 var scheduleFrame = function(fractionalFramesSinceLastFrame, skipGraphicsRendering) {
     Tools.updateTime(fractionalFramesSinceLastFrame);
     Tools.debugStartFrame();
-    if (game.state == Network.STATE.PLAYING) { 
+    if (game.state == Network.STATE.PLAYING) {
         Input.update();
         Network.detectConnectivity();
         Players.update();
@@ -319,10 +320,10 @@ $(function() {
 !function() {
     var alreadyWarned;
     setInterval(function() {
-        if (alreadyWarned !== game.server.id && 
-            game.state === Network.STATE.PLAYING && 
+        if (alreadyWarned !== game.server.id &&
+            game.state === Network.STATE.PLAYING &&
             game.server.config &&
-            game.server.config.sf && 
+            game.server.config.sf &&
             config.scalingFactor > game.server.config.sf)
         {
             console.log(`%c⚠️ The maximum scalingFactor on this server (${game.server.id}) is ${game.server.config.sf}.\nThis is enforced by the server. Objects past the horizon limit will not be visible.`, "color:red");
