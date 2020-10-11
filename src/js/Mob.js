@@ -1,7 +1,7 @@
 import Vector from './Vector';
 
 class Mob {
-    constructor(msg) {
+    constructor(msg, ownerId) {
         if(msg.type == MobType.PredatorMissile && window.forceCarrot) {
             msg.type = MobType.CarrotMissile;
         }
@@ -38,6 +38,7 @@ class Mob {
         this.forDeletion = false;
         this.spawnTime = game.time;
         this.lastPacket = game.timeNetwork;
+        this.ownerId = ownerId;
         this.setupSprite();
     }
 
@@ -108,6 +109,33 @@ class Mob {
                 scale: this.state.baseScaleShadow
             });
         }
+
+        this.setTeamColourOnMissiles();
+    }
+
+    setTeamColourOnMissiles() {
+        if (game.gameType == GameType.CTF) {
+            switch (this.type) {
+                case MobType.PredatorMissile:
+                case MobType.TornadoSingleMissile:
+                case MobType.TornadoTripleMissile:
+                case MobType.ProwlerMissile:
+                case MobType.GoliathMissile:
+                case MobType.MohawkMissile:
+                    let team = Players.getMe().team == 1 ? 2 : 1;
+
+                    if (this.ownerId) {
+                        let owner = Players.get(this.ownerId);
+                        if (owner) {
+                            team = owner.team;
+                        }
+                    }
+
+                    this.sprites.sprite.tint = this.sprites.thruster.tint = (team == 1 ? 0x4076E2 : 0xEA4242);
+
+                    break;
+            }
+        }
     }
 
     despawn(despawnType) {
@@ -162,7 +190,7 @@ class Mob {
         this.missile && Sound.updateThruster(1, this, false))
     }
 
-    network(msg) {
+    network(msg, ownerId) {
         this.lastPacket = game.timeNetwork;
         if (msg.c === Network.SERVERPACKET.MOB_UPDATE) {
             this.reducedFactor = Tools.reducedFactor();
@@ -176,6 +204,11 @@ class Mob {
         if (null != msg.accelX) {
             this.accel.x = msg.accelX;
             this.accel.y = msg.accelY;
+        }
+
+        if (ownerId) {
+            this.ownerId = ownerId;
+            this.setTeamColourOnMissiles();
         }
     }
 

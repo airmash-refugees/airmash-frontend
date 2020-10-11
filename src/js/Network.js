@@ -78,15 +78,16 @@ Network.voteMute = function(playerId) {
 };
 
 Network.force = function(repelMsg) {
-    var t;
     Players.network(ServerPacket.PLAYER_UPDATE, repelMsg);
-    for (t in repelMsg.players)
-        Players.network(ServerPacket.PLAYER_UPDATE, repelMsg.players[t]);
-    for (t in repelMsg.mobs)
-        Mobs.network(repelMsg.mobs[t]);
-    var n = new Vector(repelMsg.posX,repelMsg.posY);
-    Particles.spiritShockwave(n),
-    Sound.effectRepel(n)
+    for (let player of repelMsg.players) {
+        Players.network(ServerPacket.PLAYER_UPDATE, player);
+    }
+    for (let mob of repelMsg.mobs) {
+        Mobs.network(mob, repelMsg.id);
+    }
+    let pos = new Vector(repelMsg.posX, repelMsg.posY);
+    Particles.spiritShockwave(pos);
+    Sound.effectRepel(pos);
 };
 
 Network.getScores = function() {
@@ -192,12 +193,15 @@ var dispatchIncomingMessage = function(msg) {
         case ServerPacket.PLAYER_FLAG:
         case ServerPacket.EVENT_BOOST:
         case ServerPacket.EVENT_BOUNCE:
-            if (Players.network(msg.c, msg),
-            msg.c === ServerPacket.PLAYER_FIRE) {
-                for (var t = 0; t < msg.projectiles.length; t++)
-                    msg.projectiles[t].c = ServerPacket.PLAYER_FIRE,
-                    Mobs.add(msg.projectiles[t]);
-                msg.projectiles.length > 0 && Sound.missileLaunch(new Vector(msg.projectiles[0].posX,msg.projectiles[0].posY), msg.projectiles[0].type)
+            Players.network(msg.c, msg);
+            if (msg.c === ServerPacket.PLAYER_FIRE) {
+                for (let projectile of msg.projectiles) {
+                    projectile.c = ServerPacket.PLAYER_FIRE;
+                    Mobs.add(projectile, false, msg.id);
+                }
+                if (msg.projectiles.length > 0) {
+                    Sound.missileLaunch(new Vector(msg.projectiles[0].posX, msg.projectiles[0].posY), msg.projectiles[0].type);
+                }
             }
             break;
         case ServerPacket.LOGIN:
@@ -220,8 +224,7 @@ var dispatchIncomingMessage = function(msg) {
             }(msg),
             UI.loggedIn(msg);
             let botIds = msg.bots ? msg.bots.map(b => b.id) : [];
-            for (t = 0; t < msg.players.length; t++) {
-                let player = msg.players[t];
+            for (let player of msg.players) {
                 player.isBot = botIds.includes(player.id);
                 Players.add(player, true);
             }
@@ -255,8 +258,8 @@ var dispatchIncomingMessage = function(msg) {
             Players.updateLevel(msg);
             break;
         case ServerPacket.PLAYER_RETEAM:
-            for (t = 0; t < msg.players.length; t++)
-                Players.reteam(msg.players[t]);
+            for (let player of msg.players)
+                Players.reteam(player);
             break;
         case ServerPacket.EVENT_REPEL:
             Network.force(msg);

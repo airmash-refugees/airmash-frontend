@@ -6,9 +6,11 @@ var mobs = {};
 var doodads = [];
 var someFlag = {};
 
-Mobs.add = function (t, n) {
-    mobs[t.id] = new Mob(t),
-        n && mobs[t.id].network(t)
+Mobs.add = function (netmob, network, ownerId) {
+    mobs[netmob.id] = new Mob(netmob, ownerId);
+    if (network) {
+        mobs[netmob.id].network(netmob);
+    }
 };
 
 Mobs.update = function () {
@@ -18,9 +20,14 @@ Mobs.update = function () {
             n.forDeletion ? Mobs.destroy(n) : n.updateGraphics(game.timeFactor)
 };
 
-Mobs.network = function (t) {
-    var n = mobs[t.id];
-    null == n ? Mobs.add(t, true) : n.network(t)
+Mobs.network = function (netmob, ownerId) {
+    var mob = mobs[netmob.id];
+    if (mob == null) {
+        Mobs.add(netmob, true, ownerId)
+    }
+    else {
+        mob.network(netmob, ownerId);
+    }
 };
 
 Mobs.despawn = function (despawnMsg) {
