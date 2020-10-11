@@ -44,7 +44,8 @@ var lastTransmittedKeyState = {},
         MOUSEMODE: ["M"],
         ALTZOOM: ["BACKSPACE"],
         ZOOMOUT: ["-"],
-        ZOOMIN: ["="]
+        ZOOMIN: ["="],
+        DEFAULTZOOM: ["0"]
     },
     p = {},
     movementKeySet = {
@@ -83,6 +84,7 @@ var lastTransmittedKeyState = {},
         ["Upgrade Energy", "UPGRADE3"],
         ["Upgrade Missiles", "UPGRADE4"],
         ["Zoom Out", "ZOOMOUT"],
+        ["Default Zoom", "DEFAULTZOOM"],
         ["Scoreboard", "SHOWSCORE"],
         ["Main Menu", "MAINMENU"],
         ["Show Games", "SHOWGAMES"],
@@ -390,7 +392,7 @@ var updateKeybindsList = function(e) {
                     '</div>'
                 );
 
-                if(14 == o) {
+                if(15 == o) {
                     bindHtml += '</div><div class="right-binds">'
                 }
             } else {

@@ -683,6 +683,9 @@ UI.controlKey = function(keyCode, bindName, alwaysTrue) {
                     case "ZOOMOUT":
                         UI.scaleDecrease();
                         break;
+                    case "DEFAULTZOOM":
+                        UI.scaleDefault();
+                        break;
                     case "DROPUPGRADE":
                         UI.dropUpgrade();
                         break;
@@ -1946,6 +1949,11 @@ UI.scaleDecrease = function() {
 
 UI.onScaleAltClick = function(event) {
     UI.toggleScaleAltMode();
+};
+
+UI.scaleDefault = function() {
+    UI.setScalingFactor(2500);
+    UI.updateScalingWidgetState();
 };
 
 UI.hideScaleSlider = function() {
