@@ -1342,7 +1342,7 @@ UI.popMenu = function(event, closeMenu) {
         return;
     }
 
-    if(closeMenu || game.state != Network.STATE.PLAYING) {
+    if(game.state == Network.STATE.PLAYING && !closeMenu) {
          UI.closeAllPanels();
     }
 
