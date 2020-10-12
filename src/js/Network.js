@@ -272,7 +272,7 @@ var dispatchIncomingMessage = function(msg) {
             break;
         case ServerPacket.MOB_UPDATE:
         case ServerPacket.MOB_UPDATE_STATIONARY:
-            Mobs.network(msg);
+            Mobs.network(msg, msg.ownerId);
             break;
         case ServerPacket.MOB_DESPAWN:
             Mobs.despawn(msg);
@@ -914,7 +914,7 @@ var ServerMessageSchema = {
     [ServerPacket.EVENT_BOUNCE]: [["clock", FieldType.uint32], ["id", FieldType.uint16], ["keystate", FieldType.uint8], ["posX", FieldType.coord24], ["posY", FieldType.coord24], ["rot", FieldType.rotation], ["speedX", FieldType.speed], ["speedY", FieldType.speed]],
     [ServerPacket.EVENT_STEALTH]: [["id", FieldType.uint16], ["state", FieldType.boolean], ["energy", FieldType.healthnergy], ["energyRegen", FieldType.regen]],
     [ServerPacket.EVENT_LEAVEHORIZON]: [["type", FieldType.uint8], ["id", FieldType.uint16]],
-    [ServerPacket.MOB_UPDATE]: [["clock", FieldType.uint32], ["id", FieldType.uint16], ["type", FieldType.uint8], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["speedX", FieldType.speed], ["speedY", FieldType.speed], ["accelX", FieldType.accel], ["accelY", FieldType.accel], ["maxSpeed", FieldType.speed]],
+    [ServerPacket.MOB_UPDATE]: [["clock", FieldType.uint32], ["id", FieldType.uint16], ["type", FieldType.uint8], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["speedX", FieldType.speed], ["speedY", FieldType.speed], ["accelX", FieldType.accel], ["accelY", FieldType.accel], ["maxSpeed", FieldType.speed], ["ownerId", FieldType.uint16]],
     [ServerPacket.MOB_UPDATE_STATIONARY]: [["id", FieldType.uint16], ["type", FieldType.uint8], ["posX", FieldType.float32], ["posY", FieldType.float32]],
     [ServerPacket.MOB_DESPAWN]: [["id", FieldType.uint16], ["type", FieldType.uint8]],
     [ServerPacket.MOB_DESPAWN_COORDS]: [["id", FieldType.uint16], ["type", FieldType.uint8], ["posX", FieldType.coordx], ["posY", FieldType.coordy]],
