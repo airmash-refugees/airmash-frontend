@@ -495,11 +495,25 @@ var jsonErrorReplacer = function(key, obj) {
 };
 
 Tools.handleError = function(e) {
-    ++clientErrorCount > 5 || (null != e.error && (e.error = JSON.stringify(e.error, jsonErrorReplacer)),
-    Tools.ajaxPost("https://" + game.backendHost + "/clienterror", {
-        type: "runtime",
-        error: JSON.stringify(e, null, "\t\t")
-    }))
+    clientErrorCount += 1;
+    if (clientErrorCount <= 5) {
+        if (e.error != null) {
+            e.error = JSON.stringify(e.error, jsonErrorReplacer);
+        }
+
+        let server;
+        if (game.server && game.server.id) {
+            server = game.server.id;
+        }
+
+        Tools.ajaxPost("https://" + game.backendHost + "/clienterror", {
+            type: "runtime",
+            error: JSON.stringify(e),
+            version: game.version,
+            state: game.state,
+            server,
+        });
+    }
 };
 
 Tools.encodeUTF8 = function(e) {
