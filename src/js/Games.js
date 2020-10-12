@@ -257,7 +257,6 @@ var refreshGamesJsonData = function(successCallback, t) {
 
 var updatePlayersOnlineCount = function() {
     let playerCount = 0;
-    let botCount = 0;
     let gameCount = 0;
     for (let region of gamesJsonData) {
         for (let game of region.games) {
@@ -265,7 +264,6 @@ var updatePlayersOnlineCount = function() {
                 playerCount += game.players;
             }
             if (game.bots) {
-                botCount += game.bots;
                 playerCount -= game.bots;
             }
             gameCount++;
@@ -276,11 +274,7 @@ var updatePlayersOnlineCount = function() {
         UI.showMessage('alert', '<span class="mainerror">We are currently performing server maintenance<br>Please try again in a few minutes</span>', 30000);
     }
     else {
-        let html = '<div class="item smallerpad">' + playerCount + '</div>player' + (playerCount > 1 ? 's' : '');
-        if (botCount > 0) {
-            html += ' and<div class="item smallerpad">' + botCount + '</div>bot' + (playerCount > 1 ? 's' : '');
-        }
-        html += ' online';
+        let html = '<div class="item smallerpad">' + playerCount + '</div>player' + (playerCount > 1 ? 's' : '') + ' online';
         $("#gameinfo").html(html);
     }
 };
