@@ -25,7 +25,6 @@ var e = false,
         "Players spawn at random locations all across the map. Destroyed players will not respawn. Last player standing wins.",
         "Game environments for development and testing."
     ],
-    totalPlayersOnlineCount = 0,
     gameHostState = {},
     inProgressPingCount = 0,
     performPingTimerId = null,
@@ -257,19 +256,32 @@ var refreshGamesJsonData = function(successCallback, t) {
 };
 
 var updatePlayersOnlineCount = function() {
-    totalPlayersOnlineCount = 0;
-    for (var e = 0, t = 0; t < gamesJsonData.length; t++)
-        for (var n = 0; n < gamesJsonData[t].games.length; n++)
-            if (gamesJsonData[t].games[n].players) {
-                totalPlayersOnlineCount += gamesJsonData[t].games[n].players;
+    let playerCount = 0;
+    let botCount = 0;
+    let gameCount = 0;
+    for (let region of gamesJsonData) {
+        for (let game of region.games) {
+            if (game.players) {
+                playerCount += game.players;
             }
-            e++;
-    if (0 == e)
-        isServerMaintenance = true,
-        UI.showMessage("alert", '<span class="mainerror">We are currently performing server maintenance<br>Please try again in a few minutes</span>', 3e4);
+            if (game.bots) {
+                botCount += game.bots;
+                playerCount -= game.bots;
+            }
+            gameCount++;
+        }
+    }
+    if (gameCount === 0) {
+        isServerMaintenance = true;
+        UI.showMessage('alert', '<span class="mainerror">We are currently performing server maintenance<br>Please try again in a few minutes</span>', 30000);
+    }
     else {
-        var r = '<div class="item smallerpad">' + totalPlayersOnlineCount + "</div>player" + (totalPlayersOnlineCount > 1 ? "s" : "") + " online";
-        $("#gameinfo").html(r)
+        let html = '<div class="item smallerpad">' + playerCount + '</div>player' + (playerCount > 1 ? 's' : '');
+        if (botCount > 0) {
+            html += ' and<div class="item smallerpad">' + botCount + '</div>bot' + (playerCount > 1 ? 's' : '');
+        }
+        html += ' online';
+        $("#gameinfo").html(html);
     }
 };
 
