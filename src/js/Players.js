@@ -24,8 +24,12 @@ Players.update = function() {
     }
 };
 
-Players.add = function(t, n) {
-    playersById[t.id] = new Player(t,n)
+Players.add = function(player, fromLogin) {
+    playersById[player.id] = new Player(player, fromLogin);
+
+    if (game.state === Network.STATE.PLAYING) {
+        UI.updateGameInfo();
+    }
 };
 
 Players.get = function(t) {
@@ -56,28 +60,32 @@ Players.getByName = function(name) {
     return null
 };
 
-Players.network = function(msgTypeId, updateMsg) {
-    var player = playersById[updateMsg.id];
+Players.network = function(type, msg) {
+    let player = playersById[msg.id];
     if (null != player)
-        switch (msgTypeId) {
-        case Network.SERVERPACKET.PLAYER_UPDATE:
-        case Network.SERVERPACKET.PLAYER_FIRE:
-        case Network.SERVERPACKET.EVENT_BOOST:
-        case Network.SERVERPACKET.EVENT_BOUNCE:
-            player.networkKey(msgTypeId, updateMsg);
-            break;
-        case Network.SERVERPACKET.CHAT_SAY:
-            player.sayBubble(updateMsg);
-            break;
-        case Network.SERVERPACKET.PLAYER_RESPAWN:
-            player.respawn(updateMsg);
-            break;
-        case Network.SERVERPACKET.PLAYER_FLAG:
-            updateMsg.id == game.myID && (game.myFlag = game.lastFlagSet,
-            Tools.setSettings({
-                flag: game.lastFlagSet
-            })),
-            player.changeFlag(updateMsg)
+        switch (type) {
+            case Network.SERVERPACKET.PLAYER_UPDATE:
+            case Network.SERVERPACKET.PLAYER_FIRE:
+            case Network.SERVERPACKET.EVENT_BOOST:
+            case Network.SERVERPACKET.EVENT_BOUNCE:
+                player.networkKey(type, msg);
+                break;
+            case Network.SERVERPACKET.CHAT_SAY:
+                player.sayBubble(msg);
+                break;
+            case Network.SERVERPACKET.PLAYER_RESPAWN:
+                player.respawn(msg);
+                UI.updateGameInfo();
+                break;
+            case Network.SERVERPACKET.PLAYER_FLAG:
+                if (msg.id == game.myID) {
+                    game.myFlag = game.lastFlagSet;
+                    Tools.setSettings({
+                        flag: game.lastFlagSet
+                    });
+                }
+                player.changeFlag(msg);
+                break;
         }
 };
 
@@ -156,44 +164,64 @@ Players.updateLevel = function(packet) {
     }
 };
 
-Players.reteam = function(t) {
-    var n = playersById[t.id];
-    null != n && n.reteam(t.team)
+Players.reteam = function(msg) {
+    let player = playersById[msg.id];
+    if (player != null) {
+        player.reteam(msg.team);
+    }
+
+    UI.updateGameInfo();
 };
 
-Players.kill = function(ev) {
-    var player = playersById[ev.id];
+Players.kill = function(msg) {
+    let player = playersById[msg.id];
     if (!player) {
         return;
     }
 
-    if (0 != ev.killer || 0 != ev.posX || 0 != ev.posY) {
-        if (player.kill(ev),
-        player.me()) {
+    if (msg.killer != 0 || msg.posX != 0 || msg.posY != 0) {
+        player.kill(msg);
+        if (player.me()) {
             UI.visibilityHUD(false);
-            var r = playersById[ev.killer];
-            null != r && UI.killedBy(r),
-            UI.showSpectator('<div onclick="Network.spectateNext()" class="spectate">ENTER SPECTATOR MODE</div>')
-        } else
-            ev.killer === game.myID && UI.killed(player);
-        player.me() || player.id != game.spectatingID || 3 != game.gameType || Games.spectatorSwitch(player.id)
-    } else
-        !function(e) {
-            e.kill({
-                posX: 0,
-                posY: 0,
-                spectate: true
-            }),
-            UI.visibilityHUD(false)
-        }(player)
+            let killer = playersById[msg.killer];
+            if (killer) {
+                UI.killedBy(killer);
+            }
+            UI.showSpectator('<div onclick="Network.spectateNext()" class="spectate">ENTER SPECTATOR MODE</div>');
+        } 
+        else if (msg.killer === game.myID) {
+            UI.killed(player);
+        }
+        if (!player.me() && player.id === game.spectatingID && game.gameType !== GameType.BTR) {
+            Games.spectatorSwitch(player.id);
+        }
+    } 
+    else {
+        player.kill({
+            posX: 0,
+            posY: 0,
+            spectate: true
+        });
+        UI.visibilityHUD(false);
+        UI.updateGameInfo();
+    }
 };
 
-Players.destroy = function(t) {
-    t == game.spectatingID && ($("#spectator-tag").html("Spectating"),
-    Games.spectatorSwitch(t));
-    var n = playersById[t];
-    null != n && (n.destroy(true),
-    delete playersById[t])
+Players.destroy = function(id) {
+    if (id == game.spectatingID) {
+        $("#spectator-tag").html("Spectating");
+        Games.spectatorSwitch(id);
+    }
+
+    let player = playersById[id];
+    if (player != null) {
+        player.destroy(true);
+        delete playersById[id];
+
+        if (game.state === Network.STATE.PLAYING) {
+            UI.updateGameInfo();
+        }
+    }
 };
 
 Players.changeType = function(t) {
@@ -209,10 +237,51 @@ Players.count = function() {
     return [n - r, n]
 };
 
+Players.playerBotCount = function() {
+    let counts = {
+        players: 0,
+        bots: 0,
+        blueTeam: 0,
+        redTeam: 0,
+        notPlaying: 0
+    }
+
+    for (let id in playersById) {
+        let player = playersById[id];
+
+        if (player.bot) {
+            // Special case the ab-server bot name to exclude, as it doesn't play
+            if (player.name !== 'Server') {
+                counts.bots++
+            }
+        }
+        else {
+            counts.players++;
+
+            // Check for player status of spectate/dead, or special zero position from scoreboard rankings
+            // The (-16320, -8128) is after UI.scoreboardUpdate has called Tools.decodeMinimapCoords
+            if (player.status !== 0 || player.lowResPos.x === -16320 && player.lowResPos.y === -8128) {
+                counts.notPlaying++;
+            }
+            else {
+                if (player.team === 1) {
+                    counts.blueTeam++;
+                }
+                else if (player.team === 2) {
+                    counts.redTeam++;
+                }
+            }
+        }
+    }
+
+    return counts;
+}
+
 Players.wipe = function() {
-    for (var t in playersById)
-        playersById[t].destroy(true),
-        delete playersById[t]
+    for (let id in playersById) {
+        playersById[id].destroy(true);
+        delete playersById[id];
+    }
 };
 
 Players.all = function() { // SPATIE

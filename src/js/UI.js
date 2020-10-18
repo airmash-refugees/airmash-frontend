@@ -622,12 +622,39 @@ UI.showChatLevel = function(e) {
     null != t && UI.addChatMessage(t, true)
 };
 
-UI.updateStats = function(e) {
-    var t = e.playerstotal,
-        n = "";
-    n += '<div class="item"><span class="icon-container"><div class="icon players"></div></span><span class="greyed">' + e.playersgame + "&nbsp;/&nbsp;</span>" + t + '<span class="icon-container padded"><div class="icon ping"></div></span>' + e.ping + '<span class="millis">ms</span></div>',
-    $("#gameinfo").html(n),
-    game.ping = e.ping
+/** 
+ * Updates the game info display with player count, bot count, and ping time
+ * 
+ * If game type is CTF, will also split the player count into red / blue / spectating
+ */
+UI.updateGameInfo = function() {
+    let counts = Players.playerBotCount();
+    let html = '';
+
+    html += '<div class="item">';
+    html += `<span class="icon-container"><div class="icon players"></div></span>${counts.players}`
+    if (game.gameType === GameType.CTF) {
+        html += '<span class="greyed">&nbsp;&nbsp;(';
+        html += `<span style="color: #4076E2">${counts.blueTeam}</span>`;
+        html += '&nbsp;/&nbsp;';
+        html += `<span style="color: #EA4242">${counts.redTeam}</span>`;
+        html += '&nbsp;/&nbsp;';
+        html += `${counts.notPlaying}`;
+        html += ')</span>';
+    }
+    html += `<span class="icon-container padded"><div class="icon bots"></div></span><span class="greyed">${counts.bots}</span>`;
+    html += `<span class="icon-container padded"><div class="icon ping"></div></span>${game.ping}<span class="millis">ms</span>`;
+    html += '</div>';
+
+    $("#gameinfo").html(html);
+}
+
+/**
+ * PING_RESULT message handler
+ */
+UI.updateStats = function(msg) {
+    game.ping = msg.ping;
+    UI.updateGameInfo();
 };
 
 UI.sayLine = function(e) {

@@ -652,19 +652,23 @@ class Player {
         }
         this.updateGraphics(1);
         Sound.playerRespawn(this);
+        UI.updateGameInfo();
     }
 
     revive() {
-        this.status = 0,
-        this.boost = false,
-        this.strafe = false,
-        this.flagspeed = false,
-        this.hidden = false,
-        this.health = 1,
-        this.energy = 1,
-        this.healthRegen = 1,
-        this.energyRegen = 1,
-        this.stealthed && this.unstealth()
+        this.status = 0;
+        this.boost = false;
+        this.strafe = false;
+        this.flagspeed = false;
+        this.hidden = false;
+        this.health = 1;
+        this.energy = 1;
+        this.healthRegen = 1;
+        this.energyRegen = 1;
+        if (this.stealthed) {
+            this.unstealth();
+        }
+        UI.updateGameInfo();
     }
 
     changeFlag(e) {
