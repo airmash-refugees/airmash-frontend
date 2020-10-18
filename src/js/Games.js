@@ -703,7 +703,8 @@ var getGameSelectorHtml = function() {
 
                 html += '<div class="item' + divClass + '"' + divAttribute + '>';
                 html += '<div class="gametype chooser">' + room.nameShort + '</div>';
-                html += '<div class="players number">' + (room.players != null ? room.players : '<span class="playersunknown">?</span>') + '</div>';
+                html += '<div class="players number">' + (room.players != null ? (room.players - (room.bots || 0)) : '<span class="playersunknown">?</span>') + '</div>';
+                html += '<div class="bots number">' + (room.bots ? `+${room.bots}` : '') + '</div>';
                 html += '<div class="clear"></div>';
                 html += '</div>';
             }

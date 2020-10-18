@@ -690,7 +690,7 @@ input:focus {
     position: absolute;
     top: 12px;
     left: 134px;
-    width: 200px;
+    width: 230px;
     background-color: rgba(0, 0, 0, 0.75);
     box-shadow: 0 10px 59px -9px rgba(0, 0, 0, 0.7);
     border-radius: 9px;
@@ -781,6 +781,13 @@ input:focus {
     float: left;
     width: 72px;
     box-sizing: border-box
+}
+
+#gameselector .item .bots.number {
+    float: left;
+    padding-left: 10px;
+    text-align: left;
+    color: #a0a0a0
 }
 
 #gameselector .item .header {
