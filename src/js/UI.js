@@ -642,7 +642,9 @@ UI.updateGameInfo = function() {
         html += `${counts.notPlaying}`;
         html += ')</span>';
     }
-    html += `<span class="icon-container padded"><div class="icon bots"></div></span><span class="greyed">${counts.bots}</span>`;
+    if (counts.bots > 0) {
+        html += `<span class="icon-container padded"><div class="icon bots"></div></span><span class="greyed">${counts.bots}</span>`;
+    }
     html += `<span class="icon-container padded"><div class="icon ping"></div></span>${game.ping}<span class="millis">ms</span>`;
     html += '</div>';
 
