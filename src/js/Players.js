@@ -260,7 +260,7 @@ Players.playerBotCount = function() {
 
             // Check for player status of spectate/dead, or special zero position from scoreboard rankings
             // The (-16320, -8128) is after UI.scoreboardUpdate has called Tools.decodeMinimapCoords
-            if (player.status !== 0 || player.lowResPos.x === -16320 && player.lowResPos.y === -8128) {
+            if (!player.isOnMap()) {
                 counts.notPlaying++;
             }
             else {

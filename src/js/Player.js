@@ -988,6 +988,12 @@ class Player {
         config.debug.collisions && this.col && (this.col.position.set(this.pos.x, this.pos.y),
         this.col.rotation = this.rot)
     }
+
+    isOnMap() {        
+        // Check for player status of spectate/dead, or special zero position from scoreboard rankings
+        // The (-16320, -8128) is after UI.scoreboardUpdate has called Tools.decodeMinimapCoords
+        return !(this.status !== 0 || this.lowResPos.x === -16320 && this.lowResPos.y === -8128);
+    }
 }
 
 export default Player;

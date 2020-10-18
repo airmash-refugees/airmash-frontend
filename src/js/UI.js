@@ -1252,7 +1252,21 @@ UI.updateScore = function (scoreDetailedMsg) {
         var badgeHtml = f <= 2 ? '&nbsp;<div class="badge detail ' + rankNames[f] + '"></div>' : f + 1 + ".";
         var curPlayerIsMeClass = player.me() ? " sel" : "";
 
-        var u = scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED_CTF ? " team-" + player.team : scoreDetailedMsg.c != Network.SERVERPACKET.SCORE_DETAILED_BTR || scores[f].alive ? "" : " inactive";
+        let playerNameDivClass = '';
+        if (scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED_CTF) {
+            playerNameDivClass += ` team-${player.team}`
+        }
+
+        if (scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED_BTR) {
+            if (!scores[f].alive) {
+                playerNameDivClass += ' inactive';
+            }
+        }
+        else {
+            if (!player.isOnMap() && !player.bot) {
+                playerNameDivClass += ' inactive';
+            }
+        }
 
         containerHtml += (
             '<div class="item ' + curPlayerIsMeClass + '">' +
@@ -1262,7 +1276,7 @@ UI.updateScore = function (scoreDetailedMsg) {
                     '</div>' +
                     '<div class="flag small flag-' + player.flag + '" ' +
                         'title="' + getFlagLabel(player.flag) + '"></div>' +
-                    '<div class="player' + u + '">' +
+                    '<div class="player' + playerNameDivClass + '">' +
                         UI.escapeHTML(player.name) +
                     '</div>' +
                     (player.bot ? '<div class="bot">bot</div>' : '') +
