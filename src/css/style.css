@@ -2441,12 +2441,20 @@ input:focus {
     width: 9%
 }
 
+#scoredetailed .item .kills.inactive {
+    color: #8c8c8c
+}
+
 #scoredetailed .item .captures {
     display: inline-block;
     width: 10%;
     font-weight: bold;
     text-align: right;
     color: #fff;
+}
+
+#scoredetailed .item .captures.inactive {
+    color: #8c8c8c
 }
 
 #scoredetailed .item .captures .captures-container {
@@ -2467,12 +2475,20 @@ input:focus {
     background-size: 14px 14px
 }
 
+#scoredetailed .item .captures .captures-container .captures-icon.inactive {
+    filter: invert(63%) sepia(0%) saturate(24%) hue-rotate(152deg) brightness(89%) contrast(86%);
+}
+
 #scoredetailed .item .wins {
     display: inline-block;
     width: 12%;
     font-weight: bold;
     text-align: right;
     color: #fff;
+}
+
+#scoredetailed .item .wins.inactive {
+    color: #8c8c8c
 }
 
 #scoredetailed .item .wins .wins-container {
@@ -2493,14 +2509,26 @@ input:focus {
     background-size: 14px 14px
 }
 
+#scoredetailed .item .wins .wins-container .wins-icon.inactive {
+    filter: invert(63%) sepia(0%) saturate(24%) hue-rotate(152deg) brightness(89%) contrast(86%);
+}
+
 #scoredetailed .item .deaths {
     display: inline-block;
     width: 11%
 }
 
+#scoredetailed .item .deaths.inactive {
+    color: #8c8c8c
+}
+
 #scoredetailed .item .damage {
     display: inline-block;
     width: 13%
+}
+
+#scoredetailed .item .damage.inactive {
+    color: #8c8c8c
 }
 
 #scoredetailed .item .bounty {
@@ -2510,6 +2538,10 @@ input:focus {
     font-weight: bold
 }
 
+#scoredetailed .item .bounty.inactive {
+    color: #8c8c8c
+}
+
 #scoredetailed .item .rank {
     display: inline-block;
     width: 8%;
@@ -2517,9 +2549,17 @@ input:focus {
     font-weight: bold
 }
 
+#scoredetailed .item .rank.inactive {
+    color: #8c8c8c
+}
+
 #scoredetailed .item .ping {
     display: inline-block;
     width: 9%;
+}
+
+#scoredetailed .item .ping.inactive {
+    color: #8c8c8c
 }
 
 #scoredetailed .item .ping .ms {

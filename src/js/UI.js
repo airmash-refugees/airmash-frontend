@@ -1257,14 +1257,17 @@ UI.updateScore = function (scoreDetailedMsg) {
             playerNameDivClass += ` team-${player.team}`
         }
 
+        let playerStatsDivClass = '';
         if (scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED_BTR) {
             if (!scores[f].alive) {
                 playerNameDivClass += ' inactive';
+                playerStatsDivClass += ' inactive';
             }
         }
         else {
             if (!player.isOnMap() && !player.bot) {
                 playerNameDivClass += ' inactive';
+                playerStatsDivClass += ' inactive';
             }
         }
 
@@ -1288,11 +1291,11 @@ UI.updateScore = function (scoreDetailedMsg) {
                 containerHtml += '<div class="wins">&nbsp;</div>';
             } else {
                 containerHtml += (
-                    '<div class="wins">' +
+                    '<div class="wins ' + playerStatsDivClass + '">' +
                         scores[f].wins +
                         '<div class="wins-container">' +
                             '&nbsp;' +
-                            '<div class="wins-icon"></div>' +
+                            '<div class="wins-icon ' + playerStatsDivClass + '"></div>' +
                         '</div>' +
                     '</div>'
                 );
@@ -1304,29 +1307,29 @@ UI.updateScore = function (scoreDetailedMsg) {
                 containerHtml += '<div class="captures">&nbsp;</div>'
             } else {
                 containerHtml += (
-                    '<div class="captures">' +
+                    '<div class="captures ' + playerStatsDivClass + '">' +
                         scores[f].captures +
-                        '<div class="captures-container">&nbsp;<div class="captures-icon"></div></div>' +
+                        '<div class="captures-container">&nbsp;<div class="captures-icon ' + playerStatsDivClass + '"></div></div>' +
                     '</div>'
                 );
             }
         }
 
         containerHtml += (
-            '<div class="kills">' + scores[f].kills + '</div>' +
-            '<div class="deaths">' + scores[f].deaths + '</div>'
+            '<div class="kills ' + playerStatsDivClass + '">' + scores[f].kills + '</div>' +
+            '<div class="deaths ' + playerStatsDivClass + '">' + scores[f].deaths + '</div>'
         );
 
         if (scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED) {
-            containerHtml += '<div class="damage">' + formatMostAwesomeMetric(scores[f].damage) + "</div>";
+            containerHtml += '<div class="damage ' + playerStatsDivClass + '">' + formatMostAwesomeMetric(scores[f].damage) + "</div>";
         }
 
         containerHtml += (
-                '<div class="bounty">' + scores[f].score + '</div>' +
-                '<div class="rank">' +
+                '<div class="bounty ' + playerStatsDivClass + '">' + scores[f].score + '</div>' +
+                '<div class="rank ' + playerStatsDivClass + '">' +
                     ((0 == scores[f].level) ? "&nbsp;" : scores[f].level) +
                 '</div>' +
-                '<div class="ping">' +
+                '<div class="ping ' + playerStatsDivClass + '">' +
                     scores[f].ping +
                     '<span class="ms">ms</span>' +
                 '</div>' +
