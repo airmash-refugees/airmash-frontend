@@ -666,7 +666,7 @@ Games.popGames = function() {
 var getGameSelectorHtml = function() {
     let html = '';
 
-    html += '<div class="header">' + game.roomName;
+    html += '<div class="header">' + game.roomNameShort;
     html += '<span class="region">&nbsp;&nbsp;&bull;&nbsp;&nbsp;' + game.regionName + '</span>';
     html += '</div>';
     html += '<div class="buttons">';
@@ -963,6 +963,7 @@ Games.start = function(playerName, fromMainPage) {
         let regionGame = getGameByRegionAndRoom(game.playRegion, roomId);
         game.playHost = regionGame.host;
         game.playPath = regionGame.path;
+        game.roomNameShort = regionGame.nameShort;
         game.regionName = getRegionByName(game.playRegion).name;
         game.playRoom = roomId;
     }

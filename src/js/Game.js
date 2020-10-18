@@ -24,6 +24,7 @@ window.game = {
     myFlag: "xx",
     loggedIn: false,
     roomName: "",
+    roomNameShort: "",
     regionName: "",
     playRegion: "derp",
     playRoom: "ffa",

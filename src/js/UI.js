@@ -1665,7 +1665,7 @@ UI.reconnection = function() {
 UI.loggedIn = function(e) {
     $("#roomname").html(game.roomName),
     $("#scoreheader").html(game.roomName + "&nbsp;&nbsp;"),
-    $("#open-menu").html('<span class="arrowdown"></span>' + game.roomName + '&nbsp;&nbsp;<span class="region">&bull;&nbsp;&nbsp;' + game.regionName + "</span>"),
+    $("#open-menu").html('<span class="arrowdown"></span>' + game.roomNameShort + '&nbsp;&nbsp;<span class="region">&bull;&nbsp;&nbsp;' + game.regionName + "</span>"),
     UI.visibilityHUD(true),
     UI.visibilityMinimap(true),
     UI.updateHUD(1, 1)
