@@ -632,7 +632,10 @@ UI.updateGameInfo = function() {
     let html = '';
 
     html += '<div class="item">';
-    html += `<span class="icon-container"><div class="icon players"></div></span>${counts.players}`
+    if (counts.bots > 0) {
+        html += `<span class="icon-container"><div class="icon bots"></div></span><span class="greyed">${counts.bots}</span>`;
+    }
+    html += `<span class="icon-container padded"><div class="icon players"></div></span>${counts.players}`
     if (game.gameType === GameType.CTF) {
         html += '<span class="greyed">&nbsp;&nbsp;(';
         html += `<span style="color: #4076E2">${counts.blueTeam}</span>`;
@@ -641,9 +644,6 @@ UI.updateGameInfo = function() {
         html += '&nbsp;/&nbsp;';
         html += `${counts.notPlaying}`;
         html += ')</span>';
-    }
-    if (counts.bots > 0) {
-        html += `<span class="icon-container padded"><div class="icon bots"></div></span><span class="greyed">${counts.bots}</span>`;
     }
     html += `<span class="icon-container padded"><div class="icon ping"></div></span>${game.ping}<span class="millis">ms</span>`;
     html += '</div>';
