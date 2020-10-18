@@ -1,133 +1,154 @@
 import Vector from './Vector';
-import { defaultGamesData } from './GamesData';
 
-var e = false,
-    t = false,
-    gamesSelectorVisible = false,
-    gameTypes = [
-        "",
-        "ffa",
-        "ctf",
-        "br",
-        "dev"
-    ],
-    gameTypeNames = [
-        "",
-        "Free For All",
-        "Capture The Flag",
-        "Battle Royale",
-        "Development"
-    ],
-    gameTypeDescriptions = [
-        "",
-        "Everyone versus everyone deathmatch. No teams.",
-        "Players split into 2 teams. 2 flags are placed inside each base. The objective is to move the enemy flag from their base to your base.",
-        "Players spawn at random locations all across the map. Destroyed players will not respawn. Last player standing wins.",
-        "Game environments for development and testing."
-    ],
-    gameHostState = {},
-    inProgressPingCount = 0,
-    performPingTimerId = null,
-    closestGameRegion = null,
-    gameHasStarted = false,
-    gamesJsonDataIsLoaded = false,
-    inviteCopiedTimer = null,
-    gamesJsonData = defaultGamesData,
-    isServerMaintenance = false,
-    ctfGameState = {},
-    firewallHotSmokeSprites = {},
-    pixiJsGfx = null,
-    minimapIsInitialized = false,
-    firewallStatus = {
-        radius: 0,
-        pos: Vector.zero(),
-        speed: 0
-    },
-    unlockedFeature = {},
-    loginOrigin = "https://login.airmash.online",
-    loginIdentityProvider = 0,
-    loginNonce = null;
+// Default games data is fetched on build from airmash-refugees/airmash-games repo
+import { defaultGamesData } from './GamesData'; 
+
+// Visibility of the drop-down menus
+let playRegionMenuVisible = false;
+let playTypeMenuVisible = false;
+let gamesSelectorVisible = false;
+
+const gameTypes = [
+    '',
+    'ffa',
+    'ctf',
+    'br',
+    'dev'
+];
+
+const gameTypeNames = [
+    '',
+    'Free For All',
+    'Capture The Flag',
+    'Battle Royale',
+    'Development'
+];
+
+const gameTypeDescriptions = [
+    '',
+    'Everyone versus everyone deathmatch. No teams.',
+    'Players split into 2 teams. 2 flags are placed inside each base. The objective is to move the enemy flag from their base to your base.',
+    'Players spawn at random locations all across the map. Destroyed players will not respawn. Last player standing wins.',
+    'Game environments for development and testing.'
+];
+
+let pingHosts = {};
+let pingsAwaitingResponse = 0;
+let performPingInterval = null;
+let closestRegionIndex = null;
+
+let gameHasStarted = false;
+
+let inviteCopiedTimeout = null;
+
+let gamesData = defaultGamesData;
+let isGamesDataEmpty = false;
+
+let ctf = {};
+
+let firewallSprites = {};
+let minimapFirewallMask = null;
+let minimapFirewallVisible = false;
+let firewall = {
+    radius: 0,
+    pos: Vector.zero(),
+    speed: 0
+};
+
+let unlockedFeature = {};
+
+const loginOrigin = 'https://login.airmash.online';
+let loginIdentityProvider = 0;
+let loginNonce = null;
 
 Games.setup = function() {
-    $("#playregion").on("click", function(e) {
-        Games.updateRegion(true, e)
-    }),
-    $("#playtype").on("click", function(event) {
+    // Set up all the click event handlers
+    $('#playregion').on('click', function(event) {
+        Games.updateRegion(true, event)
+    });
+    $('#playtype').on('click', function(event) {
         Games.updateType(true, event)
-    }),
-    $("#open-menu").on("click", function(e) {
+    });
+    $('#open-menu').on('click', function(event) {
         Games.popGames(),
-        e.stopPropagation()
-    }),
-    $("#gameselector").on("click", function(e) {
-        e.stopPropagation()
-    }),
-    $("#invite-copy").on("click", Games.copyInviteLink),
-    $("#loginbutton").on("click", function(e) {
+        event.stopPropagation()
+    });
+    $('#gameselector').on('click', function(event) {
+        event.stopPropagation()
+    });
+    $('#invite-copy').on('click', Games.copyInviteLink);
+    $('#loginbutton').on('click', function(event) {
         UI.openLogin(),
-        e.stopPropagation()
-    }),
-    $("#login-microsoft").on("click", function() {
+        event.stopPropagation()
+    });
+    $('#login-microsoft').on('click', function() {
         Games.popupLogin(1)
-    }),
-    $("#login-google").on("click", function() {
+    });
+    $('#login-google').on('click', function() {
         Games.popupLogin(2)
-    }),
-    $("#login-twitter").on("click", function() {
+    });
+    $('#login-twitter').on('click', function() {
         Games.popupLogin(3)
-    }),
-    $("#login-reddit").on("click", function() {
+    });
+    $('#login-reddit').on('click', function() {
         Games.popupLogin(4)
-    }),
-    $("#login-twitch").on("click", function() {
+    });
+    $('#login-twitch').on('click', function() {
         Games.popupLogin(5)
-    }),
-    $("#loginselector").on("click", function(e) {
+    });
+    $('#loginselector').on('click', function(e) {
         e.stopPropagation()
-    }),
-    $("#gotomainpage").on("click", Games.redirRoot),
-    $("#lifetime-signin").on("click", Games.redirRoot);
+    });
+    $('#gotomainpage').on('click', Games.redirRoot);
+    $('#lifetime-signin').on('click', Games.redirRoot);
     
-    Tools.loadAuth() ? Games.playerAuth() : Games.playerGuest();
+    // Loading user authentication data from local storage, if it exists
+    if (Tools.loadAuth()) {
+        Games.playerAuth();
+    }
+    else { 
+        Games.playerGuest();
+    }
+
+    // Poll settings every second to see if any change needs to be sent to backend service
     setInterval(Tools.syncRemoteSettings, 1000);
 
     Games.updateRegion(false);
     Games.updateType(false);
-    initGameHostState();
+    pingGameServersForRegions();
 
-    refreshGamesJsonData(function() {
-        gamesJsonDataIsLoaded = true;
-        updatePlayersOnlineCount();
-        if (!isServerMaintenance) {
-            selectGameFromURLFragment();
+    refreshGamesData(function() {
+        updatePlayersOnline();
+        if (!isGamesDataEmpty) {
+            selectGameFromUrlHash();
             Games.updateRegion(false);
             Games.updateType(false);
         }
-    }, true)
+    }, true);
 };
 
-var receiveLoginMessage = function(e) {
-    if (e.origin !== loginOrigin) {
-        console.log("bad origin for login message: " + e.origin);
+var receiveLoginMessage = function(msg) {
+    if (msg.origin !== loginOrigin) {
+        console.log('bad origin for login message: ' + msg.origin);
         return;
     }
 
-    if (e.data.provider !== loginIdentityProvider) {
-        console.log("identity provider does not match: " + e.data.provider);
+    if (msg.data.provider !== loginIdentityProvider) {
+        console.log('identity provider does not match: ' + msg.data.provider);
         return;
     }
     loginIdentityProvider = 0;
     
-    if (e.data.nonce !== loginNonce) {
-        console.log("nonce does not match: " + e.data.nonce);
+    if (msg.data.nonce !== loginNonce) {
+        console.log('nonce does not match: ' + msg.data.nonce);
         return;
     }
     loginNonce = null;
 
     window.loginSuccess({
-        tokens: e.data.tokens,
-        identityprovider: e.data.provider,
-        loginname: e.data.loginname
+        tokens: msg.data.tokens,
+        identityprovider: msg.data.provider,
+        loginname: msg.data.loginname
     });
 }
 
@@ -159,53 +180,63 @@ var receiveLoginMessage = function(e) {
  * communication
  * 
  */
-
 Games.popupLogin = function(identityProvider) {
-    window.addEventListener("message", receiveLoginMessage, { once : true });
+    window.addEventListener('message', receiveLoginMessage, { once : true });
+
     loginIdentityProvider = identityProvider;
     loginNonce = Tools.randomID(32);
-    var url = loginOrigin + "/login?provider=" + loginIdentityProvider.toString() + "&nonce=" + loginNonce + "&origin=" + window.origin;
-    openLoginWindow(url, "Login", 4 == identityProvider ? 900 : 500, 5 == identityProvider ? 800 : 600)
+    let url = `${loginOrigin}/login?provider=${loginIdentityProvider}&nonce=${loginNonce}&origin=${window.origin}`;
+
+    openLoginWindow(url, 'Login', identityProvider == 4 ? 900 : 500, identityProvider == 5 ? 800 : 600);
 };
 
-var openLoginWindow = function(url, windowTitle, width, height) {
-    var i = void 0 != window.screenLeft ? window.screenLeft : window.screenX,
-        o = void 0 != window.screenTop ? window.screenTop : window.screenY,
-        s = (window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width) / 2 - width / 2 + i,
-        a = (window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height) / 2 - height / 2 + o;
-    window.open(url, windowTitle, "width=" + width + ", height=" + height + ", top=" + a + ", left=" + s)
+var openLoginWindow = function(url, title, width, height) {
+    // Calculate window position for centre
+    let x = window.screenLeft ? window.screenLeft : window.screenX;
+    let y = window.screenTop ? window.screenTop : window.screenY;
+    let left = (window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width) / 2 - width / 2 + x;
+    let top = (window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height) / 2 - height / 2 + y;
+
+    // Open login window at this position
+    window.open(url, title, `width=${width}, height=${height}, top=${top}, left=${left}`);
 };
 
 window.loginSuccess = function(loginsettings) {
-    Tools.setAuth(loginsettings),
-    Games.playerAuth(),
-    UI.closeLogin()
+    Tools.setAuth(loginsettings);
+    Games.playerAuth();
+    UI.closeLogin();
 };
 
 window.loginFailure = function() {};
 
 Games.playerGuest = function() {
-    UI.show("#playbutton", true),
-    UI.show("#loginbutton", true)
+    UI.show('#playbutton', true);
+    UI.show('#loginbutton', true);
 };
 
 Games.playerAuth = function() {
     Tools.ajaxGet(
-        "https://" + game.backendHost + "/settings",
+        `https://${game.backendHost}/settings`,
         config.auth.tokens.settings,
         function(remoteSettings) {
-            if (null != remoteSettings) {
+            if (remoteSettings != null) {
                 game.loggedIn = true;
-                var t = UI.escapeHTML((config.auth.loginname || '').substr(0, 30)) + '<span class="grey">(' + 
-                            ["", "Microsoft", "Google", "Twitter", "Reddit", "Twitch"][config.auth.identityprovider || 0] + ")</span>",
-                    n = t + '<span class="link" onclick="Games.logout()">Logout</span>',
-                    r = "Logged in as " + t + '<span class="button" onclick="Games.logout()">LOG OUT</span>';
-                $("#logout").html(n),
-                $("#logout-mainmenu").html(r),
-                $("#loginbutton").remove(),
-                $("#lifetime-account").remove(),
-                $("#playbutton").html("PLAY"),
-                UI.show("#playbutton", true);
+
+                let identityProvider = ['', 'Microsoft', 'Google', 'Twitter', 'Reddit', 'Twitch'][config.auth.identityprovider || 0];
+                let htmlName = UI.escapeHTML((config.auth.loginname || '').substr(0, 30));
+                htmlName += `<span class="grey">(${identityProvider})</span>`;
+
+                let htmlLogout = htmlName + '<span class="link" onclick="Games.logout()">Logout</span>';
+                let htmlMenuLogout = 'Logged in as ' + htmlName + '<span class="button" onclick="Games.logout()">LOG OUT</span>';
+                $('#logout').html(htmlLogout);
+                $('#logout-mainmenu').html(htmlMenuLogout);
+
+                $('#loginbutton').remove();
+                $('#lifetime-account').remove();
+
+                $('#playbutton').html('PLAY');
+                UI.show('#playbutton', true);
+                
                 Tools.setSettings(remoteSettings);
                 Tools.applySettingsToGame();
             } else {
@@ -216,858 +247,1308 @@ Games.playerAuth = function() {
 
 Games.logout = function() {
     Tools.setAuth({});
-    Tools.removeSetting("flag");
-    Tools.removeSetting("name");
+    Tools.removeSetting('flag');
+    Tools.removeSetting('name');
     window.location = window.location;
 };
 
-var refreshGamesJsonData = function(successCallback, t) {
-    var url = "https://" + game.backendHost + "/games";
-    t && (url += "?main=1"),
+var refreshGamesData = function(callback, fromMainPage) {
+    let url = `https://${game.backendHost}/games`;
+    if (fromMainPage) {
+        url += '?main=1';
+    }
+
     $.ajax({
         url: url,
-        dataType: "json",
+        dataType: 'json',
         cache: false,
         success: function(response) {
+            // Parse games data in response
             try {
-                gamesJsonData = JSON.parse(response.data)
+                gamesData = JSON.parse(response.data)
             } catch (e) {
-                return
+                return;
             }
-            if ("xx" == game.myFlag && (game.myFlag = response.country),
-            t && game.protocol != response.protocol) {
-                if ("#reload" !== window.location.hash)
-                    return void Tools.ajaxPost("https://" + game.backendHost + "/clienterror", {
-                        type: "protocol"
-                    }, function(e) {
-                        UI.showMessage("alert", '<span class="mainerror">Protocol update<br>Your client is being updated to the new version</span>', 3e4),
-                        setTimeout(function() {
-                            window.location = "/?" + Tools.randomID(10) + "#reload"
-                        }, 5e3)
+
+            // Set flag from country code in response
+            if (game.myFlag == 'xx') {
+                game.myFlag = response.country;
+            }
+
+            // On protocol mismatch, reload the page
+            if (fromMainPage && game.protocol != response.protocol) {
+                if (window.location.hash !== '#reload') {
+                    Tools.ajaxPost(`https://${game.backendHost}/clienterror`, { type: 'protocol' }, function() {
+                        UI.showMessage('alert', '<span class="mainerror">Protocol update<br>Your client is being updated to the new version</span>', 30000);
+                        setTimeout(function() { window.location = '/?' + Tools.randomID(10) + '#reload' }, 5000);
                     });
-                Tools.ajaxPost("https://" + game.backendHost + "/clienterror", {
-                    type: "protocolretry"
-                })
+                }
+                else {
+                    Tools.ajaxPost(`https://${game.backendHost}/clienterror`, { type: 'protocolretry' });
+                }
             }
-            successCallback()
+
+            // Success callback
+            callback();
         },
         error: function() {}
     })
 };
 
-var updatePlayersOnlineCount = function() {
+var updatePlayersOnline = function() {
     let playerCount = 0;
     let gameCount = 0;
-    for (let region of gamesJsonData) {
-        for (let game of region.games) {
-            if (game.players) {
-                playerCount += game.players;
+    for (let region of gamesData) {
+        for (let regionGame of region.games) {
+            if (regionGame.players) {
+                playerCount += regionGame.players;
             }
-            if (game.bots) {
-                playerCount -= game.bots;
+            if (regionGame.bots) {
+                playerCount -= regionGame.bots;
             }
             gameCount++;
         }
     }
     if (gameCount === 0) {
-        isServerMaintenance = true;
+        isGamesDataEmpty = true;
         UI.showMessage('alert', '<span class="mainerror">We are currently performing server maintenance<br>Please try again in a few minutes</span>', 30000);
     }
     else {
         let html = '<div class="item smallerpad">' + playerCount + '</div>player' + (playerCount > 1 ? 's' : '') + ' online';
-        $("#gameinfo").html(html);
+        $('#gameinfo').html(html);
     }
 };
 
-var getPlayRegion = function(regionName) {
-    if ("closest" === regionName)
-        return {
-            name: "Closest"
-        };
-    for (var t = 0; t < gamesJsonData.length; t++)
-        if (gamesJsonData[t].id === regionName)
-            return gamesJsonData[t];
-    return game.playRegion = "closest",
-    {
-        name: "Closest"
+var getRegionByName = function(regionName) {
+    if (regionName === 'closest') {
+        return { name: 'Closest' };
+    }
+
+    for (let region of gamesData) {
+        if (region.id === regionName) {
+            return region;
+        }
+    }
+
+    if (game.playRegion = 'closest') {
+        return { name: 'Closest' };
     }
 };
 
-var getPlayData = function(e, gameTypeId) {
-    var n = getPlayRegion(e);
-    if (null == n)
+var getGameByRegionAndRoom = function(regionName, gameName) {
+    let region = getRegionByName(regionName);
+    if (!region || !region.games) {
+        // Return null if the specified region has no games
         return null;
-    if (null == n.games)
-        return null;
-    for (var o = 0; o < n.games.length; o++)
-        if (n.games[o].id === gameTypeId)
-            return n.games[o];
-    var s = gameTypes.indexOf(gameTypeId);
-    if (-1 != s)
-        for (o = 0; o < n.games.length; o++)
-            if (n.games[o].type == s)
-                return {
-                    name: gameTypeNames[s]
-                };
-    return null
+    }
+
+    // Check if game name is a game with this id in this region
+    for (let regionGame of region.games) {
+        if (regionGame.id === gameName) {
+            return regionGame;
+        }
+    }
+
+    // Check if game name is a game type
+    let gameType = gameTypes.indexOf(gameName);
+    if (gameType != -1) {
+        for (let regionGame of region.games) {
+            if (regionGame.type == gameType) {
+                return { name: gameTypeNames[gameType] };
+            }
+        }
+    }
+
+    return null;
 };
 
-var selectGameFromURLFragment = function() {
-    var hash = window.location.hash;
-    if ("#reload" !== hash && null != hash && !(hash.length < 4 || hash.length > 20)) {
-        var regionRoom = (hash = hash.substr(1)).indexOf("-");
-        if (regionRoom != -1) {
-            var region = hash.substr(0, regionRoom),
-                room = hash.substr(regionRoom + 1);
-            if (getPlayData(region, room) != null) {
+var selectGameFromUrlHash = function() {
+    let hash = window.location.hash;
+    if (hash !== '#reload' && hash != null && !(hash.length < 4 || hash.length > 20)) {
+        // Remove leading '#' from URL hash
+        hash = hash.substr(1);
+
+        // Format of URL hash is 'region-room', split on '-'
+        let splitIndex = hash.indexOf('-');
+        if (splitIndex != -1) {
+            let region = hash.substr(0, splitIndex);
+            let room = hash.substr(splitIndex + 1);
+
+            // Look up this region and room in games data, and clear URL hash
+            if (getGameByRegionAndRoom(region, room) != null) {
                 game.playRegion = region;
                 game.playRoom = room;
                 game.playInvited = true;
-                history.replaceState(null, null, "/");
+                history.replaceState(null, null, '/');
             }
         }
     }
 };
 
-Games.selectRegion = function(e, t) {
-    e.stopPropagation(),
-    Sound.UIClick(),
-    game.playRegion = t,
-    Games.updateRegion(false),
-    Games.updateType()
+Games.selectRegion = function(clickEvent, region) {
+    clickEvent.stopPropagation();
+    Sound.UIClick();
+    game.playRegion = region;
+    Games.updateRegion(false);
+    Games.updateType();
 };
 
-Games.selectGame = function(e, t) {
-    e.stopPropagation(),
-    Sound.UIClick(),
-    game.playRoom = t,
-    Games.updateType(false)
+Games.selectGame = function(clickEvent, room) {
+    clickEvent.stopPropagation();
+    Sound.UIClick();
+    game.playRoom = room;
+    Games.updateType(false);
 };
 
 Games.closeDropdowns = function() {
-    t && Games.updateType(false),
-    e && Games.updateRegion(false)
+    if (playTypeMenuVisible) {
+        Games.updateType(false);
+    }
+    if (playRegionMenuVisible) {
+        Games.updateRegion(false);
+    }
 };
 
-Games.updateRegion = function(n, r) {
-    var i = "",
-        o = null;
-    if (!isServerMaintenance) {
-        if (null != r && (r.stopPropagation(),
-        e || Sound.UIClick()),
-        n && UI.closeLogin(),
-        null == n && (n = e),
-        n) {
-            t && Games.updateType(false),
-            i += '<div class="item"><div class="region header">REGION</div><div class="players header">PLAYERS</div><div class="ping header">PING</div><div class="clear"></div></div>';
-            var s = "";
-            null != closestGameRegion && (s = '<span class="autoregion">(' + gamesJsonData[closestGameRegion].name + ")</span>"),
-            i += '<div class="item selectable' + ("closest" === game.playRegion ? " sel" : "") + '" onclick="Games.selectRegion(event, &quot;closest&quot;)"><div class="region chooser">Closest' + s + '</div><div class="clear"></div></div>';
-            for (var a = 0; a < gamesJsonData.length; a++) {
-                for (var anyPlayers = false, playerCount = 0, c = 0; c < gamesJsonData[a].games.length; c++) {
-                    if (gamesJsonData[a].games[c].players !== undefined)
+Games.updateRegion = function(menuVisible, clickEvent) {
+    let html = '';
+    let css;
+
+    if (!isGamesDataEmpty) {
+        if (clickEvent) {
+            clickEvent.stopPropagation();
+            if (!playRegionMenuVisible) {
+                Sound.UIClick();
+            }
+        }
+
+        if (menuVisible) {
+            UI.closeLogin();
+        }
+
+        if (menuVisible == null) {
+            menuVisible = playRegionMenuVisible;
+        }
+
+        if (menuVisible) {
+            if (playTypeMenuVisible) {
+                Games.updateType(false);
+            }
+
+            // Header row
+            html += '<div class="item">';
+            html += '<div class="region header">REGION</div>';
+            html += '<div class="players header">PLAYERS</div>';
+            html += '<div class="ping header">PING</div>';
+            html += '<div class="clear"></div>';
+            html += '</div>';
+
+            // Closest region
+            let autoregion = '';
+            if (closestRegionIndex != null) {
+                autoregion = '<span class="autoregion">(' + gamesData[closestRegionIndex].name + ')</span>';
+            }
+            html += '<div class="item selectable' + (game.playRegion === 'closest' ? ' sel' : '') + '" onclick="Games.selectRegion(event, &quot;closest&quot;)">';
+            html += '<div class="region chooser">Closest' + autoregion + '</div>'
+            html += '<div class="clear"></div>';
+            html += '</div>';
+
+            // Named regions
+            for (let region of gamesData) {
+
+                // Region total players 
+                let hasPlayers = false;
+                let playerCount = 0;
+                for (let regionGame of region.games) {
+                    if (regionGame.players)
                     {
-                        playerCount += gamesJsonData[a].games[c].players;
-                        anyPlayers = true;
+                        playerCount += regionGame.players;
+                        hasPlayers = true;
                     }
                 }
-                var d;
-                if (!anyPlayers) {
+                if (!hasPlayers) {
                     playerCount = '<span class="playersunknown">?</span>';
                 }
-                d = null == gamesJsonData[a].ping ? "&nbsp;" : Math.round(gamesJsonData[a].ping) + '<span class="ms">ms</span>',
-                i += '<div class="item selectable' + (game.playRegion === gamesJsonData[a].id ? " sel" : "") + '" onclick="Games.selectRegion(event, &quot;' + gamesJsonData[a].id + '&quot;)"><div class="region chooser">' + gamesJsonData[a].name + '</div><div class="players number">' + playerCount + '</div><div class="ping chooser nopadding">' + d + '</div><div class="clear"></div></div>'
+
+                // Region ping 
+                let ping = '&nbsp;';
+                if (region.ping) {
+                    ping = Math.round(region.ping) + '<span class="ms">ms</span>';
+                }
+                
+                html += '<div class="item selectable' + (region.id === game.playRegion ? ' sel' : '') + '" onclick="Games.selectRegion(event, &quot;' + region.id + '&quot;)">';
+                html += '<div class="region chooser">' + region.name + '</div>';
+                html += '<div class="players number">' + playerCount + '</div>';
+                html += '<div class="ping chooser nopadding">' + ping + '</div>';
+                html += '<div class="clear"></div>';
+                html += '</div>';
             }
-            i += '<div class="item"></div>',
-            o = {
-                width: "240px",
-                height: "auto",
-                "z-index": "2"
-            },
-            $("#playregion").removeClass("hoverable")
+
+            // Bottom padding
+            html += '<div class="item"></div>';
+
+            css = {
+                width: '240px',
+                height: 'auto',
+                'z-index': '2'
+            };
+
+            $('#playregion').removeClass('hoverable');
+
         } else {
-            i += '<div class="arrowdown"></div>',
-            i += '<div class="playtop">REGION</div>';
-            i += '<div class="playbottom">' + getPlayRegion(game.playRegion).name + "</div>",
-            o = {
-                width: "130px",
-                height: "40px",
-                "z-index": "auto"
-            },
-            $("#playregion").addClass("hoverable")
+            // Dropdown menu not visible (closed)
+            html += '<div class="arrowdown"></div>';
+            html += '<div class="playtop">REGION</div>';
+            html += '<div class="playbottom">' + getRegionByName(game.playRegion).name + '</div>';
+            css = {
+                width: '130px',
+                height: '40px',
+                'z-index': 'auto'
+            };
+            $('#playregion').addClass('hoverable');
         }
-        $("#playregion").html(i),
-        $("#playregion").css(o),
-        e = n
+
+        $('#playregion').html(html);
+        $('#playregion').css(css);
+        playRegionMenuVisible = menuVisible;
     }
 };
 
-var getSelectedGameId = function() {
-    var gameId = game.playRegion;
-    if ("closest" === gameId) {
-        if (null == closestGameRegion)
+var getSelectedOrClosestRegionId = function() {
+    let regionId = game.playRegion;
+
+    // If no region has been selected, get closest if known
+    if (regionId === 'closest') {
+        if (closestRegionIndex == null) {
             return null;
-        gameId = gamesJsonData[closestGameRegion].id
-    }
-    return gameId
-};
-
-var getGameTypeInfoHtml = function(gameType) {
-    var t = '<div class="infott">';
-    t += gameTypeDescriptions[gameType];
-    t += '<div class="arrow"></div></div>';
-    return t;
-};
-
-Games.updateType = function(trueOrFalseOrUndefined, clickEvent) {
-    var s = "",
-        a = null;
-    if (!isServerMaintenance) {
-        if (null != clickEvent && (clickEvent.stopPropagation(),
-        t || Sound.UIClick()),
-        trueOrFalseOrUndefined && UI.closeLogin(),
-        null == trueOrFalseOrUndefined && (trueOrFalseOrUndefined = t),
-        trueOrFalseOrUndefined) {
-            e && Games.updateRegion(false),
-            s += '<div class="item"><div class="gametype header">GAME</div><div class="players header">PLAYERS</div><div class="clear"></div></div>';
-            if (null == (p = getSelectedGameId()))
-                return;
-            null == getPlayData(p, game.playRoom) && (game.playRoom = gameTypes[1]);
-            var l, u, c = getPlayRegion(p).games, d = [[], [], [], [], [], [], [], [], []];
-            for (l = 0; l < c.length; l++)
-                d[c[l].type].push(c[l]);
-            for (l = 1; l < d.length; l++)
-                if (0 != d[l].length)
-                    for (s += '<div class="item selectable' + (gameTypes[l] === game.playRoom ? " sel" : "") + '" onclick="Games.selectGame(event, &quot;' + gameTypes[l] + '&quot;)"><div class="gametype chooser">' + gameTypeNames[l] + '<span class="infocontainer">&nbsp;<div class="infoicon">' + getGameTypeInfoHtml(l) + '</div></span></div><div class="clear"></div></div>',
-                    u = 0; u < d[l].length; u++)
-                        s += '<div class="item selectable' + (d[l][u].id === game.playRoom ? " sel" : "") + '" onclick="Games.selectGame(event, &quot;' + d[l][u].id + '&quot;)"><div class="gametype chooser">' + d[l][u].nameShort + '</div><div class="players number">' + (d[l][u].players === undefined ? '<span class="playersunknown">?</span>' : d[l][u].players) + '</div><div class="clear"></div></div>';
-            s += '<div class="item"></div>',
-            a = {
-                width: "240px",
-                height: "auto",
-                "z-index": "2"
-            },
-            $("#playtype").removeClass("hoverable")
-        } else {
-            s += '<div class="arrowdown"></div>',
-            s += '<div class="playtop">GAME</div>';
-            var p;
-            if (null == (p = getSelectedGameId()))
-                return;
-            var g = getPlayData(p, game.playRoom);
-            null == g ? (name = gameTypeNames[1],
-            game.playRoom = gameTypes[1]) : name = g.name,
-            s += '<div class="playbottom">' + name + "</div>",
-            a = {
-                width: "190px",
-                height: "40px",
-                "z-index": "auto"
-            },
-            $("#playtype").addClass("hoverable")
         }
-        $("#playtype").html(s),
-        $("#playtype").css(a),
-        t = trueOrFalseOrUndefined
+        regionId = gamesData[closestRegionIndex].id;
+    }
+
+    return regionId;
+};
+
+var getGameTypeDescriptionHtml = function(gameType) {
+    return `<div class="infott">${gameTypeDescriptions[gameType]}<div class="arrow"></div></div>`;
+};
+
+Games.updateType = function(menuVisible, clickEvent) {
+    let html = '';
+    let css = null;
+
+    if (!isGamesDataEmpty) {
+        if (clickEvent) {
+            clickEvent.stopPropagation();
+            if (!playTypeMenuVisible) {
+                Sound.UIClick();
+            }
+        }
+
+        if (menuVisible) {
+            UI.closeLogin();
+        }
+
+        if (menuVisible == null) {
+            menuVisible = playTypeMenuVisible;
+        }
+        
+        if (menuVisible) {
+            if (playRegionMenuVisible) { 
+                Games.updateRegion(false);
+            }
+
+            // Header row
+            html += '<div class="item">';
+            html += '<div class="gametype header">GAME</div>';
+            html += '<div class="players header">PLAYERS</div>';
+            html += '<div class="clear"></div>';
+            html += '</div>';
+
+            // Do not display if no region selected (including autoselect of closest)
+            let selectedRegionId = getSelectedOrClosestRegionId();
+            if (selectedRegionId == null) {
+                return;
+            }
+
+            // Default to first game type (FFA) if none selected
+            if (getGameByRegionAndRoom(selectedRegionId, game.playRoom) == null) {
+                game.playRoom = gameTypes[1];
+            };
+
+            let roomsByType = [[],[],[],[],[],[],[],[],[]];
+            
+            let regionRooms = getRegionByName(selectedRegionId).games;
+            for (let room of regionRooms) {
+                roomsByType[room.type].push(room);
+            }
+
+            for (let type = 1; type < gameTypes.length; type++) {
+                if (roomsByType[type].length > 0) {
+                    html += '<div class="item selectable' + (gameTypes[type] === game.playRoom ? ' sel' : '') + '" onclick="Games.selectGame(event, &quot;' + gameTypes[type] + '&quot;)">';
+                    html += '<div class="gametype chooser">' + gameTypeNames[type];
+                    html += '<span class="infocontainer">&nbsp;<div class="infoicon">' + getGameTypeDescriptionHtml(type) + '</div></span>';
+                    html += '</div>';
+                    html += '<div class="clear"></div>';
+                    html += '</div>';
+
+                    for (let room of roomsByType[type]) {
+                        html += '<div class="item selectable' + (room.id === game.playRoom ? ' sel' : '') + '" onclick="Games.selectGame(event, &quot;' + room.id + '&quot;)">';
+                        html += '<div class="gametype chooser">' + room.nameShort + '</div>';
+                        html += '<div class="players number">' + (room.players != null ? room.players : '<span class="playersunknown">?</span>') + '</div>';
+                        html += '<div class="clear"></div>';
+                        html += '</div>';
+                    }
+                }
+            }
+
+            html += '<div class="item"></div>';
+
+            css = {
+                width: '240px',
+                height: 'auto',
+                'z-index': '2'
+            };
+
+            $('#playtype').removeClass('hoverable');
+        } else {
+            html += '<div class="arrowdown"></div>',
+            html += '<div class="playtop">GAME</div>';
+
+            // Do not display if no region selected (including autoselect of closest)
+            let selectedRegionId = getSelectedOrClosestRegionId();
+            if (selectedRegionId == null) {
+                return;
+            }
+
+            let selectedGame = getGameByRegionAndRoom(selectedRegionId, game.playRoom);
+            if (selectedGame == null) { 
+                name = gameTypeNames[1];
+                game.playRoom = gameTypes[1];
+            } 
+            else { 
+                name = selectedGame.name;
+            }
+
+            html += '<div class="playbottom">' + name + '</div>';
+
+            css = {
+                width: '190px',
+                height: '40px',
+                'z-index': 'auto'
+            };
+
+            $('#playtype').addClass('hoverable');
+        }
+
+        $('#playtype').html(html);
+        $('#playtype').css(css);
+
+        playTypeMenuVisible = menuVisible;
     }
 };
 
 Games.popGames = function() {
     if (!gamesSelectorVisible) {
-        UI.closeAllPanels("games");
-        var e = A();
-        UI.hide("#menu"),
-        $("#gameselector").html(e),
-        UI.show("#gameselector"),
-        gamesSelectorVisible = true,
-        O(),
-        Sound.UIClick()
+        UI.closeAllPanels('games');
+        let html = getGameSelectorHtml();
+        UI.hide('#menu');
+        $('#gameselector').html(html);
+        UI.show('#gameselector');
+        gamesSelectorVisible = true;
+        updateGameSelector();
+        Sound.UIClick();
     }
 };
 
-var A = function() {
-    var e = "";
-    e += '<div class="header">' + game.roomName + '<span class="region">&nbsp;&nbsp;&bull;&nbsp;&nbsp;' + game.regionName + '</span></div><div class="buttons"><div class="button" onclick="Games.redirRoot()">CHANGE REGION</div></div>';
-    var t, n, i = getPlayRegion(game.playRegion).games, o = [[], [], [], [], [], [], [], [], []];
-    for (t = 0; t < i.length; t++)
-        o[i[t].type].push(i[t]);
-    var s, a;
-    for (t = 1; t < o.length; t++)
-        if (0 != o[t].length)
-            for (e += '<div class="item head"><div class="gametype chooser section">' + gameTypeNames[t] + '<span class="infocontainer">&nbsp;<div class="infoicon">' + getGameTypeInfoHtml(t) + '</div></span></div><div class="clear"></div></div>',
-            n = 0; n < o[t].length; n++)
-                o[t][n].id === game.playRoom ? (s = " sel",
-                a = "") : (s = " selectable",
-                a = ' onclick="Games.switchGame(&quot;' + o[t][n].id + '&quot;)"'),
-                e += '<div class="item' + s + '"' + a + '><div class="gametype chooser">' + o[t][n].nameShort + '</div><div class="players number">' + (o[t][n].players === undefined ? '<span class="playersunknown">?</span>' : o[t][n].players ) + '</div><div class="clear"></div></div>';
-    return e
+var getGameSelectorHtml = function() {
+    let html = '';
+
+    html += '<div class="header">' + game.roomName;
+    html += '<span class="region">&nbsp;&nbsp;&bull;&nbsp;&nbsp;' + game.regionName + '</span>';
+    html += '</div>';
+    html += '<div class="buttons">';
+    html += '<div class="button" onclick="Games.redirRoot()">CHANGE REGION</div>';
+    html += '</div>';
+
+    let roomsByType = [[],[],[],[],[],[],[],[],[]];
+
+    let regionRooms = getRegionByName(game.playRegion).games;
+    for (let room of regionRooms) {
+        roomsByType[room.type].push(room);
+    }
+
+    for (let type = 1; type < gameTypes.length; type++) {
+        if (roomsByType[type].length > 0) {
+            html += '<div class="item head">';
+            html += '<div class="gametype chooser section">' + gameTypeNames[type];
+            html += '<span class="infocontainer">&nbsp;<div class="infoicon">' + getGameTypeDescriptionHtml(type) + '</div></span>'
+            html += '</div>';
+            html += '<div class="clear"></div>';
+            html += '</div>';
+
+            for (let room of roomsByType[type]) {
+                let divClass, divAttribute;
+
+                if (room.id === game.playRoom) {
+                    divClass = ' sel';
+                    divAttribute = '';
+                }
+                else {
+                    divClass = ' selectable';
+                    divAttribute = ' onclick="Games.switchGame(&quot;' + room.id + '&quot;)"';
+                }
+
+                html += '<div class="item' + divClass + '"' + divAttribute + '>';
+                html += '<div class="gametype chooser">' + room.nameShort + '</div>';
+                html += '<div class="players number">' + (room.players != null ? room.players : '<span class="playersunknown">?</span>') + '</div>';
+                html += '<div class="clear"></div>';
+                html += '</div>';
+            }
+        }
+    }
+
+    return html;
 };
 
 Games.redirRoot = function() {
-    game.reloading = true,
-    window.location = "/"
+    game.reloading = true;
+    window.location = '/';
 };
 
-var O = function() {
-    refreshGamesJsonData(function() {
-        var e = A();
-        $("#gameselector").html(e)
-    })
+var updateGameSelector = function() {
+    refreshGamesData(function() {
+        let html = getGameSelectorHtml();
+        $('#gameselector').html(html);
+    });
 };
 
 Games.closeGames = function() {
-    gamesSelectorVisible && (UI.hide("#gameselector"),
-    UI.show("#menu"),
-    gamesSelectorVisible = false,
-    Sound.UIClick())
+    if (gamesSelectorVisible) {
+        UI.hide('#gameselector');
+        UI.show('#menu');
+        gamesSelectorVisible = false;
+        Sound.UIClick();
+    }
 };
 
 Games.toggleGames = function() {
-    gamesSelectorVisible ? Games.closeGames() : Games.popGames()
+    if (gamesSelectorVisible) {
+        Games.closeGames();
+    }
+    else {
+        Games.popGames();
+    }
 };
 
-Games.switchGame = function(e) {
-    Games.closeGames(),
-    null != e && (game.playRoom = e),
-    game.myScore = 0,
-    game.server = {},
-    game.state = Network.STATE.CONNECTING,
-    Network.shutdown(),
-    Particles.wipe(),
-    Players.wipe(),
-    Mobs.wipe(),
-    UI.reconnection(),
-    Games.start(game.myOriginalName)
+Games.switchGame = function(room) {
+    Games.closeGames();
+    if (room != null) {
+        game.playRoom = room;
+    }
+    game.myScore = 0;
+    game.server = {};
+    game.state = Network.STATE.CONNECTING;
+    Network.shutdown();
+    Particles.wipe();
+    Players.wipe();
+    Mobs.wipe();
+    UI.reconnection();
+    Games.start(game.myOriginalName);
 };
 
-var initGameHostState = function() {
-    gameHostState = {},
-    inProgressPingCount = 0;
-    for (var t = 0; t < gamesJsonData.length; t++) {
-        var host = gamesJsonData[t].games[Tools.randInt(0, gamesJsonData[t].games.length - 1)].host;
-        if(null == gameHostState[host]) {
-            gameHostState[host] = {
+var pingGameServersForRegions = function() {
+    pingHosts = {};
+    pingsAwaitingResponse = 0;
+
+    for (let regionIndex = 0; regionIndex < gamesData.length; regionIndex++) {
+        // Pick a host for pinging randomly from games in region
+        let games = gamesData[regionIndex].games;
+        let host = games[Tools.randInt(0, games.length - 1)].host;
+        if(pingHosts[host] == null) {
+            pingHosts[host] = {
                 ping: 9999,
                 num: 0,
                 threshold: 0,
-                server: t
+                server: regionIndex
             };
         }
     }
+
     Games.performPing();
     Games.performPing();
     Games.performPing();
-    performPingTimerId = setInterval(Games.performPing, 300);
+    performPingInterval = setInterval(Games.performPing, 300);
 };
 
 Games.performPing = function() {
-    if (!(inProgressPingCount > 3 || gameHasStarted)) {
-        var e = 9999,
-            gameKey = null;
-        for (var key in gameHostState)
-            gameHostState[key].num < e && (e = gameHostState[key].num,
-            gameKey = key);
-        if (e > 6)
-            null != performPingTimerId && clearInterval(performPingTimerId);
+    if (!gameHasStarted && pingsAwaitingResponse <= 3) {
+        let pingNum = 9999;
+        let pingHost;
+
+        // Pick a host with the smallest number of pings
+        for (let host in pingHosts) {
+            if (pingHosts[host].num < pingNum) {
+                pingNum = pingHosts[host].num;
+                pingHost = host;
+            }
+        }
+
+        // Stop pinging when threshold reached, or ping host if not
+        if (pingNum > 6) {
+            
+            if (performPingInterval) {
+                clearInterval(performPingInterval);
+            }
+        }
         else {
-            gameHostState[gameKey].num++;
-            var pingUrl;
-            pingUrl = "https://" + gameKey + "/ping",
-            performSinglePing(gameKey, pingUrl, function() {
-                performSinglePing(gameKey, pingUrl)
-            })
+            pingHosts[pingHost].num++;
+            let url = `https://${pingHost}/ping`;
+            performSinglePing(pingHost, url, function() {
+                performSinglePing(pingHost, url);
+            });
         }
     }
 };
 
-var performSinglePing = function(gameKey, pingUrl, onSuccess) {
-    if (null != gameHostState[gameKey] && !gameHasStarted) {
-        inProgressPingCount++;
-        var now = performance.now();
-        fetch(pingUrl, {
-            method: "GET",
-            mode: "no-cors",
-            cache: "no-cache"
-        }).then(response => {
-            if (!gameHasStarted && (inProgressPingCount--,
-                null != gameHostState[gameKey])) {
-                var delay = performance.now() - now;
-                if (Math.abs(gameHostState[gameKey].ping - delay) < .1 * delay && gameHostState[gameKey].threshold++,
-                gameHostState[gameKey].threshold >= 2)
-                    return delay < gameHostState[gameKey].ping && (gamesJsonData[gameHostState[gameKey].server].ping = delay,
-                    Games.findClosest(),
-                    Games.updateRegion()),
-                    void delete gameHostState[gameKey];
-                delay < gameHostState[gameKey].ping && (gameHostState[gameKey].ping = delay,
-                gamesJsonData[gameHostState[gameKey].server].ping = delay,
-                Games.findClosest(),
-                Games.updateRegion(),
-                null != onSuccess && onSuccess())
-            }
-        }).catch(error => {
-            inProgressPingCount--
-        })
+var performSinglePing = function(host, url, callback) {
+    if (!gameHasStarted && pingHosts[host] != null) {
+        pingsAwaitingResponse++;
+        let pingStartTimestamp = performance.now();
+        fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-cache' })
+            .then(_ => {
+                pingsAwaitingResponse--;
+
+                if (!gameHasStarted && pingHosts[host] != null) {
+                    let ping = performance.now() - pingStartTimestamp;
+
+                    // Have we made at least three pings to this host, and is this ping is within 10% of previous ping?
+                    pingHosts[host].threshold++;
+                    if ((Math.abs(pingHosts[host].ping - ping) < 0.1 * ping) && pingHosts[host].threshold >= 2) {
+                        // Is this ping is lower than previous ping?
+                        if (ping < pingHosts[host].ping) {
+                            // Update region with this ping
+                            gamesData[pingHosts[host].server].ping = ping;
+                            Games.findClosest();
+                            Games.updateRegion();
+                        }
+                        else {
+                            // Stop pinging this host
+                            delete pingHosts[host];
+                        }
+                    }
+                    else {
+                        // Is this ping is lower than previous ping?
+                        if (ping < pingHosts[host].ping) {
+                            // Update host and region with this ping
+                            pingHosts[host].ping = ping;
+                            gamesData[pingHosts[host].server].ping = ping;
+                            Games.findClosest();
+                            Games.updateRegion();
+
+                            if (callback) {
+                                callback();
+                            }
+                        }
+                    }
+                }
+            })
+            .catch(_ => {
+                pingsAwaitingResponse--;
+            });
     }
 };
 
 Games.findClosest = function() {
-    for (var bestPing = 9999, foundSaneGameRegion = false, n = 0; n < gamesJsonData.length; n++)
-        null != gamesJsonData[n].ping && gamesJsonData[n].ping < bestPing && (bestPing = gamesJsonData[n].ping,
-        closestGameRegion = n,
-        foundSaneGameRegion = true);
-    foundSaneGameRegion && "closest" === game.playRegion && Games.updateType()
+    let lowestPing = 9999;
+    let foundClosestRegion = false;
+
+    for (let index = 0; index < gamesData.length; index++) {
+        let region = gamesData[index];
+        if (region.ping && region.ping < lowestPing) {
+            lowestPing = region.ping;
+            closestRegionIndex = index;
+            foundClosestRegion = true;
+        }
+    }
+
+    if (foundClosestRegion && game.playRegion === 'closest') {
+        Games.updateType();
+    }
 };
 
-Games.highlightInput = function(e) {
-    $(e).css({
-        transition: "none",
-        transform: "scale(1.1)",
-        "background-color": "rgb(90, 30, 30)"
-    }),
-    $(e).width(),
-    $(e).css({
-        transition: "all 0.5s ease-in-out",
-        transform: "scale(1)",
-        "background-color": "rgb(30, 30, 30)"
-    }),
-    setTimeout(function() {
-        $(e).focus()
-    }, 200)
+Games.highlightInput = function(id) {
+    $(id).css({
+        transition: 'none',
+        transform: 'scale(1.1)',
+        'background-color': 'rgb(90, 30, 30)'
+    });
+    $(id).width();
+    $(id).css({
+        transition: 'all 0.5s ease-in-out',
+        transform: 'scale(1)',
+        'background-color': 'rgb(30, 30, 30)'
+    });
+    setTimeout(function() { $(id).focus() }, 200);
 };
 
 Games.copyInviteLink = function() {
-    D(game.inviteLink) && (UI.show("#invite-copied"),
-    null != inviteCopiedTimer && clearTimeout(inviteCopiedTimer),
-    inviteCopiedTimer = setTimeout(function() {
-        UI.hide("#invite-copied")
-    }, 2e3))
+    if (copyToClipboard(game.inviteLink)) {
+        UI.show('#invite-copied');
+        if (inviteCopiedTimeout) {
+            clearTimeout(inviteCopiedTimeout);
+        }
+        inviteCopiedTimeout = setTimeout(function() { UI.hide('#invite-copied') }, 2000);
+    }
 };
 
-var D = function(e) {
-    var t = document.createElement("span");
-    t.textContent = e,
-    t.style.whiteSpace = "pre";
-    var n = document.createElement("iframe");
-    n.sandbox = "allow-same-origin",
-    document.body.appendChild(n);
-    var r = n.contentWindow;
-    r.document.body.appendChild(t);
-    var i = r.getSelection();
-    i || (i = (r = window).getSelection(),
-    document.body.appendChild(t));
-    var o = r.document.createRange();
-    i.removeAllRanges(),
-    o.selectNode(t),
-    i.addRange(o);
-    var s = false;
+var copyToClipboard = function(content) {
+    let span = document.createElement('span');
+    span.textContent = content;
+    span.style.whiteSpace = 'pre';
+
+    let iframe = document.createElement('iframe');
+    iframe.sandbox = 'allow-same-origin';
+    document.body.appendChild(iframe);
+    let contentWindow = iframe.contentWindow;
+    contentWindow.document.body.appendChild(span);
+
+    let selection = contentWindow.getSelection();
+    if (!selection) {
+        contentWindow = window;
+        selection = contentWindow.getSelection();
+        document.body.appendChild(span);
+    }
+
+    let range = contentWindow.document.createRange();
+    selection.removeAllRanges();
+    range.selectNode(span);
+    selection.addRange(range);
+
+    let copyResult = false;
     try {
-        s = r.document.execCommand("copy")
+        copyResult = contentWindow.document.execCommand('copy')
     } catch (e) {}
-    return i.removeAllRanges(),
-    t.remove(),
-    n.remove(),
-    s
+
+    selection.removeAllRanges();
+    span.remove();
+    iframe.remove();
+
+    return copyResult;
 };
 
-Games.start = function(playerName, isFirstTime) {
-    const stillInitializing = isFirstTime && game.state == Network.STATE.CONNECTING;
-    if (isServerMaintenance || stillInitializing) {
+Games.start = function(playerName, fromMainPage) {
+    if (isGamesDataEmpty && !DEVELOPMENT) {
         return;
     }
 
-    if (DEVELOPMENT && game.customServerUrl) {
-        if (null != performPingTimerId) {
-            clearInterval(performPingTimerId);
-        }
-
-        gameHasStarted = true;
-
-        if (game.state == Network.STATE.LOGIN) {
-            Tools.wipeReel();
-        }
-
-        game.state = Network.STATE.CONNECTING;
-        var player = {
-            name: playerName
-        };
-
-        game.server = {id: `custom-${game.customServerUrl}`};
-
-        Tools.setSettings(player);
-        UI.gameStart(playerName, isFirstTime);
-    } else {
-        var playRegion = game.playRegion;
-        var gameId = getSelectedGameId();
-        if (!gameId) {
-            return;
-        }
-
-        game.playRegion = gameId;
-        if (null != performPingTimerId) {
-                clearInterval(performPingTimerId);
-        }
-        gameHasStarted = true;
-
-        var playRoom = getPlayRoom();
-
-        var data = getPlayData(game.playRegion, playRoom);
-        game.playHost = data.host;
-        game.playPath = data.path;
-        game.regionName = getPlayRegion(game.playRegion).name;
-        game.playRoom = playRoom;
-        if (game.state == Network.STATE.LOGIN) {
-            Tools.wipeReel();
-        }
-        game.state = Network.STATE.CONNECTING;
-        var player = {
-            name: playerName
-        };
-
-        if (!game.playInvited) {
-            player.region = playRegion;
-        }
-
-        game.server = {id: `${game.playRegion}-${game.playRoom}`};
-
-        Tools.setSettings(player);
-        UI.gameStart(playerName, isFirstTime);
+    if (fromMainPage && game.state == Network.STATE.CONNECTING) {
+        return;
     }
 
-    Tools.ajaxPost("https://" + game.backendHost + "/enter", {
+    let savedRegionId = game.playRegion;
+
+    if (!(DEVELOPMENT && game.customServerUrl)) {
+        // Region
+        let regionId = getSelectedOrClosestRegionId();
+        if (!regionId) {
+            return;
+        }
+        game.playRegion = regionId;
+
+        // Room
+        let roomId = getSelectedRoomId();
+        let regionGame = getGameByRegionAndRoom(game.playRegion, roomId);
+        game.playHost = regionGame.host;
+        game.playPath = regionGame.path;
+        game.regionName = getRegionByName(game.playRegion).name;
+        game.playRoom = roomId;
+    }
+
+    // Stop any pinging of the game server hosts
+    if (performPingInterval != null) {
+        clearInterval(performPingInterval);
+    }
+    gameHasStarted = true;
+
+    // Clear the main page if we're on it
+    if (game.state == Network.STATE.LOGIN) {
+        Tools.wipeReel();
+    }
+    game.state = Network.STATE.CONNECTING;
+
+    // Any change to player name gets saved to settings upon game start
+    let settings = {
+        name: playerName
+    };
+
+    if (!(DEVELOPMENT && game.customServerUrl)) {
+        game.server = { id: `${game.playRegion}-${game.playRoom}` };
+
+        if (!game.playInvited) {
+            // Saved region id is used for settings because it might be 'closest' rather than an actual region
+            settings.region = savedRegionId;
+        }
+    } else {
+        game.server = { id: `custom-${game.customServerUrl}` };
+    }
+
+    // Persist settings to storage
+    Tools.setSettings(settings);
+
+    UI.gameStart(playerName, fromMainPage);
+
+    // Usage telemetry
+    Tools.ajaxPost(`https://${game.backendHost}/enter`, {
         id: config.settings.id,
         name: playerName,
         game: game.server.id,
-        source: null != document.referrer ? document.referrer : "",
+        source: document.referrer != null ? document.referrer : '',
         mode: config.mobile ? 1 : 0,
         version: game.version,
-        switch: !isFirstTime
+        switch: !fromMainPage
     });
 };
 
-function getPlayRoom() {
-    var result = game.playRoom;
-    var playRoomIndex = gameTypes.indexOf(result);
-    if (-1 != playRoomIndex) {
-        var playRegionGames = getPlayRegion(game.playRegion).games;
-        var roomIds = [];
-        for (var i = 0; i < playRegionGames.length; i++) {
-            if (playRegionGames[i].type == playRoomIndex) {
-                roomIds.push(playRegionGames[i].id);
+function getSelectedRoomId() {
+    let room = game.playRoom;
+
+    // If the room is a game type, choose a game of that type at random
+    let gameType = gameTypes.indexOf(room);
+    if (gameType != -1) {
+        let regionGames = getRegionByName(game.playRegion).games;
+        let gameIds = [];
+        for (let regionGame of regionGames) {
+            if (regionGame.type == gameType) {
+                gameIds.push(regionGame.id);
             }
         }
-        result = roomIds[Tools.rand(0, 1) < .5 ? (roomIds.length - 1) : Tools.randInt(0, roomIds.length - 1)];
+        room = gameIds[Tools.rand(0, 1) < .5 ? (gameIds.length - 1) : Tools.randInt(0, gameIds.length - 1)];
     }
-    return result;
+
+    return room;
 }
 
+/**
+ * Prepare new game upon receipt of LOGIN message
+ */
 Games.prep = function() {
+    // Remove anything that may persist from previous game type
     Games.wipe();
-    if (GameType.CTF == game.gameType) {
-        $("#gamespecific").html('<div class="blueflag"></div><div id="blueflag-name" class="blueflag-player">&nbsp;</div><div class="redflag"></div><div id="redflag-name" class="redflag-player">&nbsp;</div>'),
-        UI.show("#gamespecific"),
-        ctfGameState = {
-            flagBlue: {
-                visible: false,
-                playerId: null,
-                direction: 1,
-                diffX: 0,
-                momentum: 0,
-                position: Vector.zero(),
-                basePos: new Vector(-9669,-1471),
-                sprite: Textures.init("ctfFlagBlue", {
-                    scale: .4,
-                    visible: false
-                }),
-                spriteShadow: Textures.init("ctfFlagShadow", {
-                    scale: .4 * 1.1,
-                    visible: false
-                }),
-                minimapSprite: Textures.init("minimapFlagBlue"),
-                minimapBase: Textures.init("minimapBaseBlue")
-            },
-            flagRed: {
-                visible: false,
-                playerId: null,
-                direction: 1,
-                diffX: 0,
-                momentum: 0,
-                position: Vector.zero(),
-                basePos: new Vector(8602,-944),
-                sprite: Textures.init("ctfFlagRed", {
-                    scale: .4,
-                    visible: false
-                }),
-                spriteShadow: Textures.init("ctfFlagShadow", {
-                    scale: .4 * 1.1,
-                    visible: false
-                }),
-                minimapSprite: Textures.init("minimapFlagRed"),
-                minimapBase: Textures.init("minimapBaseRed")
-            }
-        },
-        Graphics.minimapMob(ctfGameState.flagBlue.minimapBase, ctfGameState.flagBlue.basePos.x, ctfGameState.flagBlue.basePos.y),
-        Graphics.minimapMob(ctfGameState.flagRed.minimapBase, ctfGameState.flagRed.basePos.x, ctfGameState.flagRed.basePos.y)
-    } else
-        GameType.BTR == game.gameType && (
-            $("#gamespecific").html(""),
-            UI.show("#gamespecific")
-        )
+
+    switch(game.gameType) {
+        case GameType.CTF:
+            // Display CTF status (team flags and their carriers) in game-specific region
+            $('#gamespecific').html(
+                '<div class="blueflag"></div>' +
+                '<div id="blueflag-name" class="blueflag-player">&nbsp;</div>' + 
+                '<div class="redflag"></div>' + 
+                '<div id="redflag-name" class="redflag-player">&nbsp;</div>'
+                );
+            UI.show('#gamespecific');
+
+            // Set up game state for CTF, including sprites
+            ctf = {
+                flagBlue: {
+                    visible: false,
+                    playerId: null,
+                    direction: 1,
+                    diffX: 0,
+                    momentum: 0,
+                    position: Vector.zero(),
+                    basePos: new Vector(-9669,-1471),
+                    sprite: Textures.init('ctfFlagBlue', {
+                        scale: 0.4,
+                        visible: false
+                    }),
+                    spriteShadow: Textures.init('ctfFlagShadow', {
+                        scale: 0.4 * 1.1,
+                        visible: false
+                    }),
+                    minimapSprite: Textures.init('minimapFlagBlue'),
+                    minimapBase: Textures.init('minimapBaseBlue')
+                },
+                flagRed: {
+                    visible: false,
+                    playerId: null,
+                    direction: 1,
+                    diffX: 0,
+                    momentum: 0,
+                    position: Vector.zero(),
+                    basePos: new Vector(8602,-944),
+                    sprite: Textures.init('ctfFlagRed', {
+                        scale: 0.4,
+                        visible: false
+                    }),
+                    spriteShadow: Textures.init('ctfFlagShadow', {
+                        scale: 0.4 * 1.1,
+                        visible: false
+                    }),
+                    minimapSprite: Textures.init('minimapFlagRed'),
+                    minimapBase: Textures.init('minimapBaseRed')
+                }
+            };
+
+            // Display team bases on minimap
+            Graphics.minimapMob(ctf.flagBlue.minimapBase, ctf.flagBlue.basePos.x, ctf.flagBlue.basePos.y);
+            Graphics.minimapMob(ctf.flagRed.minimapBase, ctf.flagRed.basePos.x, ctf.flagRed.basePos.y);
+            break;
+        
+        case GameType.BTR:
+            // Clear game-specific region
+            $('#gamespecific').html('');
+            UI.show('#gamespecific');
+            break;
+    }    
 };
 
 Games.wipe = function() {
-    deinitMinimapAndFirewall(),
-    ctfGameState.flagBlue && ctfGameState.flagRed && (game.graphics.layers.flags.removeChild(ctfGameState.flagBlue.sprite),
-    game.graphics.layers.flags.removeChild(ctfGameState.flagRed.sprite),
-    game.graphics.layers.shadows.removeChild(ctfGameState.flagBlue.spriteShadow),
-    game.graphics.layers.shadows.removeChild(ctfGameState.flagRed.spriteShadow),
-    game.graphics.layers.ui3.removeChild(ctfGameState.flagBlue.minimapSprite),
-    game.graphics.layers.ui3.removeChild(ctfGameState.flagRed.minimapSprite),
-    game.graphics.layers.ui2.removeChild(ctfGameState.flagBlue.minimapBase),
-    game.graphics.layers.ui2.removeChild(ctfGameState.flagRed.minimapBase),
-    ctfGameState.flagBlue.sprite.destroy(),
-    ctfGameState.flagRed.sprite.destroy(),
-    ctfGameState.flagBlue.spriteShadow.destroy(),
-    ctfGameState.flagRed.spriteShadow.destroy(),
-    ctfGameState.flagBlue.minimapSprite.destroy(),
-    ctfGameState.flagRed.minimapSprite.destroy(),
-    ctfGameState.flagBlue.minimapBase.destroy(),
-    ctfGameState.flagRed.minimapBase.destroy())
+    // Clear BTR firewall
+    removeFirewall();
+
+    // If exists, clear all CTF graphics
+    if (ctf.flagBlue && ctf.flagRed) {
+        game.graphics.layers.flags.removeChild(ctf.flagBlue.sprite);
+        game.graphics.layers.flags.removeChild(ctf.flagRed.sprite);
+        game.graphics.layers.shadows.removeChild(ctf.flagBlue.spriteShadow);
+        game.graphics.layers.shadows.removeChild(ctf.flagRed.spriteShadow);
+        game.graphics.layers.ui3.removeChild(ctf.flagBlue.minimapSprite);
+        game.graphics.layers.ui3.removeChild(ctf.flagRed.minimapSprite);
+        game.graphics.layers.ui2.removeChild(ctf.flagBlue.minimapBase);
+        game.graphics.layers.ui2.removeChild(ctf.flagRed.minimapBase);
+        ctf.flagBlue.sprite.destroy();
+        ctf.flagRed.sprite.destroy();
+        ctf.flagBlue.spriteShadow.destroy();
+        ctf.flagRed.spriteShadow.destroy();
+        ctf.flagBlue.minimapSprite.destroy();
+        ctf.flagRed.minimapSprite.destroy();
+        ctf.flagBlue.minimapBase.destroy();
+        ctf.flagRed.minimapBase.destroy();
+    }
 };
 
-Games.networkFlag = function(flagMsg) {
-    var flagState = 1 == flagMsg.flag ? ctfGameState.flagBlue : ctfGameState.flagRed,
-        flagElemSelector = 1 == flagMsg.flag ? "#blueflag-name" : "#redflag-name",
-        r = 1 == flagMsg.flag ? flagMsg.blueteam : flagMsg.redteam;
-    flagState.momentum = 0,
-    flagState.direction = 1,
-    flagState.sprite.scale.x = .4,
-    flagState.sprite.rotation = 0,
-    flagState.spriteShadow.scale.x = .4 * 1.1,
-    flagState.spriteShadow.rotation = 0;
-    var i = '<span class="rounds">' + r + '<span class="divider">/</span>3</span>';
-    if (1 == flagMsg.type) {
-        flagState.playerId = null,
-        flagState.position.x = flagMsg.posX,
-        flagState.position.y = flagMsg.posY,
-        flagState.sprite.position.set(flagMsg.posX, flagMsg.posY);
-        var o = Graphics.shadowCoords(new Vector(flagMsg.posX,flagMsg.posY));
-        flagState.spriteShadow.position.set(o.x, o.y),
-        Graphics.minimapMob(flagState.minimapSprite, flagMsg.posX, flagMsg.posY),
-        $(flagElemSelector).html(i)
+/**
+ * GAME_FLAG message handler
+ */
+Games.networkFlag = function(msg) {
+    // Check if this is a blue (1) or red (2) team flag
+    let flag, selector, flagCaptures;
+    if (msg.flag == 1) {
+        flag = ctf.flagBlue;
+        selector = '#blueflag-name';
+        flagCaptures = msg.blueteam;
+    }
+    else {
+        flag = ctf.flagRed;
+        selector = '#redflag-name';
+        flagCaptures = msg.redteam;
+    }
+
+    // Common values for flag display
+    flag.momentum = 0;
+    flag.direction = 1;
+    flag.sprite.scale.x = 0.4;
+    flag.sprite.rotation = 0;
+    flag.spriteShadow.scale.x = 0.4 * 1.1;
+    flag.spriteShadow.rotation = 0;
+
+    // Team score (successful flag captures)
+    let html = `<span class="rounds">${flagCaptures}<span class="divider">/</span>3</span>`;
+
+    if (msg.type == 1) {
+        // Flag is not being carried
+        flag.playerId = null;
+        flag.position.x = msg.posX;
+        flag.position.y = msg.posY;
+        flag.sprite.position.set(msg.posX, msg.posY);
+        let shadow = Graphics.shadowCoords(new Vector(msg.posX,msg.posY));
+        flag.spriteShadow.position.set(shadow.x, shadow.y),
+        Graphics.minimapMob(flag.minimapSprite, msg.posX, msg.posY);
+        $(selector).html(html);
     } else {
-        flagState.playerId = flagMsg.id;
-        var s = Players.get(flagMsg.id);
-        null != s && (1 == flagMsg.flag ? i = UI.escapeHTML(s.name) + i : i += UI.escapeHTML(s.name)),
-        flagState.diffX = s.pos.x,
-        $(flagElemSelector).html(i)
+        // Flag is being carried
+        flag.playerId = msg.id;
+        let player = Players.get(msg.id);
+        if (player != null) {
+            // Position of player name is to the left for blue, right for red
+            if (msg.flag == 1) {
+                html = UI.escapeHTML(player.name) + html;
+            }
+            else {
+                html += UI.escapeHTML(player.name);
+            }
+        }
+        flag.diffX = player.pos.x;
+        $(selector).html(html);
     }
-    updateCtfFlagState(flagState, false)
+
+    updateCtfFlag(flag, false);
 };
 
-var updateCtfFlagState = function(flagState, isResize) {
+var updateCtfFlag = function(flag, isResize) {
+    // If window is being resized, redraw minimap
     if(isResize) {
-        Graphics.minimapMob(flagState.minimapSprite, flagState.position.x, flagState.position.y);
-        Graphics.minimapMob(flagState.minimapBase, flagState.basePos.x, flagState.basePos.y);
+        Graphics.minimapMob(flag.minimapSprite, flag.position.x, flag.position.y);
+        Graphics.minimapMob(flag.minimapBase, flag.basePos.x, flag.basePos.y);
     }
 
-    if(null != flagState.playerId) {
-        var player = Players.get(flagState.playerId);
-        if (null != player) {
-            if(player.render != flagState.visible) {
-                flagState.visible = player.render;
-                flagState.sprite.visible = player.render;
-                flagState.spriteShadow.visible = player.render;
-                if(player.render) {
-                    flagState.momentum = 0;
-                    flagState.direction = 1;
-                    flagState.diffX = player.pos.x;
+    if(flag.playerId != null) {
+        // Flag is being carried
+        let carrier = Players.get(flag.playerId);
+        if (carrier != null) {
+            // Flag visibility must match visibility of flag carrier player (i.e. are they on-screen?)
+            if(carrier.render != flag.visible) {
+                flag.visible = carrier.render;
+                flag.sprite.visible = carrier.render;
+                flag.spriteShadow.visible = carrier.render;
+
+                if(carrier.render) {
+                    flag.momentum = 0;
+                    flag.direction = 1;
+                    flag.diffX = carrier.pos.x;
                 }
             }
-            if(player.render) {
-                Graphics.minimapMob(flagState.minimapSprite, player.pos.x, player.pos.y);
+
+            // Accuracy of flag minimap position depends on whether flag carrier player is visible
+            if(carrier.render) {
+                Graphics.minimapMob(flag.minimapSprite, carrier.pos.x, carrier.pos.y);
             } else {
-                Graphics.minimapMob(flagState.minimapSprite, player.lowResPos.x, player.lowResPos.y);
+                Graphics.minimapMob(flag.minimapSprite, carrier.lowResPos.x, carrier.lowResPos.y);
             }
         }
 
-        if(flagState.visible) {
-            flagState.position.x = player.pos.x;
-            flagState.position.y = player.pos.y;
-            flagState.sprite.position.set(player.pos.x, player.pos.y);
-            var shadowPos = Graphics.shadowCoords(player.pos);
-            flagState.spriteShadow.position.set(shadowPos.x, shadowPos.y),
-            flagState.momentum = Tools.clamp(flagState.momentum + (player.pos.x - flagState.diffX) * game.timeFactor, -40, 40);
-            var i = flagState.momentum > 0 ? .1 : -.1;
-            flagState.direction = Tools.clamp(flagState.direction - i * game.timeFactor, -.4, .4);
-            flagState.sprite.scale.x = flagState.direction;
-            flagState.spriteShadow.scale.x = 1.1 * flagState.direction;
-            var o = .04 * -(player.pos.x - flagState.diffX) * game.timeFactor;
-            flagState.sprite.rotation = o;
-            flagState.spriteShadow.rotation = o;
-            flagState.diffX = player.pos.x;
+        // Display flag if flag carrier player is visible
+        if(flag.visible) {
+            flag.position.x = carrier.pos.x;
+            flag.position.y = carrier.pos.y;
+            flag.sprite.position.set(carrier.pos.x, carrier.pos.y);
+
+            let shadow = Graphics.shadowCoords(carrier.pos);
+            flag.spriteShadow.position.set(shadow.x, shadow.y),
+
+            flag.momentum = Tools.clamp(flag.momentum + (carrier.pos.x - flag.diffX) * game.timeFactor, -40, 40);
+            let directionModifier = flag.momentum > 0 ? 0.1 : -0.1;
+            flag.direction = Tools.clamp(flag.direction - directionModifier * game.timeFactor, -0.4, 0.4);
+            flag.sprite.scale.x = flag.direction;
+            flag.spriteShadow.scale.x = 1.1 * flag.direction;
+
+            let rotation = 0.04 * -(carrier.pos.x - flag.diffX) * game.timeFactor;
+            flag.sprite.rotation = rotation;
+            flag.spriteShadow.rotation = rotation;
+
+            flag.diffX = carrier.pos.x;
         }
     } else {
-        var isVisible = Graphics.inScreen(flagState.position, 128);
-        if(isVisible != flagState.visible) {
-            flagState.visible = isVisible;
-            flagState.sprite.visible = isVisible;
-            flagState.spriteShadow.visible = isVisible;
+        // Flag is not being carried, display if on-screen
+        let isVisible = Graphics.inScreen(flag.position, 128);
+        if(isVisible != flag.visible) {
+            flag.visible = isVisible;
+            flag.sprite.visible = isVisible;
+            flag.spriteShadow.visible = isVisible;
         }
     }
 };
 
-Games.spectate = function(playerID) {
-    null == game.spectatingID && 3 != game.gameType && UI.showMessage("alert", '<span class="info">SPECTATOR MODE</span>Click on Respawn to resume playing', 4e3),
-    game.spectatingID = playerID;
-    var player = Players.get(playerID),
-        n = '<div id="spectator-tag" class="spectating">Spectating ' + (null == player ? "" : UI.escapeHTML(player.name)) + '</div><div class="buttons"><div onclick="Network.spectateNext()" class="changeplayer left"><div class="arrow"></div></div><div onclick="Network.spectatePrev()" class="changeplayer right"><div class="arrow"></div></div></div>';
-    UI.showSpectator(n)
+/**
+ * GAME_SPECTATE message handler
+ */
+Games.spectate = function(playerId) {
+    // If entering spectator mode and we're not playing BTR, display message
+    if (game.spectatingID == null && game.gameType !== GameType.BTR) {
+        UI.showMessage('alert', '<span class="info">SPECTATOR MODE</span>Click on Respawn to resume playing', 4000);
+    }
+    game.spectatingID = playerId;
+
+    // Display spectator status text
+    let html = '';
+    let player = Players.get(playerId);
+    html += '<div id="spectator-tag" class="spectating">Spectating ' + (player == null ? '' : UI.escapeHTML(player.name)) + '</div>';
+    html += '<div class="buttons">'
+    html += '<div onclick="Network.spectateNext()" class="changeplayer left"><div class="arrow"></div></div>';
+    html += '<div onclick="Network.spectatePrev()" class="changeplayer right"><div class="arrow"></div></div>';
+    html += '</div>';
+
+    UI.showSpectator(html);
 };
 
-Games.spectatorSwitch = function(e) {
+/**
+ * Switch to spectating another player after a delay
+ * 
+ * This is for when players are killed or leave the game
+ */
+Games.spectatorSwitch = function(id) {
     setTimeout(function() {
-        e == game.spectatingID && Network.spectateNext()
-    }, 2e3)
+        if (id === game.spectatingID) {
+            Network.spectateNext();
+        }
+    }, 2000);
 };
 
-Games.playersAlive = function(e) {
-    var t = "";
-    e > 1 && (t = '<div class="playersalive">' + e + " players alive</div>"),
-    $("#gamespecific").html(t)
+/**
+ * GAME_PLAYERSALIVE message handler
+ * 
+ * Displays number of players still alive - this is for BTR
+ */
+Games.playersAlive = function(numberAlive) {
+    let html = '';
+    if (numberAlive > 1) {
+        html = `<div class="playersalive">${numberAlive} players alive</div>`;
+    }
+    $('#gamespecific').html(html);
 };
 
-Games.showBTRWin = function(e) {
-    if (!$("#custom-msg").length) {
-        var t = '<div id="custom-msg" class="btrwin"><div class="trophy"></div><div class="winner"><div class="player"><span class="flag big flag-' + UI.escapeHTML(e.f) + '"></span>' + UI.escapeHTML(e.p) + '</div></div><div class="bounty"><span class="stat">' + UI.escapeHTML(e.k) + " KILL" + (1 == e.k ? "" : "S") + "</span>+" + UI.escapeHTML(e.b) + " BOUNTY</div></div>";
-        $("body").append(t),
-        UI.showPanel("#custom-msg"),
+/**
+ * SERVER_CUSTOM type 1 (BTR) message handler
+ */
+Games.showBTRWin = function(info) {
+    // Only display if no other custom message is currently displayed
+    if (!$('#custom-msg').length) {
+        let html = '';
+        
+        // Trophy image, number of kills, and bounty awarded to player
+        html += '<div id="custom-msg" class="btrwin">';
+        html += '<div class="trophy"></div>';
+        html += '<div class="winner">';
+        html += '<div class="player"><span class="flag big flag-' + UI.escapeHTML(info.f) + '"></span>' + UI.escapeHTML(info.p) + '</div>';
+        html += '</div>';
+        html += '<div class="bounty">';
+        html += '<span class="stat">' + UI.escapeHTML(info.k) + ' KILL' + (info.k == 1 ? '' : 'S') + '</span>';
+        html += '+' + UI.escapeHTML(info.b) + ' BOUNTY';
+        html += '</div>';
+        html += '</div>';
+
+        // Display message and play sound
+        $('body').append(html);
+        UI.showPanel('#custom-msg');
         setTimeout(function() {
-            UI.hidePanel("#custom-msg", false, true)
-        }, 1e3 * e.t),
-        Sound.gameComplete()
+            UI.hidePanel('#custom-msg', false, true);
+        }, 1000 * info.t);
+        Sound.gameComplete();
     }
 };
 
-Games.showCTFWin = function(e) {
-    if (!$("#custom-msg").length) {
-        var t = '<div id="custom-msg" class="ctfwin"><div class="trophy"></div><div class="winner">' + (1 == e.w ? '<div class="player blue">BLUE TEAM</div>' : '<div class="player red">RED TEAM</div>') + '</div><div class="bounty">+' + UI.escapeHTML(e.b) + " BOUNTY</div></div>";
-        $("body").append(t),
-        UI.showPanel("#custom-msg"),
+/**
+ * SERVER_CUSTOM type 2 (CTF) message handler
+ */
+Games.showCTFWin = function(info) {
+    // Only display if no other custom message is currently displayed
+    if (!$('#custom-msg').length) {
+        let html = '';
+        
+        // Trophy, winning team, and bounty awarded to player
+        html += '<div id="custom-msg" class="ctfwin">';
+        html += '<div class="trophy"></div>';
+        html += '<div class="winner">' + (info.w == 1 ? '<div class="player blue">BLUE TEAM</div>' : '<div class="player red">RED TEAM</div>') + '</div>';
+        html += '<div class="bounty">+' + UI.escapeHTML(info.b) + ' BOUNTY</div></div>';
+
+        // Display message and play sound
+        $('body').append(html);
+        UI.showPanel('#custom-msg');
         setTimeout(function() {
-            UI.hidePanel("#custom-msg", false, true)
-        }, 1e3 * e.t),
-        Sound.gameComplete()
+            UI.hidePanel('#custom-msg', false, true)
+        }, 1000 * info.t);
+        Sound.gameComplete();
     }
 };
 
 Games.showLevelUp = function(level) {
-    $("#custom-msg").length && $("#custom-msg").remove();
-    let featureUnlockText = "";
-    let divclass = " lvlsmaller";
-    if (unlockedFeature[level + ""] != null) {
-        divclass = "";
-        featureUnlockText = '<div class="unlocked">FEATURE UNLOCKED<br><div class="unlockedtext">' + unlockedFeature[level + ""] + "</div></div>";
+    // Clear any existing custom message
+    if ($('#custom-msg').length) {
+        $('#custom-msg').remove();
     }
+
+    // Feature unlocked text
+    let featureUnlockHtml = '';
+    let divclass = ' lvlsmaller';
+    if (unlockedFeature[level + ''] != null) {
+        divclass = '';
+        featureUnlockHtml = '<div class="unlocked">FEATURE UNLOCKED<br><div class="unlockedtext">' + unlockedFeature[level + ''] + "</div></div>";
+    }
+
+    // New level reached text, and level number in badge
     let html = '<div id="custom-msg" class="levelup' + divclass + '">' +
                '<div class="leveltext">NEW LEVEL REACHED</div>' + 
                '<div class="levelbadge"></div>' +
-               '<div class="levelnum">' + level + "</div>" + featureUnlockText + "</div>";
-    $("body").append(html);
-    UI.showPanel("#custom-msg");
-    setTimeout(function() { UI.hidePanel("#custom-msg", false, true, true) }, 2000);
+               '<div class="levelnum">' + level + "</div>" + featureUnlockHtml + "</div>";
+
+    // Display message and play sound
+    $('body').append(html);
+    UI.showPanel('#custom-msg');
+    setTimeout(function() { 
+        UI.hidePanel('#custom-msg', false, true, true) 
+    }, 2000);
     Sound.levelUp();
 };
 
-Games.popFirewall = function(e, t) {
-    t <= 0 && (t = 0),
-    minimapIsInitialized || (minimapIsInitialized = true,
-    pixiJsGfx = new PIXI.Graphics,
-    game.graphics.gui.minimap.mask = pixiJsGfx),
-    pixiJsGfx.clear(),
-    pixiJsGfx.beginFill(16777215),
-    pixiJsGfx.drawCircle(game.screenX - config.minimapPaddingX - config.minimapSize * (16384 - e.x) / 32768, game.screenY - config.minimapPaddingY - config.minimapSize / 2 * (8192 - e.y) / 16384, 2 * t / (256 / config.minimapSize * 256)),
-    pixiJsGfx.endFill();
-    var n = Graphics.getCamera(),
-          r = Math.ceil((game.halfScreenX + 64) / game.scale / 64),
-          i = Math.ceil((game.halfScreenY + 64) / game.scale / 64),
-          o = 0,
-          s = 0,
-          a = "",
-          l = {},
-          u = 0,
-          c = 0,
-          h = new Vector(n.x - game.halfScreenX / game.scale - 64,n.y - game.halfScreenY / game.scale - 64),
-          d = new Vector(n.x + game.halfScreenX / game.scale + 64,n.y - game.halfScreenY / game.scale - 64),
-          p = new Vector(n.x - game.halfScreenX / game.scale - 64,n.y + game.halfScreenY / game.scale + 64),
-          f = new Vector(n.x + game.halfScreenX / game.scale + 64,n.y + game.halfScreenY / game.scale + 64);
-    if (Tools.distance(e.x, e.y, h.x, h.y) > t || Tools.distance(e.x, e.y, d.x, d.y) > t || Tools.distance(e.x, e.y, p.x, p.y) > t || Tools.distance(e.x, e.y, f.x, f.y) > t)
-        for (var g = -r; g <= r; g++)
-            for (var b = -i; b <= i; b++)
-                if (o = 64 * (Math.floor(n.x / 64) + .5) + 64 * g,
-                s = 64 * (Math.floor(n.y / 64) + .5) + 64 * b,
-                !((u = Tools.distance(o, s, e.x, e.y)) < t) && (a = o + "_" + s,
-                l[a] = true,
-                null == firewallHotSmokeSprites[a])) {
-                    var sprite = Textures.sprite("hotsmoke_" + Tools.randInt(1, 4));
-                    sprite.scale.set(Tools.rand(1.5, 2.5)),
-                    sprite.anchor.set(.5, .5),
-                    sprite.position.set(o, s),
-                    c = 1,
-                    Tools.rand(0, 1) > .5 && (sprite.blendMode = PIXI.BLEND_MODES.ADD,
-                    c = .5),
-                    game.graphics.layers.powerups.addChild(sprite),
-                    firewallHotSmokeSprites[a] = {
-                        sprite: sprite,
-                        rotation: Tools.rand(0, 100),
-                        rotationSpeed: Tools.rand(-.0025, .0025),
-                        opacity: 0,
-                        maxOpacity: c,
-                        opacitySpeed: u - t >= 64 ? .02 : .0035,
-                        color: Tools.rand(0, 1),
-                        colorDir: Tools.rand(0, 1) < .5 ? -1 : 1
+/**
+ * Update firewall sprites and minimap mask
+ */
+Games.popFirewall = function(firewallPosition, firewallRadius) {
+    if (firewallRadius <= 0) {
+        firewallRadius = 0;
+    }
+
+    // Create Graphics object for firewall minimap mask if it doesn't already exist
+    if (!minimapFirewallVisible) {
+        minimapFirewallVisible = true;
+        minimapFirewallMask = new PIXI.Graphics;
+        game.graphics.gui.minimap.mask = minimapFirewallMask;
+    }
+
+    // Draw firewall mask on minimap
+    minimapFirewallMask.clear();
+    minimapFirewallMask.beginFill(0xFFFFFF);
+    minimapFirewallMask.drawCircle(
+        game.screenX - config.minimapPaddingX - config.minimapSize * (16384 - firewallPosition.x) / 32768, 
+        game.screenY - config.minimapPaddingY - config.minimapSize / 2 * (8192 - firewallPosition.y) / 16384, 
+        2 * firewallRadius / (256 / config.minimapSize * 256));
+    minimapFirewallMask.endFill();
+
+    // Calculate extent of firewall sprite grid
+    let horizonalSpriteCount = Math.ceil((game.halfScreenX + 64) / game.scale / 64);
+    let verticalSpriteCount =  Math.ceil((game.halfScreenY + 64) / game.scale / 64);
+    let activeSprites = {};
+
+    // Coordinates of the visible border
+    let camera = Graphics.getCamera();
+    let upperLeft =  new Vector(camera.x - game.halfScreenX / game.scale - 64, camera.y - game.halfScreenY / game.scale - 64);
+    let upperRight = new Vector(camera.x + game.halfScreenX / game.scale + 64, camera.y - game.halfScreenY / game.scale - 64);
+    let lowerLeft =  new Vector(camera.x - game.halfScreenX / game.scale - 64, camera.y + game.halfScreenY / game.scale + 64);
+    let lowerRight = new Vector(camera.x + game.halfScreenX / game.scale + 64, camera.y + game.halfScreenY / game.scale + 64);
+
+    // Check if any part of the firewall is currently visible
+    if (Tools.distance(firewallPosition.x, firewallPosition.y, upperLeft.x, upperLeft.y) > firewallRadius || 
+        Tools.distance(firewallPosition.x, firewallPosition.y, upperRight.x, upperRight.y) > firewallRadius ||
+        Tools.distance(firewallPosition.x, firewallPosition.y, lowerLeft.x, lowerLeft.y) > firewallRadius || 
+        Tools.distance(firewallPosition.x, firewallPosition.y, lowerRight.x, lowerRight.y) > firewallRadius) {
+        
+        // Iterate over firewall sprite grid
+        for (let x = -horizonalSpriteCount; x <= horizonalSpriteCount; x++) {
+            for (let y = -verticalSpriteCount; y <= verticalSpriteCount; y++) {
+                let posX = 64 * (Math.floor(camera.x / 64) + 0.5) + 64 * x;
+                let posY = 64 * (Math.floor(camera.y / 64) + 0.5) + 64 * y;
+                let distance = Tools.distance(posX, posY, firewallPosition.x, firewallPosition.y)
+
+                // If position is outside of firewall radius then we display the hot smoke
+                if (distance >= firewallRadius) {
+                    let name = `${posX}_${posY}`;
+                    activeSprites[name] = true;
+
+                    // Create firewall sprite for this position if it doesn't already exist
+                    if (firewallSprites[name] == null)
+                    {
+                        let sprite = Textures.sprite(`hotsmoke_${Tools.randInt(1, 4)}`);
+
+                        sprite.scale.set(Tools.rand(1.5, 2.5));
+                        sprite.anchor.set(0.5, 0.5);
+                        sprite.position.set(posX, posY);
+                        let maxOpacity = 1;
+                        if (Tools.rand(0, 1) > 0.5) {
+                            sprite.blendMode = PIXI.BLEND_MODES.ADD;
+                            maxOpacity = 0.5;
+                        }
+
+                        game.graphics.layers.powerups.addChild(sprite);
+
+                        firewallSprites[name] = {
+                            sprite: sprite,
+                            rotation: Tools.rand(0, 100),
+                            rotationSpeed: Tools.rand(-0.0025, 0.0025),
+                            opacity: 0,
+                            maxOpacity: maxOpacity,
+                            opacitySpeed: distance - firewallRadius >= 64 ? 0.02 : 0.0035,
+                            color: Tools.rand(0, 1),
+                            colorDir: Tools.rand(0, 1) < 0.5 ? -1 : 1
+                        }
                     }
                 }
-    for (var x in firewallHotSmokeSprites)
-        null != l[x] ? (firewallHotSmokeSprites[x].rotation += firewallHotSmokeSprites[x].rotationSpeed * game.timeFactor,
-        firewallHotSmokeSprites[x].opacity += firewallHotSmokeSprites[x].opacitySpeed * game.timeFactor,
-        firewallHotSmokeSprites[x].opacity > firewallHotSmokeSprites[x].maxOpacity && (firewallHotSmokeSprites[x].opacity = firewallHotSmokeSprites[x].maxOpacity),
-        firewallHotSmokeSprites[x].color += .005 * firewallHotSmokeSprites[x].colorDir * game.timeFactor,
-        firewallHotSmokeSprites[x].color < 0 && (firewallHotSmokeSprites[x].colorDir = 1),
-        firewallHotSmokeSprites[x].color > 1 && (firewallHotSmokeSprites[x].colorDir = -1),
-        firewallHotSmokeSprites[x].sprite.rotation = firewallHotSmokeSprites[x].rotation,
-        firewallHotSmokeSprites[x].sprite.alpha = firewallHotSmokeSprites[x].opacity,
-        firewallHotSmokeSprites[x].sprite.tint = Tools.colorLerp(16427014, 16404230, firewallHotSmokeSprites[x].color)) : (game.graphics.layers.powerups.removeChild(firewallHotSmokeSprites[x].sprite),
-        firewallHotSmokeSprites[x].sprite.destroy(),
-        delete firewallHotSmokeSprites[x])
-};
+            }
+        }
+    }
 
-var deinitMinimapAndFirewall = function() {
-    if (minimapIsInitialized) {
-        for (var e in firewallHotSmokeSprites)
-            game.graphics.layers.powerups.removeChild(firewallHotSmokeSprites[e].sprite),
-            firewallHotSmokeSprites[e].sprite.destroy();
-        firewallHotSmokeSprites = {},
-        game.graphics.gui.minimap.mask = null,
-        null != pixiJsGfx && (pixiJsGfx.destroy(),
-        pixiJsGfx = null),
-        minimapIsInitialized = false
+    for (let name in firewallSprites) {
+        if (activeSprites[name]) {
+            // Animate sprite by varying its display properties
+            firewallSprites[name].rotation += firewallSprites[name].rotationSpeed * game.timeFactor;
+            firewallSprites[name].opacity += firewallSprites[name].opacitySpeed * game.timeFactor;
+            if (firewallSprites[name].opacity > firewallSprites[name].maxOpacity) {
+                firewallSprites[name].opacity = firewallSprites[name].maxOpacity
+            }
+            firewallSprites[name].color += 0.005 * firewallSprites[name].colorDir * game.timeFactor;
+            if (firewallSprites[name].color < 0) {
+                firewallSprites[name].colorDir = 1;
+            }
+            if (firewallSprites[name].color > 1) {
+                firewallSprites[name].colorDir = -1;
+            }
+
+            // Apply properties to sprite
+            firewallSprites[name].sprite.rotation = firewallSprites[name].rotation;
+            firewallSprites[name].sprite.alpha = firewallSprites[name].opacity;
+            firewallSprites[name].sprite.tint = Tools.colorLerp(0xFAA806, 0xFA4F06, firewallSprites[name].color);
+        }
+        else {
+            // Remove this firewall sprite
+            game.graphics.layers.powerups.removeChild(firewallSprites[name].sprite);
+            firewallSprites[name].sprite.destroy();
+            delete firewallSprites[name];
+        }
     }
 };
 
-Games.handleFirewall = function(firewallMsg) {
-    0 == firewallMsg.status ? deinitMinimapAndFirewall() : (firewallStatus.radius = firewallMsg.radius,
-    firewallStatus.pos.x = firewallMsg.posX,
-    firewallStatus.pos.y = firewallMsg.posY,
-    firewallStatus.speed = firewallMsg.speed,
-    Games.popFirewall(firewallStatus.pos, firewallStatus.radius))
+/**
+ * Remove all BTR firewall sprites and minimap mask
+ */
+var removeFirewall = function() {
+    if (minimapFirewallVisible) {
+        for (let name in firewallSprites) {
+            game.graphics.layers.powerups.removeChild(firewallSprites[name].sprite),
+            firewallSprites[name].sprite.destroy();
+        }
+
+        firewallSprites = {};
+
+        game.graphics.gui.minimap.mask = null;
+
+        if (minimapFirewallMask) {
+            minimapFirewallMask.destroy();
+            minimapFirewallMask = null;
+        }
+
+        minimapFirewallVisible = false;
+    }
 };
 
+/**
+ * GAME_FIREWALL message handler
+ */
+Games.handleFirewall = function(msg) {
+    if (msg.status == 0) {
+        removeFirewall();
+    }
+    else {
+        firewall.radius = msg.radius;
+        firewall.pos.x = msg.posX;
+        firewall.pos.y = msg.posY;
+        firewall.speed = msg.speed;
+        Games.popFirewall(firewall.pos, firewall.radius);
+    }
+};
+
+/**
+ * Frame update handler
+ */
 Games.update = function(isResize) {
-    if(GameType.CTF == game.gameType && ctfGameState.flagBlue) {
-        updateCtfFlagState(ctfGameState.flagBlue, isResize);
-        updateCtfFlagState(ctfGameState.flagRed, isResize);
-    }
-    if(GameType.BTR == game.gameType && minimapIsInitialized) {
-        firewallStatus.radius += firewallStatus.speed / 60 * game.timeFactor;
-        Games.popFirewall(firewallStatus.pos, firewallStatus.radius);
+    switch (game.gameType) {
+        case GameType.CTF:
+            if (ctf.flagBlue) {
+                updateCtfFlag(ctf.flagBlue, isResize);
+                updateCtfFlag(ctf.flagRed, isResize);
+            }
+            break;
+        case GameType.BTR:
+            if (minimapFirewallVisible) {
+                firewall.radius += firewall.speed / 60 * game.timeFactor;
+                Games.popFirewall(firewall.pos, firewall.radius);
+            }
+            break;
     }
 };
