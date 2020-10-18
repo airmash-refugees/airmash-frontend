@@ -131,7 +131,9 @@ class Mob {
                         }
                     }
 
-                    this.sprites.sprite.tint = this.sprites.thruster.tint = (team == 1 ? 0x4076E2 : 0xEA4242);
+                    this.sprites.smokeGlow.tint = 
+                    this.sprites.sprite.tint = 
+                    this.sprites.thruster.tint = (team == 1 ? 0x3232FA : 0xEA4242);
 
                     break;
             }
