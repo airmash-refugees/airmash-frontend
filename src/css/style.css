@@ -329,6 +329,20 @@ input:focus {
     box-sizing: border-box
 }
 
+#logon .playoptions .item .players.header {
+    text-align: left;
+}
+
+#logon .playoptions .item .bots {
+    float: left;
+    width: 30px;
+    box-sizing: border-box;
+}
+
+#logon .playoptions .item .bots.number {
+    color: #a0a0a0;
+}
+
 #logon .playoptions .item .header {
     text-align: center;
     font-size: 11px;

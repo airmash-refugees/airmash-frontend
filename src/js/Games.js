@@ -459,10 +459,12 @@ Games.updateRegion = function(menuVisible, clickEvent) {
                 let hasPlayers = false;
                 let playerCount = 0;
                 for (let regionGame of region.games) {
-                    if (regionGame.players)
-                    {
+                    if (regionGame.players) {
                         playerCount += regionGame.players;
                         hasPlayers = true;
+                    }
+                    if (regionGame.bots) {
+                        playerCount -= regionGame.bots;
                     }
                 }
                 if (!hasPlayers) {
@@ -560,6 +562,7 @@ Games.updateType = function(menuVisible, clickEvent) {
             html += '<div class="item">';
             html += '<div class="gametype header">GAME</div>';
             html += '<div class="players header">PLAYERS</div>';
+            html += '<div class="bots header">BOTS</div>';
             html += '<div class="clear"></div>';
             html += '</div>';
 
@@ -593,7 +596,8 @@ Games.updateType = function(menuVisible, clickEvent) {
                     for (let room of roomsByType[type]) {
                         html += '<div class="item selectable' + (room.id === game.playRoom ? ' sel' : '') + '" onclick="Games.selectGame(event, &quot;' + room.id + '&quot;)">';
                         html += '<div class="gametype chooser">' + room.nameShort + '</div>';
-                        html += '<div class="players number">' + (room.players != null ? room.players : '<span class="playersunknown">?</span>') + '</div>';
+                        html += '<div class="players number">' + (room.players != null ? (room.players - (room.bots || 0)) : '<span class="playersunknown">?</span>') + '</div>';
+                        html += '<div class="bots number">' + (room.bots ? `+${room.bots}` : '') + '</div>';
                         html += '<div class="clear"></div>';
                         html += '</div>';
                     }
@@ -603,7 +607,7 @@ Games.updateType = function(menuVisible, clickEvent) {
             html += '<div class="item"></div>';
 
             css = {
-                width: '240px',
+                width: '280px',
                 height: 'auto',
                 'z-index': '2'
             };
