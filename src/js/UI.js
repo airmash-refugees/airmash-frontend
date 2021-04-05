@@ -483,6 +483,10 @@ UI.scoreboardUpdate = function (msgData, msgRankings, maxScoreboard) {
         );
     }
 
+    if (!isEndOfScoreboard && msgData.length > maxScoreboard) {
+        html += '<div class="line dottedline">&middot; &middot; &middot;</div>';
+    }
+    
     $("#scoreboard").html(html);
 };
 

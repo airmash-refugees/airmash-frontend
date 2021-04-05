@@ -238,7 +238,7 @@ window.config = {
     minimapPaddingY: 16,
     minimapSize: 240,
     maxChatLines: 50,
-    maxScoreboard: 8,
+    maxScoreboard: 12,
     shadowScaling: 2,
     shadowOffsetX: 20,
     shadowOffsetY: 40,
