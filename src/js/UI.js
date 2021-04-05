@@ -628,7 +628,7 @@ UI.showChatLevel = function(e) {
  * If game type is CTF, will also split the player count into red / blue / spectating
  */
 UI.updateGameInfo = function() {
-    let counts = Players.playerBotCount();
+    let counts = Players.categoryCounts();
     let html = '';
 
     html += '<div class="item">';
@@ -642,7 +642,7 @@ UI.updateGameInfo = function() {
         html += '&nbsp;/&nbsp;';
         html += `<span style="color: #EA4242">${counts.redTeam}</span>`;
         html += '&nbsp;/&nbsp;';
-        html += `${counts.notPlaying}`;
+        html += `${counts.spectators}`;
         html += ')</span>';
     }
     html += `<span class="icon-container padded"><div class="icon ping"></div></span>${game.ping}<span class="millis">ms</span>`;
@@ -1260,14 +1260,14 @@ UI.updateScore = function (scoreDetailedMsg) {
         let playerStatsDivClass = '';
         if (scoreDetailedMsg.c == Network.SERVERPACKET.SCORE_DETAILED_BTR) {
             if (!scores[f].alive) {
-                playerNameDivClass += ' inactive';
-                playerStatsDivClass += ' inactive';
+                playerNameDivClass += ' spectating';
+                playerStatsDivClass += ' spectating';
             }
         }
         else {
-            if (!player.isOnMap() && !player.bot) {
-                playerNameDivClass += ' inactive';
-                playerStatsDivClass += ' inactive';
+            if (!player.isSpectating() && !player.bot) {
+                playerNameDivClass += ' spectating';
+                playerStatsDivClass += ' spectating';
             }
         }
 

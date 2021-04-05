@@ -237,13 +237,13 @@ Players.count = function() {
     return [n - r, n]
 };
 
-Players.playerBotCount = function() {
+Players.categoryCounts = function() {
     let counts = {
         players: 0,
         bots: 0,
         blueTeam: 0,
         redTeam: 0,
-        notPlaying: 0
+        spectators: 0
     }
 
     for (let id in playersById) {
@@ -258,10 +258,8 @@ Players.playerBotCount = function() {
         else {
             counts.players++;
 
-            // Check for player status of spectate/dead, or special zero position from scoreboard rankings
-            // The (-16320, -8128) is after UI.scoreboardUpdate has called Tools.decodeMinimapCoords
-            if (!player.isOnMap()) {
-                counts.notPlaying++;
+            if (!player.isSpectating()) {
+                counts.spectators++;
             }
             else {
                 if (player.team === 1) {

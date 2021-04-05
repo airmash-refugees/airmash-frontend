@@ -2432,7 +2432,7 @@ input:focus {
     color: #dc4f46
 }
 
-#scoredetailed .item .name .inactive {
+#scoredetailed .item .name .spectating {
     color: #8c8c8c
 }
 
@@ -2441,7 +2441,7 @@ input:focus {
     width: 9%
 }
 
-#scoredetailed .item .kills.inactive {
+#scoredetailed .item .kills.spectating {
     color: #8c8c8c
 }
 
@@ -2453,7 +2453,7 @@ input:focus {
     color: #fff;
 }
 
-#scoredetailed .item .captures.inactive {
+#scoredetailed .item .captures.spectating {
     color: #8c8c8c
 }
 
@@ -2475,7 +2475,7 @@ input:focus {
     background-size: 14px 14px
 }
 
-#scoredetailed .item .captures .captures-container .captures-icon.inactive {
+#scoredetailed .item .captures .captures-container .captures-icon.spectating {
     filter: invert(63%) sepia(0%) saturate(24%) hue-rotate(152deg) brightness(89%) contrast(86%);
 }
 
@@ -2487,7 +2487,7 @@ input:focus {
     color: #fff;
 }
 
-#scoredetailed .item .wins.inactive {
+#scoredetailed .item .wins.spectating {
     color: #8c8c8c
 }
 
@@ -2509,7 +2509,7 @@ input:focus {
     background-size: 14px 14px
 }
 
-#scoredetailed .item .wins .wins-container .wins-icon.inactive {
+#scoredetailed .item .wins .wins-container .wins-icon.spectating {
     filter: invert(63%) sepia(0%) saturate(24%) hue-rotate(152deg) brightness(89%) contrast(86%);
 }
 
@@ -2518,7 +2518,7 @@ input:focus {
     width: 11%
 }
 
-#scoredetailed .item .deaths.inactive {
+#scoredetailed .item .deaths.spectating {
     color: #8c8c8c
 }
 
@@ -2527,7 +2527,7 @@ input:focus {
     width: 13%
 }
 
-#scoredetailed .item .damage.inactive {
+#scoredetailed .item .damage.spectating {
     color: #8c8c8c
 }
 
@@ -2538,7 +2538,7 @@ input:focus {
     font-weight: bold
 }
 
-#scoredetailed .item .bounty.inactive {
+#scoredetailed .item .bounty.spectating {
     color: #8c8c8c
 }
 
@@ -2549,7 +2549,7 @@ input:focus {
     font-weight: bold
 }
 
-#scoredetailed .item .rank.inactive {
+#scoredetailed .item .rank.spectating {
     color: #8c8c8c
 }
 
@@ -2558,7 +2558,7 @@ input:focus {
     width: 9%;
 }
 
-#scoredetailed .item .ping.inactive {
+#scoredetailed .item .ping.spectating {
     color: #8c8c8c
 }
 
