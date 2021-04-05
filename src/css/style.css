@@ -1912,6 +1912,10 @@ input:focus {
     margin-right: 4px
 }
 
+#scoreboard .line .place.spectating {
+    color: #8c8c8c
+}
+
 #scoreboard .line .nick {
     color: #e6e6e6;
     font-weight: bold;
@@ -1929,6 +1933,10 @@ input:focus {
 
 #scoreboard .line .nick.team-2 {
     color: #dc4f46
+}
+
+#scoreboard .line .nick.spectating {
+    color: #8c8c8c
 }
 
 #scoreboard .line .holder {
@@ -1966,6 +1974,10 @@ input:focus {
     display: inline-block;
     width: 9px;
     text-align: center
+}
+
+#scoreboard .line .score.spectating {
+    color: #8c8c8c
 }
 
 #scoreboard .sel {

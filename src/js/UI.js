@@ -439,14 +439,21 @@ UI.scoreboardUpdate = function (msgData, msgRankings, maxScoreboard) {
             isEndOfScoreboard = true;
         }
 
-        var currentTeamClass = "";
+        let playerNameClass = '';
+        let playerScoreClass = '';
         if (GameType.CTF == game.gameType) {
-            currentTeamClass = " team-" + player.team
+            playerNameClass = " team-" + player.team
         }
 
-        var placeCssClass = "";
+        let placeCssClass = '';
         if (4 == (badgeHtml + "").length) {
             placeCssClass = " bigger"
+        }
+
+        if (player.isSpectating() && !player.bot) {
+            playerNameClass += ' spectating';
+            placeCssClass += ' spectating';
+            playerScoreClass = ' spectating';
         }
 
         html += (
@@ -456,7 +463,7 @@ UI.scoreboardUpdate = function (msgData, msgRankings, maxScoreboard) {
                 '</span>' +
                 '<span class="flag small flag-' + player.flag + '" ' +
                     'title="' + getFlagLabel(player.flag) + '"></span>' +
-                '<span class="nick ' + currentTeamClass + '">' +
+                '<span class="nick' + playerNameClass + '">' +
                     UI.escapeHTML(Tools.mungeNonAscii(player.name, player.id)) +
                 '</span>'
         );
@@ -469,7 +476,7 @@ UI.scoreboardUpdate = function (msgData, msgRankings, maxScoreboard) {
             );
         }
         html += (
-                '<span class="score">' +
+                '<span class="score' + playerScoreClass + '">' +
                     wrapCharsInSpans(curPlayerScore) +
                 '</span>' +
             '</div>'
