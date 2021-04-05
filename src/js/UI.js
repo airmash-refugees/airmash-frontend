@@ -359,6 +359,27 @@ UI.scoreboardUpdate = function (msgData, msgRankings, maxScoreboard) {
                     }
                     updateMinimapMob(minimapMobs[msgRankings[i].id]);
                 }
+                else {
+                    let player = Players.get(msgRankings[i].id);
+                    /*
+                       If a player is missing from the minimap for longer than the 3s
+                       post-death duration (PLAYERS_DEATH_INACTIVITY_MS in ab-server)
+                       after their kill, then we assume the player is spectating.
+                       
+                       We have knowledge of these last-killed times because all player 
+                       kills are broadcast to all players. However, if we join a game 
+                       and a player has been killed just before that, we don't know if
+                       they are spectating or just awaiting revival.
+
+                       So we assume they are spectating, by having the lastKilled 
+                       property initialised to zero (rather than performance.now()) in 
+                       Player constructor. If this is wrong, it will be corrected within
+                       a few seconds, when they respawn/revive.
+                    */
+                    if (player && performance.now() - player.lastKilled > 3000) {
+                        player.spectate = true;
+                    }
+                }
             } else {
                 somethingLikeHighestPlayerId = i + 1;
             }
@@ -1265,7 +1286,7 @@ UI.updateScore = function (scoreDetailedMsg) {
             }
         }
         else {
-            if (!player.isSpectating() && !player.bot) {
+            if (player.isSpectating() && !player.bot) {
                 playerNameDivClass += ' spectating';
                 playerStatsDivClass += ' spectating';
             }

@@ -5,6 +5,7 @@ class Player {
     constructor(playerNewMsg, isFromLoginPacket) {
         this.id = playerNewMsg.id;
         this.status = playerNewMsg.status;
+        this.spectate = false;
         this.level = null == playerNewMsg.level || 0 == playerNewMsg.level ? null : playerNewMsg.level;
         this.reel = 1 == playerNewMsg.reel;
         this.name = playerNewMsg.name;
@@ -20,7 +21,7 @@ class Player {
         this.sprites = {};
         this.randomness = Tools.rand(0, 1e5);
         this.keystate = {};
-        this.lastTick = 0;
+        this.lastKilled = 0;
         this.health = 1;
         this.energy = 1;
         this.healthRegen = 1;
@@ -360,6 +361,7 @@ class Player {
 
     kill(ev) {
         this.status = 1;
+        this.spectate = !!ev.spectate;
         this.keystate = {};
         this.pos.x = ev.posX;
         this.pos.y = ev.posY;
@@ -374,23 +376,27 @@ class Player {
             this.unstealth();
         }
 
-        if (!this.culled && !ev.spectate) {
-            switch (this.type) {
-                case PlaneType.Predator:
-                    Particles.explosion(this.pos.clone(), Tools.rand(1.5, 2), Tools.randInt(2, 3));
-                    break;
-                case PlaneType.Goliath:
-                    Particles.explosion(this.pos.clone(), Tools.rand(2, 2.5), Tools.randInt(4, 7));
-                    break;
-                case PlaneType.Mohawk:
-                case PlaneType.Tornado:
-                case PlaneType.Prowler:
-                    Particles.explosion(this.pos.clone(), Tools.rand(1.5, 2), Tools.randInt(2, 3));
-                    break;
+        if (!this.spectate) {
+            this.lastKilled = performance.now();
+
+            if (!this.culled) {
+                switch (this.type) {
+                    case PlaneType.Predator:
+                        Particles.explosion(this.pos.clone(), Tools.rand(1.5, 2), Tools.randInt(2, 3));
+                        break;
+                    case PlaneType.Goliath:
+                        Particles.explosion(this.pos.clone(), Tools.rand(2, 2.5), Tools.randInt(4, 7));
+                        break;
+                    case PlaneType.Mohawk:
+                    case PlaneType.Tornado:
+                    case PlaneType.Prowler:
+                        Particles.explosion(this.pos.clone(), Tools.rand(1.5, 2), Tools.randInt(2, 3));
+                        break;
+                }
+                Graphics.shakeCamera(this.pos, this.me() ? 20 : 10),
+                Sound.clearThruster(this.id),
+                Sound.playerKill(this)
             }
-            Graphics.shakeCamera(this.pos, this.me() ? 20 : 10),
-            Sound.clearThruster(this.id),
-            Sound.playerKill(this)
         }
     }
 
@@ -611,6 +617,7 @@ class Player {
     respawn(e) {
         this.lastPacket = game.timeNetwork,
         this.status = 0,
+        this.spectate = false,
         this.keystate = {},
         this.pos.x = e.posX,
         this.pos.y = e.posY,
@@ -657,6 +664,7 @@ class Player {
 
     revive() {
         this.status = 0;
+        this.spectate = false;
         this.boost = false;
         this.strafe = false;
         this.flagspeed = false;
@@ -990,9 +998,7 @@ class Player {
     }
 
     isSpectating() {        
-        // Check for player status of spectate/dead, or special zero position from scoreboard rankings
-        // The (-16320, -8128) is after UI.scoreboardUpdate has called Tools.decodeMinimapCoords
-        return !(this.status !== 0 || this.lowResPos.x === -16320 && this.lowResPos.y === -8128);
+        return this.spectate;
     }
 }
 

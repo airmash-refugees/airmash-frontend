@@ -258,7 +258,8 @@ Players.categoryCounts = function() {
         else {
             counts.players++;
 
-            if (!player.isSpectating()) {
+            // If player is spectating, exclude them from CTF team counts
+            if (player.isSpectating()) {
                 counts.spectators++;
             }
             else {
