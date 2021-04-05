@@ -653,7 +653,8 @@ UI.showChatLevel = function(e) {
 /** 
  * Updates the game info display with player count, bot count, and ping time
  * 
- * If game type is CTF, will also split the player count into red / blue / spectating
+ * For FFA, splits player count into active and spectating players
+ * For CTF, also splits the player count into red and blue team active players
  */
 UI.updateGameInfo = function() {
     let counts = Players.categoryCounts();
@@ -669,6 +670,13 @@ UI.updateGameInfo = function() {
         html += `<span style="color: #4076E2">${counts.blueTeam}</span>`;
         html += '&nbsp;/&nbsp;';
         html += `<span style="color: #EA4242">${counts.redTeam}</span>`;
+        html += '&nbsp;/&nbsp;';
+        html += `${counts.spectators}`;
+        html += ')</span>';
+    }
+    else if (game.gameType === GameType.FFA) {
+        html += '<span class="greyed">&nbsp;&nbsp;(';
+        html += `<span style="color: #FFEC52">${counts.players - counts.spectators}</span>`;
         html += '&nbsp;/&nbsp;';
         html += `${counts.spectators}`;
         html += ')</span>';
