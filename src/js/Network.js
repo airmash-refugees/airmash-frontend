@@ -895,7 +895,6 @@ var ServerMessageSchema = {
     [ServerPacket.PLAYER_LEAVE]: [["id", FieldType.uint16]],
     [ServerPacket.PLAYER_UPDATE]: [["clock", FieldType.uint32], ["id", FieldType.uint16], ["keystate", FieldType.uint8], ["upgrades", FieldType.uint8], ["posX", FieldType.coord24], ["posY", FieldType.coord24], ["rot", FieldType.rotation], ["speedX", FieldType.speed], ["speedY", FieldType.speed]],
     [ServerPacket.PLAYER_FIRE]: [["clock", FieldType.uint32], ["id", FieldType.uint16], ["energy", FieldType.healthnergy], ["energyRegen", FieldType.regen], ["projectiles", FieldType.arraysmall, [["id", FieldType.uint16], ["type", FieldType.uint8], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["speedX", FieldType.speed], ["speedY", FieldType.speed], ["accelX", FieldType.accel], ["accelY", FieldType.accel], ["maxSpeed", FieldType.speed]]]],
-    [ServerPacket.PLAYER_SAY]: [["id", FieldType.uint16], ["text", FieldType.text]],
     [ServerPacket.PLAYER_RESPAWN]: [["id", FieldType.uint16], ["posX", FieldType.coord24], ["posY", FieldType.coord24], ["rot", FieldType.rotation], ["upgrades", FieldType.uint8]],
     [ServerPacket.PLAYER_FLAG]: [["id", FieldType.uint16], ["flag", FieldType.uint16]],
     [ServerPacket.PLAYER_HIT]: [["id", FieldType.uint16], ["type", FieldType.uint8], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["owner", FieldType.uint16], ["players", FieldType.arraysmall, [["id", FieldType.uint16], ["health", FieldType.healthnergy], ["healthRegen", FieldType.regen]]]],
