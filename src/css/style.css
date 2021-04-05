@@ -2042,8 +2042,8 @@ input:focus {
 #debug {
     display: none;
     position: absolute;
-    right: 16px;
-    bottom: 140px;
+    right: 300px;
+    bottom: 20px;
     width: 160px;
     background-color: rgba(0, 0, 0, 0.4);
     border-radius: 5px;
