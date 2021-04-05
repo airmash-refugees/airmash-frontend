@@ -220,6 +220,11 @@ var maybePlaySound = function(spriteName, volume, pos, rate, fade, useUncompress
             var howl = howlsByUncompressedAssetName[spriteName]
         } else
             howl = mainHowlInstance;
+
+        if (!(howl && howl.play)) {
+            return;
+        }
+        
         if (!(null != volume && volume < .01)) {
             var soundId = howl.play(useUncompressedAsset ? void 0 : spriteName);
             if ("thruster" === spriteName || "missile" === spriteName || "chopper" === spriteName) {
