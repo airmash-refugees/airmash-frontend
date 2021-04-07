@@ -33,8 +33,6 @@ npm run build
 
 The output will be created in `dist/`, and can be served using a local web server for testing (e.g. something like `cd dist ; python3 -m http.server`).
 
-The latest successful build of this repo is deployed automatically to https://test.airmash.online. 
-
 For development, ``DEBUG=1 npm run build`` cuts build time down by disabling minification.
 
 ### This repository contains proprietary code

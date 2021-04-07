@@ -26,23 +26,3 @@ steps:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: '$(Build.Repository.Name)'
     publishLocation: 'Container'
-
-- task: InstallSSHKey@0
-  inputs:
-    knownHostsEntry: 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ=='
-    sshPublicKey: 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAp/RUkXQss1HhaBUX4VFIxIXPgJXsPckKYVXcumtam0pK4G/Gt4PIWJZnAj1A6v4wi55pN9hHOzMrJjpxSzXj+Kz7P7I63QoM4hOLo+ouNdGWISombxcovvKX/OR4QCHYbYf9g+u+suiPHX1IoYvH/D3WjyVw1eI6X6kQ52ta1A4aA9j7tQW06omYSLlTvyVXkS9G/hNNqT1lHbmhD6cANsUaIG7nuFj2MF2D5p3Gk/tIXna6jMgi8WunGoD9psbm0nkwpEidxSYh6Lb6tj2Y9vew0e8CEqqULUe+JiYDPFdrIEM6HtYZXbj3mn81xfmFQxzcVzbLrv+OnkOqdSRotw=='
-    sshKeySecureFile: 'test.airmash.online-deploy-key'
-  displayName: 'Install deploy key for github:airmash-refugees/test.airmash.online'
-
-- script: |
-    pushd $(Build.ArtifactStagingDirectory)
-    echo test.airmash.online > CNAME
-    git init
-    git config user.name "Azure Pipelines"
-    git config user.email "<>"
-    git add .
-    git commit -m "Deployment of $(Build.SourceVersion) from $(Build.Repository.Uri)"
-    git remote add origin git@github.com:airmash-refugees/test.airmash.online
-    git push origin -u master -f
-    popd
-  displayName: 'Deploy to test.airmash.online (GitHub Pages)'
