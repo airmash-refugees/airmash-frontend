@@ -369,10 +369,9 @@ var selectGameFromUrlHash = function() {
         hash = hash.substr(1);
 
         // Format of URL hash is 'region-room', split on '-'
-        let splitIndex = hash.indexOf('-');
-        if (splitIndex != -1) {
-            let region = hash.substr(0, splitIndex);
-            let room = hash.substr(splitIndex + 1);
+        let regionRoom = hash.split('-');
+        if (regionRoom.length == 2) {
+            let [ region, room ] = regionRoom;
 
             // Look up this region and room in games data, and clear URL hash
             if (getGameByRegionAndRoom(region, room) != null) {
@@ -698,7 +697,7 @@ var getGameSelectorHtml = function() {
                 }
                 else {
                     divClass = ' selectable';
-                    divAttribute = ' onclick="Games.switchGame(&quot;' + room.id + '&quot;)"';
+                    divAttribute = ` onclick="Games.switchGame(&quot;${game.playRegion}-${room.id}&quot;)"`;
                 }
 
                 html += '<div class="item' + divClass + '"' + divAttribute + '>';
@@ -744,10 +743,13 @@ Games.toggleGames = function() {
     }
 };
 
-Games.switchGame = function(room) {
+Games.switchGame = function(gameServerId) {
     Games.closeGames();
-    if (room != null) {
-        game.playRoom = room;
+    if (gameServerId != null) {
+        let regionRoom = gameServerId.split('-');
+        if (regionRoom.length == 2) {
+            [ game.playRegion, game.playRoom ] = regionRoom;
+        }
     }
     game.myScore = 0;
     game.server = {};

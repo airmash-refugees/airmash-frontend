@@ -364,6 +364,26 @@ var handleCustomMessage = function(msg) {
         case 2:
             Games.showCTFWin(parsedData);
             break;
+        case 100:
+            showSwitchGameSuggestion(parsedData);
+            break;
+    }
+};
+
+var isValidGameServerId = function(gameServerId) {
+    const re = /^[a-z0-9]+-[a-z0-9]+$/m;
+    return re.test(gameServerId);
+};
+
+var showSwitchGameSuggestion = function(data) {
+    /* 
+       On the original Airmash servers, this was sent in a SERVER_MESSAGE packet, as HTML. Example:
+    
+         Battle Royale: Goliath round starting in 1 minute<br><span class="button" onclick="Games.switchGame(&quot;btr1&quot;)">JOIN BTR #1</span>
+    */
+    if (data && data.message && data.button && isValidGameServerId(data.server)) {
+        const html = `${UI.escapeHTML(data.message)}<br><span class="button" onclick="Games.switchGame(&quot;${data.server}&quot;)">${UI.escapeHTML(data.button)}</span>`;
+        UI.showMessage('alert', html, 5000);
     }
 };
 
