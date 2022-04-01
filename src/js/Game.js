@@ -739,6 +739,14 @@ window.config = {
         [-8148, -7137, 1, .7, null, null, null],
         [-7030, -7301, 4, .7, null, null, null]
     ],
+    /*
+        List of lists containing:
+        [
+            centreX,
+            centreY,
+            radius
+        ]
+    */
     walls: [
         [1009, -2308, 108],
         [1241, -2490, 60],
