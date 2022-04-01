@@ -1269,7 +1269,11 @@ window.config = {
         [-8148, -7137, 84],
         [-7030, -7301, 84]
     ],
-    groundDoodads: [[-9670, -1470, "doodadField", .5, 0, null, null], [8600, -940, "doodadField", .5, 0, null, null], [920, -2800, "doodadField", .5, 0, null, null]],
+    groundDoodads: [
+        [-9670, -1470, "doodadField", .5, 0, null, null],
+        [8600, -940, "doodadField", .5, 0, null, null],
+        [920, -2800, "doodadField", .5, 0, null, null]
+    ],
     debug: {
         show: true,
         collisions: false
