@@ -1,4 +1,7 @@
-window.DEVELOPMENT = /^http:\/\/127\.0\.0\.1:[0-9]{1,5}\/?$/.test(window.origin);
+window.DEVELOPMENT = (
+    /^http:\/\/127\.0\.0\.1:[0-9]{1,5}\/?$/.test(window.origin) ||
+    ((window.location.search || '').indexOf('dev') != -1)
+);
 
 window.game = {
     protocol: 5,
