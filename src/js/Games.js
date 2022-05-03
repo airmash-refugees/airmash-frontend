@@ -1004,16 +1004,18 @@ Games.start = function(playerName, fromMainPage) {
 
     UI.gameStart(playerName, fromMainPage);
 
-    // Usage telemetry
-    Tools.ajaxPost(`https://${game.backendHost}/enter`, {
-        id: config.settings.id,
-        name: playerName,
-        game: game.server.id,
-        source: document.referrer != null ? document.referrer : '',
-        mode: config.mobile ? 1 : 0,
-        version: game.version,
-        switch: !fromMainPage
-    });
+    // Usage telemetry. Only send if browser DNT is disabled
+    if(navigator.doNotTrack !== '1') {
+        Tools.ajaxPost(`https://${game.backendHost}/enter`, {
+            id: config.settings.id,
+            name: playerName,
+            game: game.server.id,
+            source: document.referrer != null ? document.referrer : '',
+            mode: config.mobile ? 1 : 0,
+            version: game.version,
+            switch: !fromMainPage
+        });
+    }
 };
 
 function getSelectedRoomId() {
