@@ -607,6 +607,21 @@ UI.parseCommand = function(chatInput) {
 };
 
 
+UI.onChatlineClick = function(event)
+{
+    if(! (navigator.clipboard && navigator.clipboard.writeText)) {
+        return;
+    }
+
+    navigator.clipboard.writeText(event.target.innerText);
+    UI.serverMessage({
+        type: 1,
+        text: "Copied to clipboard",
+        duration: 1000
+    });
+};
+
+
 UI.addChatLine = function(msg, text, msgType) {
     if (!ignoredPlayerIdSet[msg.id]) {
         chatLineId++;
@@ -621,6 +636,8 @@ UI.addChatLine = function(msg, text, msgType) {
             o = '<div id="chat-' + chatLineId + '" class="line"><span class="tag team">TEAM</span><span class="playersel" data-playerid="' + msg.id + '"><span class="nick blue">' + UI.escapeHTML(msg.name) + '</span></span><span class="text blue">' + UI.escapeHTML(text, true) + "</span></div>";
             s = -1
         }
+        var o = $(o);
+        o.click(UI.onChatlineClick);
         var c = "#chat-" + (chatLineId - config.maxChatLines);
         if ($(c).length && $(c).remove(),
         $("#chatlines").append(o),
