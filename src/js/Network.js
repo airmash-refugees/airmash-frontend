@@ -160,6 +160,8 @@ var resetJitterMemoryEvery5Mins = function(packetDivClk) {
 };
 
 var dispatchIncomingMessage = function(msg) {
+    console.log(ServerPacketNameById[msg.c], msg);
+
     if (game.state == Network.STATE.PLAYING || msg.c == ServerPacket.LOGIN || msg.c == ServerPacket.ERROR) {
         if ((msg.c == ServerPacket.PLAYER_UPDATE || msg.c == ServerPacket.PLAYER_FIRE || msg.c == ServerPacket.EVENT_BOOST || msg.c == ServerPacket.EVENT_BOUNCE) && msg.id == game.myID || msg.c == ServerPacket.PING) {
             if (msg.c != ServerPacket.PING && shouldDiscardTimestampedMessage(msg))
@@ -902,6 +904,13 @@ var ServerPacket = {
     SERVER_MESSAGE: 90,
     SERVER_CUSTOM: 91
 };
+
+var ServerPacketNameById = {};
+for(var k in ServerPacket) {
+    if(ServerPacket.hasOwnProperty(k)) {
+        ServerPacketNameById[ServerPacket[k]] = k;
+    }
+}
 
 var ServerMessageSchema = {
     [ServerPacket.LOGIN]: [["success", FieldType.boolean], ["id", FieldType.uint16], ["team", FieldType.uint16], ["clock", FieldType.uint32], ["token", FieldType.text], ["type", FieldType.uint8], ["room", FieldType.text], ["players", FieldType.array, [["id", FieldType.uint16], ["status", FieldType.uint8], ["level", FieldType.uint8], ["name", FieldType.text], ["type", FieldType.uint8], ["team", FieldType.uint16], ["posX", FieldType.coordx], ["posY", FieldType.coordy], ["rot", FieldType.rotation], ["flag", FieldType.uint16], ["upgrades", FieldType.uint8]]],["serverConfiguration", FieldType.textbig],["bots", FieldType.array, [["id", FieldType.uint16]]]],
